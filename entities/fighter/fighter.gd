@@ -25,6 +25,12 @@ const DASH_COOLDOWN := 0.55
 # --- Movement momentum (the two feel knobs) ---
 const ACCEL := 1300.0           # ramp-up to max speed (lower = more sluggish start)
 const DRAG := 600.0             # glide-to-stop after release (lower = more floaty drift)
+# --- Chill skill (first skill: AoE slow that catches a group) ---
+const CHILL_COOLDOWN := 3.0
+const CHILL_RADIUS := 140.0
+const CHILL_DURATION := 1.6     # how long caught enemies stay slowed
+const CHILL_SLOW := 0.32        # speed multiplier while chilled
+const CHILL_CAST_ANIM := 0.4    # expanding-ring visual length
 
 # Configured by Game before add_child:
 var game
@@ -36,6 +42,7 @@ var key_left := KEY_A
 var key_right := KEY_D
 var key_attack := KEY_SPACE
 var key_dash := KEY_SHIFT
+var key_skill := KEY_E
 
 var active := true
 var hp := MAX_HP
@@ -53,6 +60,10 @@ var _dash_cd := 0.0
 var _dash_dir := Vector2.RIGHT
 var _dash_prev := false
 var _iframe := 0.0
+var _skill_cd := 0.0
+var _skill_prev := false
+var _chill_time := 0.0          # how long THIS fighter stays slowed
+var _cast_anim := 0.0           # expanding-ring visual timer
 var _hitbox: Area2D
 var _hurtbox: Area2D
 var _already_hit: Array = []
@@ -89,6 +100,12 @@ func _process(delta: float) -> void:
 		_dash_cd -= delta
 	if _iframe > 0.0:
 		_iframe -= delta
+	if _skill_cd > 0.0:
+		_skill_cd -= delta
+	if _chill_time > 0.0:
+		_chill_time -= delta
+	if _cast_anim > 0.0:
+		_cast_anim -= delta
 
 	# Knockback always applies (so a KO'd fighter still slides) - paused while dashing.
 	if not _dashing:
@@ -113,7 +130,7 @@ func _process(delta: float) -> void:
 
 		# Dash trigger (edge-detected). Gives a burst + brief i-frames.
 		var dp := Input.is_physical_key_pressed(key_dash)
-		if dp and not _dash_prev and not _dashing and _dash_cd <= 0.0:
+		if dp and not _dash_prev and not _dashing and _dash_cd <= 0.0 and _chill_time <= 0.0:
 			_dash_dir = dir if dir != Vector2.ZERO else facing
 			_dashing = true
 			_dash_time = DASH_TIME
@@ -134,10 +151,15 @@ func _process(delta: float) -> void:
 			_update_hitbox_position()
 		else:
 			# Momentum movement: accelerate toward the target, glide to a stop.
+			var spd := SPEED
+			var acc := ACCEL
+			if _chill_time > 0.0:        # chilled = sluggish
+				spd *= CHILL_SLOW
+				acc *= CHILL_SLOW
 			var target := Vector2.ZERO
 			if dir != Vector2.ZERO and not _attacking:
-				target = dir * SPEED
-			var rate := ACCEL if target != Vector2.ZERO else DRAG
+				target = dir * spd
+			var rate := acc if target != Vector2.ZERO else DRAG
 			_move_vel = _move_vel.move_toward(target, rate * delta)
 			if _move_vel != Vector2.ZERO:
 				position += _move_vel * delta
@@ -148,6 +170,10 @@ func _process(delta: float) -> void:
 			if ap and not _attack_prev and not _attacking and _cooldown <= 0.0:
 				_start_attack()
 			_attack_prev = ap
+			var sp := Input.is_physical_key_pressed(key_skill)
+			if sp and not _skill_prev and _skill_cd <= 0.0 and _chill_time <= 0.0:
+				_cast_chill()
+			_skill_prev = sp
 
 	queue_redraw()
 
@@ -179,6 +205,17 @@ func _update_hitbox_position() -> void:
 	if _hitbox:
 		_hitbox.position = facing * REACH
 
+func _cast_chill() -> void:
+	_skill_cd = CHILL_COOLDOWN
+	_cast_anim = CHILL_CAST_ANIM
+	if game and game.has_method("apply_chill"):
+		game.apply_chill(position, CHILL_RADIUS, CHILL_DURATION, self)
+		game.add_shake(5.0)
+
+func apply_chill(duration: float) -> void:
+	if active:
+		_chill_time = maxf(_chill_time, duration)
+
 func take_hit(dir: Vector2, dmg: int) -> void:
 	if not active or _iframe > 0.0:   # dashing dodges the hit
 		return
@@ -206,11 +243,19 @@ func reset_fighter(pos: Vector2) -> void:
 	_dashing = false
 	_dash_cd = 0.0
 	_iframe = 0.0
+	_skill_cd = 0.0
+	_chill_time = 0.0
+	_cast_anim = 0.0
 	active = true
 
 func _draw() -> void:
 	# facing indicator
 	draw_line(Vector2.ZERO, facing * (SIZE * 0.9), Color(1, 1, 1, 0.5), 2.0)
+	# chill cast ring (expanding outward)
+	if _cast_anim > 0.0:
+		var cp := 1.0 - (_cast_anim / CHILL_CAST_ANIM)
+		draw_arc(Vector2.ZERO, CHILL_RADIUS * cp, 0.0, TAU, 48,
+			Color(0.55, 0.80, 1.0, (1.0 - cp) * 0.75), 3.0)
 	# dash trail (afterimages behind the burst)
 	if _dashing:
 		for i in range(1, 4):
@@ -224,6 +269,8 @@ func _draw() -> void:
 		col = body_color.lerp(Color(1, 1, 1), clampf(_flash / FLASH_TIME, 0.0, 1.0))
 	elif _iframe > 0.0:
 		col = body_color.lerp(Color(0.55, 0.85, 1.0), 0.55)   # cyan = invulnerable
+	elif _chill_time > 0.0:
+		col = body_color.lerp(Color(0.50, 0.70, 1.0), 0.55)   # icy = chilled / slowed
 	if not active:
 		col = body_color.darkened(0.5)
 	var r := Rect2(-Vector2(SIZE, SIZE) / 2.0, Vector2(SIZE, SIZE))

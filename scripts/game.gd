@@ -18,6 +18,7 @@ var arena_center := Vector2.ZERO
 var _shake := 0.0
 var _p1: Node2D
 var _p2: Node2D
+var _fighters: Array = []
 var _state := "fighting"          # "fighting" | "round_over"
 var _banner: Label
 
@@ -28,7 +29,7 @@ func _ready() -> void:
 	add_child(ui)
 
 	var hint := Label.new()
-	hint.text = "P1: WASD  Space=attack  Shift=dash      P2: Arrows  Enter=attack  /=dash"
+	hint.text = "P1: WASD  Space=atk  Shift=dash  E=chill        P2: Arrows  Enter=atk  /=dash  .=chill"
 	hint.position = Vector2(16.0, 12.0)
 	ui.add_child(hint)
 
@@ -41,14 +42,15 @@ func _ready() -> void:
 	ui.add_child(_banner)
 
 	_p1 = _make_fighter("P1", Color(0.95, 0.55, 0.20),
-		KEY_W, KEY_S, KEY_A, KEY_D, KEY_SPACE, KEY_SHIFT, arena_center + P1_SPAWN)
+		KEY_W, KEY_S, KEY_A, KEY_D, KEY_SPACE, KEY_SHIFT, KEY_E, arena_center + P1_SPAWN)
 	_p2 = _make_fighter("P2", Color(0.35, 0.65, 0.95),
-		KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, KEY_SLASH, arena_center + P2_SPAWN)
+		KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, KEY_SLASH, KEY_PERIOD, arena_center + P2_SPAWN)
+	_fighters = [_p1, _p2]
 
 	queue_redraw()
 
 func _make_fighter(fname: String, color: Color, ku: int, kd: int, kl: int, kr: int,
-		ka: int, kdash: int, pos: Vector2) -> Node2D:
+		ka: int, kdash: int, kskill: int, pos: Vector2) -> Node2D:
 	var f := FighterScript.new()
 	f.game = self
 	f.fighter_name = fname
@@ -59,9 +61,18 @@ func _make_fighter(fname: String, color: Color, ku: int, kd: int, kl: int, kr: i
 	f.key_right = kr
 	f.key_attack = ka
 	f.key_dash = kdash
+	f.key_skill = kskill
 	f.position = pos
 	add_child(f)
 	return f
+
+# AoE chill: slow every other active fighter within radius of the cast origin.
+func apply_chill(origin: Vector2, radius: float, duration: float, caster) -> void:
+	for f in _fighters:
+		if f == caster or not f.active:
+			continue
+		if origin.distance_to(f.position) <= radius:
+			f.apply_chill(duration)
 
 func _process(delta: float) -> void:
 	# Screen shake: offset the scene root, decaying back to rest.
