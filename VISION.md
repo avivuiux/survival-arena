@@ -37,10 +37,10 @@ The foundation everything sits on. Proven fun (feel-test passed).
 What turns one attack into a fighting system.
 - [x] Dash / dodge with i-frames (dodge -> punish) - feel-test passed
 - [x] Momentum movement (acceleration + glide) - the weighty "hover" feel Aviv wanted
-- [ ] A resource for skills (mana / energy / cooldowns)
-- [ ] Character skills: 1-3 per character, distinct shapes (melee arc, ranged poke, AoE, buff)
-      - idea (Aviv): a **"chill"** skill - an AoE slow/freeze that catches a whole group
-- [ ] Status effects (stun, slow, knockup) - the vocabulary skills are built from
+- [~] A resource for skills - cooldowns done (chill); mana/energy still optional
+- [~] Character skills - first one done: **"chill"** (AoE slow that catches a group);
+      more shapes to come (ranged poke, melee arc, buff)
+- [~] Status effects - "slow" (chill) done; stun / knockup still to come
 - [ ] Blocking / parry? (decide: does this game reward defense?)
 
 ### Layer 2 - Characters (roster)  `[ ]`  ← mostly CONTENT, cheap & parallel
