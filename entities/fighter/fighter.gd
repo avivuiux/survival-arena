@@ -7,15 +7,11 @@ extends Node2D
 #  Slice 3+4: two fighters duel locally with win/lose + reset.
 # =============================================================
 
-const SPEED := 320.0
 const SIZE := 30.0
 const REACH := 42.0
 const HIT_W := 48.0
 const HIT_H := 48.0
 const ATTACK_ACTIVE := 0.12
-const ATTACK_COOLDOWN := 0.34
-const MAX_HP := 100
-const DAMAGE := 12
 const KNOCKBACK := 360.0
 const FRICTION := 900.0
 const FLASH_TIME := 0.12
@@ -32,11 +28,19 @@ const CHILL_DURATION := 1.6     # how long caught enemies stay slowed
 const CHILL_SLOW := 0.32        # speed multiplier while chilled
 const CHILL_CAST_ANIM := 0.4    # expanding-ring visual length
 const BOT_DODGE_CD := 1.3       # min gap between bot dodges (opens punish windows)
+const LUNGE_COOLDOWN := 1.4     # rusher skill
+const LUNGE_TIME := 0.20        # lunge travel/active window
 
 # Configured by Game before add_child:
 var game
 var fighter_name := "P1"
 var body_color := Color(0.95, 0.55, 0.20)
+# Per-character stats (set by Game from an archetype)
+var max_hp := 100
+var speed := 320.0
+var damage := 12
+var attack_cooldown := 0.34
+var skill_type := "chill"       # "chill" | "lunge"
 var key_up := KEY_W
 var key_down := KEY_S
 var key_left := KEY_A
@@ -47,11 +51,12 @@ var key_skill := KEY_E
 var is_bot := false
 
 var active := true
-var hp := MAX_HP
+var hp := 100
 var facing := Vector2.RIGHT
 var velocity := Vector2.ZERO        # knockback velocity
 var _move_vel := Vector2.ZERO       # input movement velocity (has momentum)
 var _attacking := false
+var _lunge := false
 var _attack_time := 0.0
 var _cooldown := 0.0
 var _attack_prev := false
@@ -73,6 +78,7 @@ var _hurtbox: Area2D
 var _already_hit: Array = []
 
 func _ready() -> void:
+	hp = max_hp
 	_hurtbox = Area2D.new()
 	_hurtbox.monitoring = false
 	_hurtbox.monitorable = true
@@ -174,11 +180,14 @@ func _process(delta: float) -> void:
 			_dash_time -= delta
 			if _dash_time <= 0.0:
 				_dashing = false
-				_move_vel = _dash_dir * SPEED * 0.5   # glide out of the dash
+				_move_vel = _dash_dir * speed * 0.5   # glide out of the dash
+				if _lunge:
+					_lunge = false
+					_hitbox.monitoring = false
 			_update_hitbox_position()
 		else:
 			# Momentum movement: accelerate toward the target, glide to a stop.
-			var spd := SPEED
+			var spd := speed
 			var acc := ACCEL
 			if _chill_time > 0.0:        # chilled = sluggish
 				spd *= CHILL_SLOW
@@ -196,14 +205,18 @@ func _process(delta: float) -> void:
 			if want_attack and not _attacking and _cooldown <= 0.0:
 				_start_attack()
 			if want_skill and _skill_cd <= 0.0 and _chill_time <= 0.0:
-				_cast_chill()
+				if skill_type == "lunge":
+					_cast_lunge()
+				else:
+					_cast_chill()
 
 	queue_redraw()
 
 func _physics_process(delta: float) -> void:
-	if not _attacking:
+	if not _attacking and not _lunge:
 		return
-	_attack_time -= delta
+	if _attacking:
+		_attack_time -= delta
 	for area in _hitbox.get_overlapping_areas():
 		if area.is_in_group("hurtbox") and not _already_hit.has(area):
 			var target := area.get_parent()
@@ -211,15 +224,16 @@ func _physics_process(delta: float) -> void:
 				continue
 			_already_hit.append(area)
 			if target and target.has_method("take_hit"):
-				target.take_hit(facing, DAMAGE)
-	if _attack_time <= 0.0:
+				target.take_hit(facing, damage)
+	if _attacking and _attack_time <= 0.0:
 		_attacking = false
-		_hitbox.monitoring = false
+		if not _lunge:
+			_hitbox.monitoring = false
 
 func _start_attack() -> void:
 	_attacking = true
 	_attack_time = ATTACK_ACTIVE
-	_cooldown = ATTACK_COOLDOWN
+	_cooldown = attack_cooldown
 	_already_hit.clear()
 	_update_hitbox_position()
 	_hitbox.monitoring = true
@@ -238,6 +252,23 @@ func _cast_chill() -> void:
 func apply_chill(duration: float) -> void:
 	if active:
 		_chill_time = maxf(_chill_time, duration)
+
+# Rusher skill: a fast forward lunge with the hitbox live (a dash that hits).
+func _cast_lunge() -> void:
+	_skill_cd = LUNGE_COOLDOWN
+	_dash_dir = facing
+	_dashing = true
+	_lunge = true
+	_dash_time = LUNGE_TIME
+	_dash_cd = DASH_COOLDOWN
+	_iframe = LUNGE_TIME * 0.5
+	velocity = Vector2.ZERO
+	_move_vel = Vector2.ZERO
+	_already_hit.clear()
+	_update_hitbox_position()
+	_hitbox.monitoring = true
+	if game:
+		game.add_shake(4.0)
 
 # Reactive AI: chase, attack in range, then space out; dodge the foe's swing
 # but only occasionally (dodge cooldown) so the player gets punish windows.
@@ -302,11 +333,12 @@ func take_hit(dir: Vector2, dmg: int) -> void:
 			game.on_ko(self)
 
 func reset_fighter(pos: Vector2) -> void:
-	hp = MAX_HP
+	hp = max_hp
 	position = pos
 	velocity = Vector2.ZERO
 	_move_vel = Vector2.ZERO
 	_attacking = false
+	_lunge = false
 	_hitbox.monitoring = false
 	_flash = 0.0
 	_dashing = false
@@ -353,11 +385,14 @@ func _draw() -> void:
 		var c := Color(1.0, 0.95, 0.6, 0.20 + 0.55 * t)
 		var hr := Rect2(facing * REACH - Vector2(HIT_W, HIT_H) / 2.0, Vector2(HIT_W, HIT_H))
 		draw_rect(hr, c)
+	if _lunge:
+		var hr2 := Rect2(facing * REACH - Vector2(HIT_W, HIT_H) / 2.0, Vector2(HIT_W, HIT_H))
+		draw_rect(hr2, Color(1.0, 0.5, 0.25, 0.55))   # orange = damaging lunge
 	# HP bar
 	var bw := 50.0
 	var bh := 6.0
 	var by := -SIZE / 2.0 - 16.0
 	draw_rect(Rect2(-bw / 2.0, by, bw, bh), Color(0, 0, 0, 0.5))
-	var ratio := clampf(float(hp) / float(MAX_HP), 0.0, 1.0)
+	var ratio := clampf(float(hp) / float(max_hp), 0.0, 1.0)
 	var hpcol := Color(0.40, 0.85, 0.40) if ratio > 0.3 else Color(0.90, 0.40, 0.30)
 	draw_rect(Rect2(-bw / 2.0, by, bw * ratio, bh), hpcol)

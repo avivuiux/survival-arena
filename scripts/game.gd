@@ -14,6 +14,12 @@ const FighterScript := preload("res://entities/fighter/fighter.gd")
 const P1_SPAWN := Vector2(-140.0, 0.0)
 const P2_SPAWN := Vector2(140.0, 0.0)
 
+# Character archetypes (data-driven; first step of the L2 roster)
+const ARCHETYPES := {
+	"balanced": {"hp": 100, "speed": 320.0, "damage": 12, "atk_cd": 0.34, "skill": "chill"},
+	"rusher":   {"hp": 70,  "speed": 430.0, "damage": 18, "atk_cd": 0.26, "skill": "lunge"},
+}
+
 var arena_center := Vector2.ZERO
 var _shake := 0.0
 var _p1: Node2D
@@ -30,7 +36,7 @@ func _ready() -> void:
 	add_child(ui)
 
 	var hint := Label.new()
-	hint.text = "P1: WASD  Space=atk  Shift=dash  E=chill        P2: Arrows  Enter=atk  /=dash  .=chill"
+	hint.text = "P1 Rusher: WASD / Space / Shift / E=LUNGE       P2 Balanced: Arrows / Enter / (/) / .=chill       B = bot"
 	hint.position = Vector2(16.0, 12.0)
 	ui.add_child(hint)
 
@@ -47,9 +53,9 @@ func _ready() -> void:
 	ui.add_child(_banner)
 
 	_p1 = _make_fighter("P1", Color(0.95, 0.55, 0.20),
-		KEY_W, KEY_S, KEY_A, KEY_D, KEY_SPACE, KEY_SHIFT, KEY_E, arena_center + P1_SPAWN)
+		KEY_W, KEY_S, KEY_A, KEY_D, KEY_SPACE, KEY_SHIFT, KEY_E, "rusher", arena_center + P1_SPAWN)
 	_p2 = _make_fighter("P2", Color(0.35, 0.65, 0.95),
-		KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, KEY_SLASH, KEY_PERIOD, arena_center + P2_SPAWN)
+		KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, KEY_SLASH, KEY_PERIOD, "balanced", arena_center + P2_SPAWN)
 	_fighters = [_p1, _p2]
 	_p2.is_bot = true              # solo by default; press B to toggle
 	_update_mode_label()
@@ -57,11 +63,17 @@ func _ready() -> void:
 	queue_redraw()
 
 func _make_fighter(fname: String, color: Color, ku: int, kd: int, kl: int, kr: int,
-		ka: int, kdash: int, kskill: int, pos: Vector2) -> Node2D:
+		ka: int, kdash: int, kskill: int, archetype: String, pos: Vector2) -> Node2D:
 	var f := FighterScript.new()
 	f.game = self
 	f.fighter_name = fname
 	f.body_color = color
+	var a: Dictionary = ARCHETYPES[archetype]
+	f.max_hp = a["hp"]
+	f.speed = a["speed"]
+	f.damage = a["damage"]
+	f.attack_cooldown = a["atk_cd"]
+	f.skill_type = a["skill"]
 	f.key_up = ku
 	f.key_down = kd
 	f.key_left = kl
