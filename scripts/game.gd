@@ -18,6 +18,7 @@ const P2_SPAWN := Vector2(140.0, 0.0)
 const ARCHETYPES := {
 	"balanced": {"hp": 100, "speed": 320.0, "damage": 12, "atk_cd": 0.34, "skill": "chill"},
 	"rusher":   {"hp": 70,  "speed": 430.0, "damage": 18, "atk_cd": 0.26, "skill": "lunge"},
+	"tank":     {"hp": 150, "speed": 240.0, "damage": 14, "atk_cd": 0.40, "skill": "shockwave"},
 }
 
 var arena_center := Vector2.ZERO
@@ -108,6 +109,16 @@ func apply_chill(origin: Vector2, radius: float, duration: float, caster) -> voi
 			continue
 		if origin.distance_to(f.position) <= radius:
 			f.apply_chill(duration)
+
+# AoE shockwave: shove (and lightly damage) every other fighter within radius.
+func apply_shockwave(origin: Vector2, radius: float, knock: float, dmg: int, caster) -> void:
+	for f in _fighters:
+		if f == caster or not f.active:
+			continue
+		var d: Vector2 = f.position - origin
+		if d.length() <= radius:
+			var dir: Vector2 = d.normalized() if d.length() > 0.001 else Vector2.RIGHT
+			f.take_hit(dir, dmg, knock)
 
 func _input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo):

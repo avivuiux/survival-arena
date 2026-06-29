@@ -30,6 +30,10 @@ const CHILL_CAST_ANIM := 0.4    # expanding-ring visual length
 const BOT_DODGE_CD := 1.3       # min gap between bot dodges (opens punish windows)
 const LUNGE_COOLDOWN := 1.4     # rusher skill
 const LUNGE_TIME := 0.20        # lunge travel/active window
+const SHOCK_COOLDOWN := 2.4     # tank skill
+const SHOCK_RADIUS := 130.0
+const SHOCK_KNOCKBACK := 620.0
+const SHOCK_DAMAGE := 8
 
 # Configured by Game before add_child:
 var game
@@ -71,6 +75,7 @@ var _skill_cd := 0.0
 var _skill_prev := false
 var _chill_time := 0.0          # how long THIS fighter stays slowed
 var _cast_anim := 0.0           # expanding-ring visual timer
+var _cast_radius := 140.0       # radius the cast ring draws to
 var _bot_retreat := 0.0         # bot: backing-off timer after a swing
 var _bot_dodge_cd := 0.0        # bot: cooldown between dodges
 var _hitbox: Area2D
@@ -207,6 +212,8 @@ func _process(delta: float) -> void:
 			if want_skill and _skill_cd <= 0.0 and _chill_time <= 0.0:
 				if skill_type == "lunge":
 					_cast_lunge()
+				elif skill_type == "shockwave":
+					_cast_shockwave()
 				else:
 					_cast_chill()
 
@@ -245,6 +252,7 @@ func _update_hitbox_position() -> void:
 func _cast_chill() -> void:
 	_skill_cd = CHILL_COOLDOWN
 	_cast_anim = CHILL_CAST_ANIM
+	_cast_radius = CHILL_RADIUS
 	if game and game.has_method("apply_chill"):
 		game.apply_chill(position, CHILL_RADIUS, CHILL_DURATION, self)
 		game.add_shake(5.0)
@@ -269,6 +277,15 @@ func _cast_lunge() -> void:
 	_hitbox.monitoring = true
 	if game:
 		game.add_shake(4.0)
+
+# Tank skill: a shockwave that shoves (and lightly damages) everyone nearby.
+func _cast_shockwave() -> void:
+	_skill_cd = SHOCK_COOLDOWN
+	_cast_anim = CHILL_CAST_ANIM
+	_cast_radius = SHOCK_RADIUS
+	if game and game.has_method("apply_shockwave"):
+		game.apply_shockwave(position, SHOCK_RADIUS, SHOCK_KNOCKBACK, SHOCK_DAMAGE, self)
+		game.add_shake(9.0)
 
 # Reactive AI: chase, attack in range, then space out; dodge the foe's swing
 # but only occasionally (dodge cooldown) so the player gets punish windows.
@@ -316,11 +333,11 @@ func _bot_think() -> Dictionary:
 			_bot_retreat = randf_range(0.5, 0.9)
 	return out
 
-func take_hit(dir: Vector2, dmg: int) -> void:
+func take_hit(dir: Vector2, dmg: int, knock: float = KNOCKBACK) -> void:
 	if not active or _iframe > 0.0:   # dashing dodges the hit
 		return
 	hp -= dmg
-	velocity += dir.normalized() * KNOCKBACK
+	velocity += dir.normalized() * knock
 	_flash = FLASH_TIME
 	if game:
 		game.hit_stop(0.06)
@@ -357,7 +374,7 @@ func _draw() -> void:
 	# chill cast ring (expanding outward)
 	if _cast_anim > 0.0:
 		var cp := 1.0 - (_cast_anim / CHILL_CAST_ANIM)
-		draw_arc(Vector2.ZERO, CHILL_RADIUS * cp, 0.0, TAU, 48,
+		draw_arc(Vector2.ZERO, _cast_radius * cp, 0.0, TAU, 48,
 			Color(0.55, 0.80, 1.0, (1.0 - cp) * 0.75), 3.0)
 	# dash trail (afterimages behind the burst)
 	if _dashing:
