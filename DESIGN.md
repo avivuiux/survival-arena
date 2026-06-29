@@ -60,3 +60,19 @@ If a task isn't on the path to "is the hit satisfying?", it is out of scope righ
   knockback curve, screen-shake, flash) BEFORE adding anything else.
 
 This is the gate. We do not build Slice 3 (second player) until the hit feels good.
+
+## Greybox polish principle (learned the hard way, twice)
+
+While in greybox, only polish things that are **asset-independent**:
+- ✅ **Information / readability** - what you NEED to play (cooldown bars, names, states).
+- ✅ **Timing / mechanism feel** - hit-stop length, when feedback fires, shake timing.
+- ✅ **Balance numbers** - stats that change how it PLAYS.
+
+DEFER anything whose final form depends on art/animation/audio - it will be re-made,
+per character, in the content/asset phase:
+- ❌ **Visual magnitude** - explosion size, particle look, the actual art. (Sparks now
+  are a placeholder that only proves the feedback channel + its timing exist.)
+- ❌ **Sound** - the SFX are assets; also not needed to playtest or balance. Defer to the audio phase.
+
+Test: "if the real art/audio will change this number, don't tune it now." Aviv caught
+this on explosion intensity AND on sound - so it's a rule, not a one-off.

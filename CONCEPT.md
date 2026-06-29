@@ -190,3 +190,34 @@ must pass.
 **Why it works:** fire vs ice · reckless vs calculating · heart vs control - which is
 exactly their mechanics (fast/fragile/aggressive vs slow/zone/defensive). Fiction and
 mechanics reinforce each other.
+
+---
+
+## Round 5 - ART DIRECTION (DECIDED 2026-06-30)
+
+**Critique that drives this:** beauty serves readability, not the other way around.
+DESIGN.md pillar #1 ("readable chaos") is the master constraint for an isometric brawler
+with knockback + flying effects. Conveniently, the broadcast frame pushes the same way -
+TV sports graphics are built for instant readability (clear team colors, clean arenas,
+bold UI). So we don't choose "pretty vs readable" - we choose a *readable* anime look.
+
+**Process:** generated moodboard key-art with gpt-image-1 (same two fighters / arena,
+only the style varied) so Aviv could choose visually. Three flavors (A clean sports-anime,
+B gritty-ink shonen, C arcade-Y2K neon), then blend rounds adding glow (D/E). Aviv liked
+A's character design + serious complex shading; liked C's flashiness; we tested blends.
+
+**DECIDED: `A_sports-anime-clean` is the art direction.**
+- Clean modern sports-anime: crisp clean linework, bold cel-shaded color with rich,
+  serious shading, bright high-contrast TV-broadcast energy. Readable first.
+- **Flashiness / glow is NOT baked into the base look** - it lives in MOTION: rim-light
+  and energy glow on impact moments and skills only, not constant. (Aviv loved C's glow;
+  this is where it goes without hurting readability.)
+
+**Locked visual non-negotiables (derived from pillar #1, not taste):**
+- Bold silhouette read at a glance - each character's body shape is identifiable instantly.
+- **Signature color = identity:** FANG = orange, ZERO = blue (already true in greybox - keep it).
+- Quiet backgrounds so fighters pop.
+- Effects are color-coded and instantly legible (ZERO's ice = blue-white, FANG's lunge = warm orange).
+
+**Visual anchor files:** `concept/moodboards/` - `A_sports-anime-clean.png` is THE anchor.
+(B/C/D/E kept as exploration record: B = marketing/poster key-art only, never in-game.)
