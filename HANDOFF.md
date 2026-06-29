@@ -27,36 +27,36 @@ So the whole strategy is: prove the combat is fun first, expand later.
 | Networking | **Deferred to phase 2** | Prove combat is fun LOCALLY first (two players, one machine). Real online netcode is the hard wall - solve it only once the core is proven |
 | ai-os / Design OS / deep-spec | **Deferred to phase 2** | Process/scope discipline is valuable for a sustained build, but pure overhead during find-the-fun. Adopt when building structure AROUND a proven core |
 
-## Current state - Phase 1 (greybox)
+## Current state - Phase 1 (greybox), LOCAL milestone reached
 
 - ✅ Godot 4.7 installed (portable) at `C:\Users\Aviv\dev\tools\godot\`
-- ✅ Project scaffolded, git initialized
-- ✅ **Slice 1 done & verified**: player square moves (WASD / arrows), clamped to arena.
-- ✅ **Slice 2 built & verified (headless)**: melee attack (Space) + a dummy that takes
-  knockback, flashes, and triggers hit-stop + screen-shake; HP bar + auto-refill on KO.
-  ⏳ **NOT yet feel-tested by a human** - that is the open gate (see "the gate" below).
+- ✅ **Slice 1**: movement in an isometric arena.
+- ✅ **Slice 2**: melee attack + satisfying hit (knockback + hit-stop + flash + shake).
+  **Feel-test PASSED by Aviv** ("feels good") - the core combat-feel hypothesis is validated.
+- ✅ **Slice 3+4**: local two-player duel. Two fighters share one keyboard, hit each
+  other, KO -> winner banner -> auto-reset. Verified headless (exit 0).
+
+**Aviv's call after the feel-test: "I already know this game is fun - progress beyond."**
+So we are moving faster on local content. The ONE thing we deliberately do NOT rush is
+networking (phase 2) - that is the real wall for this genre.
 
 Design contract:
-- `DESIGN.md` - one-page design (pillars, core loop, out-of-scope, the combat-feel
-  hypothesis Slice 2 tests). Read it before changing combat.
+- `DESIGN.md` - one-page design (pillars, core loop, out-of-scope, combat-feel hypothesis).
 
-Project structure (reorganized into proper folders at Slice 2):
+Project structure:
 - `project.godot` - config; main scene = `res://scenes/game.tscn`
 - `scenes/game.tscn` - trivial root running `scripts/game.gd`
-- `scripts/game.gd` - orchestration: spawns entities, owns arena bounds, provides
-  juice services (`hit_stop`, `add_shake`). Uses `preload` (not class_name) so it
-  runs headless too.
-- `entities/player/player.gd` - movement, facing, melee attack + hitbox
-- `entities/dummy/dummy.gd` - HP, knockback, flash, return-to-home, drives the juice
+- `scripts/game.gd` - orchestration: spawns 2 fighters, owns arena bounds, juice
+  services (`hit_stop`, `add_shake`), round flow (KO/banner/reset). Uses `preload`
+  (not class_name) so it runs headless.
+- `entities/fighter/fighter.gd` - one configurable combatant (key set, color, HP,
+  knockback, attack). Two instances = the duel.
 
-## THE GATE (do this before Slice 3)
+## How to play
 
-Open the editor, press F5, and **play it**. Move with WASD, attack with Space.
-Judge the DESIGN.md hypothesis honestly:
-- Does landing a hit feel *weighty* and make you want to do it again? -> proceed to Slice 3.
-- Does it feel limp / floaty / unclear? -> tune ONLY the feel (hit-stop duration,
-  knockback strength, flash, shake) before adding anything. Do not add features to
-  paper over a hit that doesn't feel good.
+P1: **WASD + Space**.  P2: **Arrows + Enter**.  First to KO the other wins; auto-resets.
+(Note: cheap keyboards may "ghost" when many keys are pressed at once - a known local-2P
+limitation, irrelevant once we go online.)
 
 ## How to run it
 
@@ -73,12 +73,17 @@ C:\Users\Aviv\dev\tools\godot\Godot_v4.7-stable_win64_console.exe --headless --p
 
 ## Next steps (in order - one slice at a time)
 
-1. ~~**Slice 2 - combat feel**~~ ✅ built; awaiting the human feel-test gate above.
-2. **Slice 3 - second player, local**: two players, same keyboard (or two windows),
-   fighting. First real "is this fun with another human" test. Still no netcode.
-3. **Slice 4 - health, win/lose**: HP, a round that ends. The minimal full loop.
-4. **Phase 2 - online**: only now bring in networking middleware (Godot's built-in
-   multiplayer first; evaluate heavier options if needed) + ai-os scope discipline.
+1. ~~**Slice 2 - combat feel**~~ ✅ feel-test PASSED.
+2. ~~**Slice 3+4 - local duel + win/lose**~~ ✅ done.
+3. **Next local options** (pick one, still cheap/safe to move fast on):
+   - A second attack / a skill (e.g. a dash or a ranged poke) - adds combat depth.
+   - A second character archetype with different stats - the "variety" pillar.
+   - Better juice / readability pass (telegraphs, hit sparks, KO pop).
+   - A simple best-of-3 score so a match has an arc.
+4. **Phase 2 - ONLINE (the wall - do NOT rush)**: bring in networking. Start with
+   Godot's built-in high-level multiplayer (ENet) for 1v1; only escalate to heavier
+   options (rollback) if the feel demands it. THIS is where we slow down, design the
+   authority model, and where ai-os scope discipline starts paying off.
 
 ## Opening a dedicated workspace
 
