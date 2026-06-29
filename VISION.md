@@ -33,11 +33,13 @@ The foundation everything sits on. Proven fun (feel-test passed).
 - [x] HP, KO, round reset, winner banner
 - [x] Local two-player duel (shared keyboard)
 
-### Layer 1 - Combat depth  `[ ]`
+### Layer 1 - Combat depth  `[~] in progress`
 What turns one attack into a fighting system.
-- [ ] Dash / dodge (movement tech, i-frames?)
+- [x] Dash / dodge with i-frames (dodge -> punish) - feel-test passed
+- [x] Momentum movement (acceleration + glide) - the weighty "hover" feel Aviv wanted
 - [ ] A resource for skills (mana / energy / cooldowns)
 - [ ] Character skills: 1-3 per character, distinct shapes (melee arc, ranged poke, AoE, buff)
+      - idea (Aviv): a **"chill"** skill - an AoE slow/freeze that catches a whole group
 - [ ] Status effects (stun, slow, knockup) - the vocabulary skills are built from
 - [ ] Blocking / parry? (decide: does this game reward defense?)
 
