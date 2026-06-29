@@ -25,23 +25,31 @@ var _shake := 0.0
 var _p1: Node2D
 var _p2: Node2D
 var _fighters: Array = []
-var _state := "fighting"          # "fighting" | "round_over"
+var _state := "select"            # "select" | "fighting" | "round_over"
 var _banner: Label
 var _mode_label: Label
+var _hint: Label
+var _title_label: Label
+var _select_label: Label
+var _arch_keys: Array = []
+var _sel_index := 0
 
 func _ready() -> void:
 	arena_center = get_viewport_rect().size / 2.0
+	_arch_keys = ARCHETYPES.keys()
+	var vp := get_viewport_rect().size
 
 	var ui := CanvasLayer.new()
 	add_child(ui)
 
-	var hint := Label.new()
-	hint.text = "P1 Rusher: WASD / Space / Shift / E=LUNGE       P2 Balanced: Arrows / Enter / (/) / .=chill       B = bot"
-	hint.position = Vector2(16.0, 12.0)
-	ui.add_child(hint)
+	_hint = Label.new()
+	_hint.position = Vector2(16.0, 12.0)
+	_hint.visible = false
+	ui.add_child(_hint)
 
 	_mode_label = Label.new()
 	_mode_label.position = Vector2(16.0, 32.0)
+	_mode_label.visible = false
 	ui.add_child(_mode_label)
 
 	_banner = Label.new()
@@ -52,14 +60,22 @@ func _ready() -> void:
 	_banner.visible = false
 	ui.add_child(_banner)
 
-	_p1 = _make_fighter("P1", Color(0.95, 0.55, 0.20),
-		KEY_W, KEY_S, KEY_A, KEY_D, KEY_SPACE, KEY_SHIFT, KEY_E, "rusher", arena_center + P1_SPAWN)
-	_p2 = _make_fighter("P2", Color(0.35, 0.65, 0.95),
-		KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, KEY_SLASH, KEY_PERIOD, "balanced", arena_center + P2_SPAWN)
-	_fighters = [_p1, _p2]
-	_p2.is_bot = true              # solo by default; press B to toggle
-	_update_mode_label()
+	# Character-select UI (shown first; arena draws behind it)
+	_title_label = Label.new()
+	_title_label.text = "CHOOSE YOUR FIGHTER\n(A / D to change,  Space to start)"
+	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_title_label.add_theme_font_size_override("font_size", 28)
+	_title_label.position = Vector2(vp.x / 2.0 - 240.0, 100.0)
+	_title_label.size = Vector2(480.0, 90.0)
+	ui.add_child(_title_label)
 
+	_select_label = Label.new()
+	_select_label.add_theme_font_size_override("font_size", 20)
+	_select_label.position = Vector2(vp.x / 2.0 - 240.0, 210.0)
+	_select_label.size = Vector2(480.0, 220.0)
+	ui.add_child(_select_label)
+
+	_refresh_select()
 	queue_redraw()
 
 func _make_fighter(fname: String, color: Color, ku: int, kd: int, kl: int, kr: int,
@@ -94,9 +110,69 @@ func apply_chill(origin: Vector2, radius: float, duration: float, caster) -> voi
 			f.apply_chill(duration)
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_B:
+	if not (event is InputEventKey and event.pressed and not event.echo):
+		return
+	if _state == "select":
+		if event.keycode == KEY_A or event.keycode == KEY_LEFT:
+			_sel_index = (_sel_index - 1 + _arch_keys.size()) % _arch_keys.size()
+			_refresh_select()
+		elif event.keycode == KEY_D or event.keycode == KEY_RIGHT:
+			_sel_index = (_sel_index + 1) % _arch_keys.size()
+			_refresh_select()
+		elif event.keycode == KEY_SPACE or event.keycode == KEY_ENTER:
+			_begin_match()
+		return
+	if event.keycode == KEY_B:
 		_p2.is_bot = not _p2.is_bot
 		_update_mode_label()
+	elif event.keycode == KEY_R:
+		_return_to_select()
+
+func _refresh_select() -> void:
+	var t := ""
+	for i in range(_arch_keys.size()):
+		var k: String = _arch_keys[i]
+		var a: Dictionary = ARCHETYPES[k]
+		var marker := "> " if i == _sel_index else "    "
+		t += "%s%s   -   hp %d   spd %d   dmg %d   skill: %s\n\n" % [
+			marker, k.to_upper(), int(a["hp"]), int(a["speed"]), int(a["damage"]), a["skill"]]
+	if _select_label:
+		_select_label.text = t
+
+func _begin_match() -> void:
+	var p1_arch: String = _arch_keys[_sel_index]
+	var p2_arch: String = _arch_keys[randi() % _arch_keys.size()]
+
+	_title_label.visible = false
+	_select_label.visible = false
+	_hint.text = "P1 %s: WASD / Space / Shift / E=skill      P2 %s: Arrows / Enter / (/) / .=skill      B=bot   R=re-pick" % [p1_arch.to_upper(), p2_arch.to_upper()]
+	_hint.visible = true
+	_mode_label.visible = true
+
+	_p1 = _make_fighter("P1", Color(0.95, 0.55, 0.20),
+		KEY_W, KEY_S, KEY_A, KEY_D, KEY_SPACE, KEY_SHIFT, KEY_E, p1_arch, arena_center + P1_SPAWN)
+	_p2 = _make_fighter("P2", Color(0.35, 0.65, 0.95),
+		KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, KEY_SLASH, KEY_PERIOD, p2_arch, arena_center + P2_SPAWN)
+	_fighters = [_p1, _p2]
+	_p2.is_bot = true
+	_update_mode_label()
+	_state = "fighting"
+
+func _return_to_select() -> void:
+	if _p1:
+		_p1.queue_free()
+	if _p2:
+		_p2.queue_free()
+	_p1 = null
+	_p2 = null
+	_fighters = []
+	_banner.visible = false
+	_hint.visible = false
+	_mode_label.visible = false
+	_title_label.visible = true
+	_select_label.visible = true
+	_refresh_select()
+	_state = "select"
 
 func _update_mode_label() -> void:
 	if _mode_label:
