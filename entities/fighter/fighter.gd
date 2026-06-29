@@ -43,6 +43,7 @@ var key_right := KEY_D
 var key_attack := KEY_SPACE
 var key_dash := KEY_SHIFT
 var key_skill := KEY_E
+var is_bot := false
 
 var active := true
 var hp := MAX_HP
@@ -118,27 +119,46 @@ func _process(delta: float) -> void:
 			velocity = Vector2.ZERO
 
 	if active:
-		var dir := Vector2.ZERO
-		if Input.is_physical_key_pressed(key_up): dir.y -= 1.0
-		if Input.is_physical_key_pressed(key_down): dir.y += 1.0
-		if Input.is_physical_key_pressed(key_left): dir.x -= 1.0
-		if Input.is_physical_key_pressed(key_right): dir.x += 1.0
-		if dir != Vector2.ZERO:
-			dir = dir.normalized()
-			if not _dashing:
-				facing = dir
+		# --- gather intent: from the bot AI, or from human keys ---
+		var in_dir := Vector2.ZERO
+		var want_attack := false
+		var want_dash := false
+		var want_skill := false
+		if is_bot:
+			var intent := _bot_think()
+			in_dir = intent["dir"]
+			want_attack = intent["attack"]
+			want_dash = intent["dash"]
+			want_skill = intent["skill"]
+		else:
+			if Input.is_physical_key_pressed(key_up): in_dir.y -= 1.0
+			if Input.is_physical_key_pressed(key_down): in_dir.y += 1.0
+			if Input.is_physical_key_pressed(key_left): in_dir.x -= 1.0
+			if Input.is_physical_key_pressed(key_right): in_dir.x += 1.0
+			var kp_a := Input.is_physical_key_pressed(key_attack)
+			want_attack = kp_a and not _attack_prev
+			_attack_prev = kp_a
+			var kp_d := Input.is_physical_key_pressed(key_dash)
+			want_dash = kp_d and not _dash_prev
+			_dash_prev = kp_d
+			var kp_s := Input.is_physical_key_pressed(key_skill)
+			want_skill = kp_s and not _skill_prev
+			_skill_prev = kp_s
 
-		# Dash trigger (edge-detected). Gives a burst + brief i-frames.
-		var dp := Input.is_physical_key_pressed(key_dash)
-		if dp and not _dash_prev and not _dashing and _dash_cd <= 0.0 and _chill_time <= 0.0:
-			_dash_dir = dir if dir != Vector2.ZERO else facing
+		if in_dir != Vector2.ZERO:
+			in_dir = in_dir.normalized()
+			if not _dashing:
+				facing = in_dir
+
+		# Dash: a burst + brief i-frames
+		if want_dash and not _dashing and _dash_cd <= 0.0 and _chill_time <= 0.0:
+			_dash_dir = in_dir if in_dir != Vector2.ZERO else facing
 			_dashing = true
 			_dash_time = DASH_TIME
 			_dash_cd = DASH_COOLDOWN
 			_iframe = DASH_TIME
 			velocity = Vector2.ZERO
 			_move_vel = Vector2.ZERO
-		_dash_prev = dp
 
 		if _dashing:
 			position += _dash_dir * DASH_SPEED * delta
@@ -156,24 +176,20 @@ func _process(delta: float) -> void:
 			if _chill_time > 0.0:        # chilled = sluggish
 				spd *= CHILL_SLOW
 				acc *= CHILL_SLOW
-			var target := Vector2.ZERO
-			if dir != Vector2.ZERO and not _attacking:
-				target = dir * spd
-			var rate := acc if target != Vector2.ZERO else DRAG
-			_move_vel = _move_vel.move_toward(target, rate * delta)
+			var target_vel := Vector2.ZERO
+			if in_dir != Vector2.ZERO and not _attacking:
+				target_vel = in_dir * spd
+			var rate := acc if target_vel != Vector2.ZERO else DRAG
+			_move_vel = _move_vel.move_toward(target_vel, rate * delta)
 			if _move_vel != Vector2.ZERO:
 				position += _move_vel * delta
 				if game:
 					position = game.clamp_to_arena(position)
 				_update_hitbox_position()
-			var ap := Input.is_physical_key_pressed(key_attack)
-			if ap and not _attack_prev and not _attacking and _cooldown <= 0.0:
+			if want_attack and not _attacking and _cooldown <= 0.0:
 				_start_attack()
-			_attack_prev = ap
-			var sp := Input.is_physical_key_pressed(key_skill)
-			if sp and not _skill_prev and _skill_cd <= 0.0 and _chill_time <= 0.0:
+			if want_skill and _skill_cd <= 0.0 and _chill_time <= 0.0:
 				_cast_chill()
-			_skill_prev = sp
 
 	queue_redraw()
 
@@ -215,6 +231,42 @@ func _cast_chill() -> void:
 func apply_chill(duration: float) -> void:
 	if active:
 		_chill_time = maxf(_chill_time, duration)
+
+# Simple reactive AI: chase, attack in range, dodge the foe's swing, chill when close.
+func _bot_think() -> Dictionary:
+	var out := {"dir": Vector2.ZERO, "attack": false, "dash": false, "skill": false}
+	var foe = null
+	if game:
+		for f in game._fighters:
+			if f != self and f.active:
+				foe = f
+				break
+	if foe == null:
+		return out
+
+	var to_foe: Vector2 = foe.position - position
+	var dist := to_foe.length()
+	var dir_to: Vector2 = to_foe.normalized() if dist > 0.001 else Vector2.RIGHT
+
+	# Dodge: foe is swinging and close -> dash away
+	if foe._attacking and dist < 90.0 and _dash_cd <= 0.0 and _chill_time <= 0.0:
+		out["dir"] = -dir_to
+		out["dash"] = true
+		return out
+
+	# Chill: foe in range, skill ready, foe not already chilled
+	if dist < CHILL_RADIUS * 0.9 and _skill_cd <= 0.0 and foe._chill_time <= 0.0 and _chill_time <= 0.0:
+		out["dir"] = dir_to
+		out["skill"] = true
+		return out
+
+	# Approach, or attack once in melee range
+	if dist > REACH + 14.0:
+		out["dir"] = dir_to
+	else:
+		out["dir"] = dir_to
+		out["attack"] = true
+	return out
 
 func take_hit(dir: Vector2, dmg: int) -> void:
 	if not active or _iframe > 0.0:   # dashing dodges the hit

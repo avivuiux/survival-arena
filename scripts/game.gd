@@ -21,6 +21,7 @@ var _p2: Node2D
 var _fighters: Array = []
 var _state := "fighting"          # "fighting" | "round_over"
 var _banner: Label
+var _mode_label: Label
 
 func _ready() -> void:
 	arena_center = get_viewport_rect().size / 2.0
@@ -32,6 +33,10 @@ func _ready() -> void:
 	hint.text = "P1: WASD  Space=atk  Shift=dash  E=chill        P2: Arrows  Enter=atk  /=dash  .=chill"
 	hint.position = Vector2(16.0, 12.0)
 	ui.add_child(hint)
+
+	_mode_label = Label.new()
+	_mode_label.position = Vector2(16.0, 32.0)
+	ui.add_child(_mode_label)
 
 	_banner = Label.new()
 	_banner.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -46,6 +51,8 @@ func _ready() -> void:
 	_p2 = _make_fighter("P2", Color(0.35, 0.65, 0.95),
 		KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, KEY_SLASH, KEY_PERIOD, arena_center + P2_SPAWN)
 	_fighters = [_p1, _p2]
+	_p2.is_bot = true              # solo by default; press B to toggle
+	_update_mode_label()
 
 	queue_redraw()
 
@@ -73,6 +80,15 @@ func apply_chill(origin: Vector2, radius: float, duration: float, caster) -> voi
 			continue
 		if origin.distance_to(f.position) <= radius:
 			f.apply_chill(duration)
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_B:
+		_p2.is_bot = not _p2.is_bot
+		_update_mode_label()
+
+func _update_mode_label() -> void:
+	if _mode_label:
+		_mode_label.text = "P2 = %s    (press B to toggle)" % ("BOT" if _p2.is_bot else "HUMAN")
 
 func _process(delta: float) -> void:
 	# Screen shake: offset the scene root, decaying back to rest.
