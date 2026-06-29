@@ -104,6 +104,7 @@ func _make_fighter(fname: String, color: Color, ku: int, kd: int, kl: int, kr: i
 	f.damage = a["damage"]
 	f.attack_cooldown = a["atk_cd"]
 	f.skill_type = a["skill"]
+	f.display_name = archetype.to_upper()
 	f.key_up = ku
 	f.key_down = kd
 	f.key_left = kl

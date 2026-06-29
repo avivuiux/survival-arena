@@ -44,7 +44,8 @@ var max_hp := 100
 var speed := 320.0
 var damage := 12
 var attack_cooldown := 0.34
-var skill_type := "chill"       # "chill" | "lunge"
+var skill_type := "chill"       # "chill" | "lunge" | "shockwave"
+var display_name := ""          # archetype name shown above the head
 var key_up := KEY_W
 var key_down := KEY_S
 var key_left := KEY_A
@@ -72,6 +73,7 @@ var _dash_dir := Vector2.RIGHT
 var _dash_prev := false
 var _iframe := 0.0
 var _skill_cd := 0.0
+var _skill_cd_max := 1.0
 var _skill_prev := false
 var _chill_time := 0.0          # how long THIS fighter stays slowed
 var _cast_anim := 0.0           # expanding-ring visual timer
@@ -251,6 +253,7 @@ func _update_hitbox_position() -> void:
 
 func _cast_chill() -> void:
 	_skill_cd = CHILL_COOLDOWN
+	_skill_cd_max = CHILL_COOLDOWN
 	_cast_anim = CHILL_CAST_ANIM
 	_cast_radius = CHILL_RADIUS
 	if game and game.has_method("apply_chill"):
@@ -264,6 +267,7 @@ func apply_chill(duration: float) -> void:
 # Rusher skill: a fast forward lunge with the hitbox live (a dash that hits).
 func _cast_lunge() -> void:
 	_skill_cd = LUNGE_COOLDOWN
+	_skill_cd_max = LUNGE_COOLDOWN
 	_dash_dir = facing
 	_dashing = true
 	_lunge = true
@@ -281,6 +285,7 @@ func _cast_lunge() -> void:
 # Tank skill: a shockwave that shoves (and lightly damages) everyone nearby.
 func _cast_shockwave() -> void:
 	_skill_cd = SHOCK_COOLDOWN
+	_skill_cd_max = SHOCK_COOLDOWN
 	_cast_anim = CHILL_CAST_ANIM
 	_cast_radius = SHOCK_RADIUS
 	if game and game.has_method("apply_shockwave"):
@@ -415,3 +420,17 @@ func _draw() -> void:
 	var ratio := clampf(float(hp) / float(max_hp), 0.0, 1.0)
 	var hpcol := Color(0.40, 0.85, 0.40) if ratio > 0.3 else Color(0.90, 0.40, 0.30)
 	draw_rect(Rect2(-bw / 2.0, by, bw * ratio, bh), hpcol)
+
+	# skill cooldown bar (below HP) - bright when the skill is ready
+	var sby := by + bh + 3.0
+	var sready := _skill_cd <= 0.0
+	var sratio := 1.0 if sready else clampf(1.0 - _skill_cd / maxf(_skill_cd_max, 0.001), 0.0, 1.0)
+	var scol := Color(0.55, 0.85, 1.0) if sready else Color(0.45, 0.50, 0.65)
+	draw_rect(Rect2(-bw / 2.0, sby, bw, 4.0), Color(0, 0, 0, 0.5))
+	draw_rect(Rect2(-bw / 2.0, sby, bw * sratio, 4.0), scol)
+
+	# name above the head
+	var font := ThemeDB.fallback_font
+	if font:
+		draw_string(font, Vector2(-60.0, by - 8.0), display_name,
+			HORIZONTAL_ALIGNMENT_CENTER, 120.0, 13, Color(1, 1, 1, 0.85))
