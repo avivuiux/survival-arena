@@ -342,11 +342,13 @@ func take_hit(dir: Vector2, dmg: int, knock: float = KNOCKBACK) -> void:
 	if game:
 		game.hit_stop(0.06)
 		game.add_shake(7.0)
+		game.spawn_sparks(position, dir, 9, Color(1.0, 0.9, 0.55))
 	if hp <= 0:
 		hp = 0
 		active = false
 		if game:
 			game.add_shake(14.0)
+			game.spawn_burst(position, 24, body_color.lerp(Color(1, 1, 1), 0.5))
 			game.on_ko(self)
 
 func reset_fighter(pos: Vector2) -> void:

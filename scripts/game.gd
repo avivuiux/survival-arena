@@ -24,6 +24,7 @@ const WINS_NEEDED := 2           # best-of-3: first to 2 round wins takes the ma
 
 var arena_center := Vector2.ZERO
 var _shake := 0.0
+var _sparks: Array = []
 var _p1: Node2D
 var _p2: Node2D
 var _fighters: Array = []
@@ -215,6 +216,14 @@ func _process(delta: float) -> void:
 		_shake = 0.0
 		position = Vector2.ZERO
 
+	if not _sparks.is_empty():
+		for s in _sparks:
+			s["pos"] += s["vel"] * delta
+			s["vel"] *= 0.90
+			s["life"] -= delta
+		_sparks = _sparks.filter(func(s): return s["life"] > 0.0)
+		queue_redraw()
+
 # Keep a position inside the isometric diamond: |dx|/rx + |dy|/ry <= 1
 func clamp_to_arena(pos: Vector2) -> Vector2:
 	var off := pos - arena_center
@@ -227,6 +236,21 @@ func clamp_to_arena(pos: Vector2) -> Vector2:
 
 func add_shake(amount: float) -> void:
 	_shake = maxf(_shake, amount)
+
+# Spark burst aimed along a hit direction (impact feedback).
+func spawn_sparks(pos: Vector2, dir: Vector2, count: int, color: Color) -> void:
+	var base := dir.angle() if dir.length() > 0.01 else 0.0
+	for i in range(count):
+		var ang := base + randf_range(-0.8, 0.8)
+		var spd := randf_range(120.0, 340.0)
+		_sparks.append({"pos": pos, "vel": Vector2(cos(ang), sin(ang)) * spd, "life": 0.28, "max": 0.28, "col": color})
+
+# Omnidirectional burst (KO pop).
+func spawn_burst(pos: Vector2, count: int, color: Color) -> void:
+	for i in range(count):
+		var ang := randf_range(0.0, TAU)
+		var spd := randf_range(160.0, 470.0)
+		_sparks.append({"pos": pos, "vel": Vector2(cos(ang), sin(ang)) * spd, "life": 0.45, "max": 0.45, "col": color})
 
 # Brief global freeze on impact - the core of "satisfying impact".
 func hit_stop(duration: float) -> void:
@@ -292,3 +316,10 @@ func _draw() -> void:
 	draw_colored_polygon(pts, Color(0.15, 0.17, 0.22))
 	var outline := pts + PackedVector2Array([pts[0]])
 	draw_polyline(outline, Color(0.35, 0.40, 0.48), 2.0)
+
+	for s in _sparks:
+		var a := clampf(s["life"] / s["max"], 0.0, 1.0)
+		var c: Color = s["col"]
+		c.a = a
+		var p: Vector2 = s["pos"]
+		draw_line(p, p - s["vel"].normalized() * (4.0 + 7.0 * a), c, 2.0)

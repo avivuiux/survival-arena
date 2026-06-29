@@ -132,6 +132,61 @@ Three options offered (each reshapes the whole roster):
 
 **Claude's recommendation: combine #1 + #3** - "one wish" gives each character a personal
 why (content engine), "an undefeated legend at the top" gives one unified target everyone
-chases (and the chill-controller already fills that role). #2 is warm but narrows the world.
+chases. #2 is warm but narrows the world.
 
-Name candidates flow from the chosen fuel - held one more step.
+**DECIDED: combo #1 + #3.** Synthesis that resolves the knot: **the wish has never been
+claimed.** No one has beaten the undefeated legend at the top, so the biggest prize in
+the world hangs there - mythic and untouched for a generation. The legend is the wall
+between every fighter and their dream. That IS the shonen fuel: not "win a tournament"
+but "topple the untoppable and claim what no one ever has."
+
+---
+
+## LOCKED CONCEPT SPINE (2026-06-30)
+
+> **OVERTHRONE** - shonen-action. The world's biggest entertainment is a **televised
+> fighting league**; the arena floor is a slick broadcast stage (that's where the glide
+> comes from), and the knockback is the show's money-shot. At the top sits an
+> **undefeated legend**, and the champion is promised **one wish** - never claimed,
+> because no one has beaten him. Every fighter enters with a burning personal "why"; the
+> legend is the wall between them all and their dream.
+
+- **Name:** OVERTHRONE (throne + overthrow; the title = the league's brand, so the whole
+  UI gets one identity. Foregrounds the heart - topple the legend - over the spectacle.)
+- **Art / character DNA:** shonen-action (Naruto / MHA energy; signature moves = skills).
+- **Frame / world:** a televised fighting league / circuit.
+- **Master tone:** sincere shonen heart (spectacle is the stage, rivalries are real).
+- **Emotional fuel:** one unclaimed wish, guarded by an undefeated legend.
+
+---
+
+## Round 4 - the two starter fighters (2026-06-30, awaiting Aviv's reaction)
+
+**Critique / correction:** earlier I said the chill-controller IS the legend. Running it
+forward, that's wrong - a starter you pick and play casually can't also be the unbeatable
+endgame legend (it burns the most mythic role on a starter and leaves the rookie with no
+real opponent to fight NOW). **Fix:** the two starters are both *contenders* - the
+hot rookie vs the cool veteran pro - a perfect eye-level rivalry. The undefeated legend
+at the very top stays a FUTURE boss character. The veteran is the first wall the rookie
+must pass.
+
+### FANG - the hot-blooded rookie (was Tiger / Rusher; orange; fast/fragile/hard-hitting, lunge)
+- A street kid from a forgotten town; entered the circuit with no sponsor, nothing.
+  Fast, fragile, hits hard, reckless lunges. Crowd favorite - plays with an open heart.
+- **Wish:** put his town on the map - prove a nobody from nowhere can reach the top.
+- **Look:** lean, bruised, taped fists, second-hand gear, reckless grin, orange tiger
+  stripe. The underdog.
+- Alt names: BLITZ / WILDCAT / COMET.
+
+### ZERO - the cool veteran pro (was Balanced / chill-controller; blue; control, AoE chill)
+- A composed, calculating veteran who controls tempo and freezes the stage. The
+  gatekeeper every rookie must get past. Sponsored, polished - FANG's exact opposite.
+- **Wish:** has chased the wish for years and keeps falling short of the legend; his wish
+  ties to something he lost along the way (this links the veteran to the future boss).
+- **Look:** calm eyes, composed, tailored blue-white gear, frost motif. Polish vs FANG's
+  scrappiness.
+- Alt names: FROST / GLACIER / WINTER.
+
+**Why it works:** fire vs ice · reckless vs calculating · heart vs control - which is
+exactly their mechanics (fast/fragile/aggressive vs slow/zone/defensive). Fiction and
+mechanics reinforce each other.
