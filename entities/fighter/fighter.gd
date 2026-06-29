@@ -22,6 +22,9 @@ const FLASH_TIME := 0.12
 const DASH_SPEED := 720.0       # quick burst
 const DASH_TIME := 0.14         # how long the dash lasts (also the i-frame window)
 const DASH_COOLDOWN := 0.55
+# --- Movement momentum (the two feel knobs) ---
+const ACCEL := 1300.0           # ramp-up to max speed (lower = more sluggish start)
+const DRAG := 600.0             # glide-to-stop after release (lower = more floaty drift)
 
 # Configured by Game before add_child:
 var game
@@ -37,7 +40,8 @@ var key_dash := KEY_SHIFT
 var active := true
 var hp := MAX_HP
 var facing := Vector2.RIGHT
-var velocity := Vector2.ZERO
+var velocity := Vector2.ZERO        # knockback velocity
+var _move_vel := Vector2.ZERO       # input movement velocity (has momentum)
 var _attacking := false
 var _attack_time := 0.0
 var _cooldown := 0.0
@@ -116,6 +120,7 @@ func _process(delta: float) -> void:
 			_dash_cd = DASH_COOLDOWN
 			_iframe = DASH_TIME
 			velocity = Vector2.ZERO
+			_move_vel = Vector2.ZERO
 		_dash_prev = dp
 
 		if _dashing:
@@ -125,10 +130,17 @@ func _process(delta: float) -> void:
 			_dash_time -= delta
 			if _dash_time <= 0.0:
 				_dashing = false
+				_move_vel = _dash_dir * SPEED * 0.5   # glide out of the dash
 			_update_hitbox_position()
 		else:
+			# Momentum movement: accelerate toward the target, glide to a stop.
+			var target := Vector2.ZERO
 			if dir != Vector2.ZERO and not _attacking:
-				position += dir * SPEED * delta
+				target = dir * SPEED
+			var rate := ACCEL if target != Vector2.ZERO else DRAG
+			_move_vel = _move_vel.move_toward(target, rate * delta)
+			if _move_vel != Vector2.ZERO:
+				position += _move_vel * delta
 				if game:
 					position = game.clamp_to_arena(position)
 				_update_hitbox_position()
@@ -187,6 +199,7 @@ func reset_fighter(pos: Vector2) -> void:
 	hp = MAX_HP
 	position = pos
 	velocity = Vector2.ZERO
+	_move_vel = Vector2.ZERO
 	_attacking = false
 	_hitbox.monitoring = false
 	_flash = 0.0
