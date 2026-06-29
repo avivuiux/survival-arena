@@ -43,12 +43,12 @@ What turns one attack into a fighting system.
 - [~] Status effects - "slow" (chill) done; stun / knockup still to come
 - [ ] Blocking / parry? (decide: does this game reward defense?)
 
-### Layer 2 - Characters (roster)  `[ ]`  ← mostly CONTENT, cheap & parallel
+### Layer 2 - Characters (roster)  `[~] started`  ← mostly CONTENT, cheap & parallel
 The "variety" pillar - Survival Project's CKs.
-- [ ] Character data model (stats + signature skill set), data-driven
-- [ ] 1 archetype first, then expand the roster
+- [x] Character data model (stats + skill), data-driven via `ARCHETYPES` in game.gd
+- [x] 2nd archetype: **"Rusher"** (fast/fragile/hard-hitting, lunge skill) - feel-test passed
 - [ ] Character select screen
-- [ ] Distinct feel per character (speed/range/power trade-offs)
+- [ ] More archetypes / distinct feel (speed/range/power trade-offs)
 
 ### Layer 3 - Arenas  `[ ]`  ← CONTENT
 - [ ] Multiple arena layouts

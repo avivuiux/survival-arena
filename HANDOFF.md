@@ -44,6 +44,12 @@ A genuinely playable greybox arena fighter. Every step was feel-tested live by A
   caught enemies slowed + can't dash). PASSED. Built the skill+status foundation.
 - ✅ **Bot opponent**: reactive AI on P2 (chase, attack, dodge with cooldown, retreat
   spacing, chill). Tuned to be beatable. Toggle P2 bot/human with **B**.
+- ✅ **L2 start - data-driven archetypes + 2nd character "Rusher"** (fast/fragile/
+  hard-hitting, `lunge` skill). Feel-test passed. P1 = Rusher (you play it), P2 bot = Balanced.
+
+**Concept track** (creative identity: world/tone/character-fiction/art/name) is being
+developed in a SEPARATE chat - see `CONCEPT.md`. Keep mechanics (this track) and concept
+separate so neither floods the other.
 
 **Aviv's stance: "I already know this game is fun - progress beyond."** Moving fast on
 local content. The ONE thing we deliberately do NOT rush is networking (Phase 2 / L6) -
