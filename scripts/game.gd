@@ -20,6 +20,7 @@ const ARCHETYPES := {
 	"rusher":   {"hp": 70,  "speed": 430.0, "damage": 18, "atk_cd": 0.26, "skill": "lunge"},
 	"tank":     {"hp": 150, "speed": 240.0, "damage": 14, "atk_cd": 0.40, "skill": "shockwave"},
 }
+const WINS_NEEDED := 2           # best-of-3: first to 2 round wins takes the match
 
 var arena_center := Vector2.ZERO
 var _shake := 0.0
@@ -34,6 +35,9 @@ var _title_label: Label
 var _select_label: Label
 var _arch_keys: Array = []
 var _sel_index := 0
+var _p1_score := 0
+var _p2_score := 0
+var _score_label: Label
 
 func _ready() -> void:
 	arena_center = get_viewport_rect().size / 2.0
@@ -75,6 +79,14 @@ func _ready() -> void:
 	_select_label.position = Vector2(vp.x / 2.0 - 240.0, 210.0)
 	_select_label.size = Vector2(480.0, 220.0)
 	ui.add_child(_select_label)
+
+	_score_label = Label.new()
+	_score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_score_label.add_theme_font_size_override("font_size", 22)
+	_score_label.position = Vector2(vp.x / 2.0 - 200.0, 14.0)
+	_score_label.size = Vector2(400.0, 30.0)
+	_score_label.visible = false
+	ui.add_child(_score_label)
 
 	_refresh_select()
 	queue_redraw()
@@ -167,6 +179,10 @@ func _begin_match() -> void:
 	_fighters = [_p1, _p2]
 	_p2.is_bot = true
 	_update_mode_label()
+	_p1_score = 0
+	_p2_score = 0
+	_score_label.visible = true
+	_update_score()
 	_state = "fighting"
 
 func _return_to_select() -> void:
@@ -180,6 +196,7 @@ func _return_to_select() -> void:
 	_banner.visible = false
 	_hint.visible = false
 	_mode_label.visible = false
+	_score_label.visible = false
 	_title_label.visible = true
 	_select_label.visible = true
 	_refresh_select()
@@ -224,19 +241,44 @@ func on_ko(loser) -> void:
 	_state = "round_over"
 	_p1.active = false
 	_p2.active = false
+
 	var winner: Node2D = _p2 if loser == _p1 else _p1
-	_banner.text = "%s WINS!" % winner.fighter_name
+	if winner == _p1:
+		_p1_score += 1
+	else:
+		_p2_score += 1
+	_update_score()
 	_banner.add_theme_color_override("font_color", winner.body_color)
-	_banner.visible = true
-	var t := get_tree().create_timer(2.0)
-	await t.timeout
-	_reset_round()
+
+	var winner_score: int = _p1_score if winner == _p1 else _p2_score
+	if winner_score >= WINS_NEEDED:
+		_banner.text = "%s WINS THE MATCH!" % winner.fighter_name
+		_banner.visible = true
+		var t := get_tree().create_timer(3.0)
+		await t.timeout
+		_new_match()
+	else:
+		_banner.text = "%s wins the round" % winner.fighter_name
+		_banner.visible = true
+		var t := get_tree().create_timer(1.6)
+		await t.timeout
+		_reset_round()
 
 func _reset_round() -> void:
 	_banner.visible = false
 	_p1.reset_fighter(arena_center + P1_SPAWN)
 	_p2.reset_fighter(arena_center + P2_SPAWN)
 	_state = "fighting"
+
+func _new_match() -> void:
+	_p1_score = 0
+	_p2_score = 0
+	_update_score()
+	_reset_round()
+
+func _update_score() -> void:
+	if _score_label:
+		_score_label.text = "P1   %d  -  %d   P2      (first to %d)" % [_p1_score, _p2_score, WINS_NEEDED]
 
 func _draw() -> void:
 	var rx := ARENA_RADIUS_X

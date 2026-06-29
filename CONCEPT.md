@@ -75,3 +75,63 @@ Whitecap / Permafrost*.
 
 **Open question to Aviv:** which pulls you instinctively, and where does the gut say
 "no"? Mixing is fine (e.g. "A with B's physics").
+
+---
+
+## Round 2 - direction chosen + reframe (2026-06-30)
+
+**Reframe (corrects "everything comes from a rich story/world first"):** in this genre
+(and in SP itself) cohesion does NOT come from a deep lore-bible. It comes from two
+cheap things: (1) one consistent **character + art DNA** = the anime style Aviv loves;
+(2) one simple **"frame"** = the single in-world reason all the wild characters meet in
+an arena. The story stays thin and grows per-character. Building a world-bible up front
+is the trap this doc already warns against.
+
+**Aviv's choices (via AskUserQuestion):**
+- **Art / character DNA = shonen-action** (Naruto / MHA energy): dynamic, bold, signature
+  moves, sharp silhouettes, rivalries. Skills map perfectly to "signature moves". Cooler
+  than cute, less crowded.
+- **Frame = a broadcast battle-show / fighting circuit**: fighters are stars/contestants
+  in the world's biggest televised fighting league.
+
+### The unified concept seed - "The Circuit"
+A world obsessed with a **televised fighting league** - its biggest entertainment.
+Shonen-style fighters enter to become stars: rookies, veterans, rivals, champions.
+Every match is broadcast - announcers, crowd, sponsors, slow-mo replays of big KOs.
+**The arena floor is a slick broadcast stage** (this is what explains the glide); the
+**knockback / ring-out are the show's money-shots.** The circuit IS the world, so it
+unifies a wild roster, justifies arenas (different studios), seeds progression (climb
+the rankings), and gives the whole UI one personality (the show's branding).
+
+The two existing characters snap in with a built-in rivalry:
+- **Rusher / Tiger** -> a hot-blooded rookie speedster, crowd favorite, reckless lunges.
+- **Chill-controller** -> a cool veteran / champion who controls tempo and freezes the
+  stage - the "boss" every rookie wants to topple.
+
+### Master tone - DECIDED: sincere shonen heart
+Spectacle is the stage; the rivalries are real (MHA-like). The show is the surface, the
+fighters genuinely care. Chosen over satirical-spectacle (ages better, fits "social fun
+with soul").
+
+---
+
+## Round 3 - the emotional fuel (2026-06-30, awaiting Aviv's reaction)
+
+**Critique that drives this:** sincere shonen collapses into "just a ranked tournament"
+unless the climb has a *personal* emotional reason. "Be the champion" is a trophy, not a
+heart. So we must decide: **what's at the top of the Circuit that actually matters?**
+Three options offered (each reshapes the whole roster):
+- **One wish to the champion** (Dragon Ball tournament-arc): winner gets a single wish.
+  Gives every character a personal "why" - a great content engine (each new character =
+  a new wish = a small story). Most flexible for a growing roster.
+- **The Circuit is the way out** (grounded / class stakes): the only path up from the
+  bottom; winning = escape for you and yours. Warmest, but narrows the world to class.
+- **Surpass the legend** (rival/mentor energy): an undefeated legend sits at the top;
+  everyone fights to reach and surpass them. Snaps perfectly onto the existing chars -
+  **the chill veteran IS the legend the rookies chase.**
+
+**Claude's recommendation: combine #1 + #3** - "one wish" gives each character a personal
+why (content engine), "an undefeated legend at the top" gives one unified target everyone
+chases (and the chill-controller already fills that role). #2 is warm but narrows the world.
+
+Name candidates flow from the chosen fuel - held one more step.
