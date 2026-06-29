@@ -34,6 +34,10 @@ So the whole strategy is: prove the combat is fun first, expand later.
 - ✅ **Slice 1 done & verified**: one orange player square moves (WASD / arrows),
   clamped inside an isometric diamond arena. Runs clean (headless exit 0).
 
+Design contract:
+- `DESIGN.md` - one-page design (pillars, core loop, out-of-scope, the combat-feel
+  hypothesis that Slice 2 tests). Read it before building Slice 2.
+
 Files:
 - `project.godot` - minimal config (gl_compatibility renderer, window size)
 - `main.tscn` - single Node2D root running `main.gd`
