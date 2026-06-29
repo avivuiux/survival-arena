@@ -31,6 +31,7 @@ const CHILL_RADIUS := 140.0
 const CHILL_DURATION := 1.6     # how long caught enemies stay slowed
 const CHILL_SLOW := 0.32        # speed multiplier while chilled
 const CHILL_CAST_ANIM := 0.4    # expanding-ring visual length
+const BOT_DODGE_CD := 1.3       # min gap between bot dodges (opens punish windows)
 
 # Configured by Game before add_child:
 var game
@@ -65,6 +66,8 @@ var _skill_cd := 0.0
 var _skill_prev := false
 var _chill_time := 0.0          # how long THIS fighter stays slowed
 var _cast_anim := 0.0           # expanding-ring visual timer
+var _bot_retreat := 0.0         # bot: backing-off timer after a swing
+var _bot_dodge_cd := 0.0        # bot: cooldown between dodges
 var _hitbox: Area2D
 var _hurtbox: Area2D
 var _already_hit: Array = []
@@ -107,6 +110,10 @@ func _process(delta: float) -> void:
 		_chill_time -= delta
 	if _cast_anim > 0.0:
 		_cast_anim -= delta
+	if _bot_retreat > 0.0:
+		_bot_retreat -= delta
+	if _bot_dodge_cd > 0.0:
+		_bot_dodge_cd -= delta
 
 	# Knockback always applies (so a KO'd fighter still slides) - paused while dashing.
 	if not _dashing:
@@ -232,7 +239,8 @@ func apply_chill(duration: float) -> void:
 	if active:
 		_chill_time = maxf(_chill_time, duration)
 
-# Simple reactive AI: chase, attack in range, dodge the foe's swing, chill when close.
+# Reactive AI: chase, attack in range, then space out; dodge the foe's swing
+# but only occasionally (dodge cooldown) so the player gets punish windows.
 func _bot_think() -> Dictionary:
 	var out := {"dir": Vector2.ZERO, "attack": false, "dash": false, "skill": false}
 	var foe = null
@@ -248,24 +256,33 @@ func _bot_think() -> Dictionary:
 	var dist := to_foe.length()
 	var dir_to: Vector2 = to_foe.normalized() if dist > 0.001 else Vector2.RIGHT
 
-	# Dodge: foe is swinging and close -> dash away
-	if foe._attacking and dist < 90.0 and _dash_cd <= 0.0 and _chill_time <= 0.0:
+	# Dodge the foe's swing - gated by a cooldown + a roll, so it's beatable.
+	if foe._attacking and dist < 85.0 and _dash_cd <= 0.0 and _bot_dodge_cd <= 0.0 \
+			and _chill_time <= 0.0 and randf() < 0.5:
 		out["dir"] = -dir_to
 		out["dash"] = true
+		_bot_dodge_cd = BOT_DODGE_CD
 		return out
 
-	# Chill: foe in range, skill ready, foe not already chilled
+	# After a swing, back off to reset spacing (less glued / aggressive).
+	if _bot_retreat > 0.0:
+		out["dir"] = -dir_to
+		return out
+
+	# Chill: foe in range, skill ready, foe not already chilled.
 	if dist < CHILL_RADIUS * 0.9 and _skill_cd <= 0.0 and foe._chill_time <= 0.0 and _chill_time <= 0.0:
 		out["dir"] = dir_to
 		out["skill"] = true
 		return out
 
-	# Approach, or attack once in melee range
+	# Approach, or commit to an attack when actually ready (then space out).
 	if dist > REACH + 14.0:
 		out["dir"] = dir_to
 	else:
 		out["dir"] = dir_to
-		out["attack"] = true
+		if _cooldown <= 0.0:
+			out["attack"] = true
+			_bot_retreat = randf_range(0.5, 0.9)
 	return out
 
 func take_hit(dir: Vector2, dmg: int) -> void:
@@ -298,6 +315,8 @@ func reset_fighter(pos: Vector2) -> void:
 	_skill_cd = 0.0
 	_chill_time = 0.0
 	_cast_anim = 0.0
+	_bot_retreat = 0.0
+	_bot_dodge_cd = 0.0
 	active = true
 
 func _draw() -> void:
