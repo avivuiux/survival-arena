@@ -28,7 +28,7 @@ func _ready() -> void:
 	add_child(ui)
 
 	var hint := Label.new()
-	hint.text = "P1: WASD + Space     P2: Arrows + Enter"
+	hint.text = "P1: WASD  Space=attack  Shift=dash      P2: Arrows  Enter=attack  /=dash"
 	hint.position = Vector2(16.0, 12.0)
 	ui.add_child(hint)
 
@@ -41,14 +41,14 @@ func _ready() -> void:
 	ui.add_child(_banner)
 
 	_p1 = _make_fighter("P1", Color(0.95, 0.55, 0.20),
-		KEY_W, KEY_S, KEY_A, KEY_D, KEY_SPACE, arena_center + P1_SPAWN)
+		KEY_W, KEY_S, KEY_A, KEY_D, KEY_SPACE, KEY_SHIFT, arena_center + P1_SPAWN)
 	_p2 = _make_fighter("P2", Color(0.35, 0.65, 0.95),
-		KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, arena_center + P2_SPAWN)
+		KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, KEY_SLASH, arena_center + P2_SPAWN)
 
 	queue_redraw()
 
 func _make_fighter(fname: String, color: Color, ku: int, kd: int, kl: int, kr: int,
-		ka: int, pos: Vector2) -> Node2D:
+		ka: int, kdash: int, pos: Vector2) -> Node2D:
 	var f := FighterScript.new()
 	f.game = self
 	f.fighter_name = fname
@@ -58,6 +58,7 @@ func _make_fighter(fname: String, color: Color, ku: int, kd: int, kl: int, kr: i
 	f.key_left = kl
 	f.key_right = kr
 	f.key_attack = ka
+	f.key_dash = kdash
 	f.position = pos
 	add_child(f)
 	return f

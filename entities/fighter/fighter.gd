@@ -19,6 +19,9 @@ const DAMAGE := 12
 const KNOCKBACK := 360.0
 const FRICTION := 900.0
 const FLASH_TIME := 0.12
+const DASH_SPEED := 720.0       # quick burst
+const DASH_TIME := 0.14         # how long the dash lasts (also the i-frame window)
+const DASH_COOLDOWN := 0.55
 
 # Configured by Game before add_child:
 var game
@@ -29,6 +32,7 @@ var key_down := KEY_S
 var key_left := KEY_A
 var key_right := KEY_D
 var key_attack := KEY_SPACE
+var key_dash := KEY_SHIFT
 
 var active := true
 var hp := MAX_HP
@@ -39,6 +43,12 @@ var _attack_time := 0.0
 var _cooldown := 0.0
 var _attack_prev := false
 var _flash := 0.0
+var _dashing := false
+var _dash_time := 0.0
+var _dash_cd := 0.0
+var _dash_dir := Vector2.RIGHT
+var _dash_prev := false
+var _iframe := 0.0
 var _hitbox: Area2D
 var _hurtbox: Area2D
 var _already_hit: Array = []
@@ -71,15 +81,20 @@ func _process(delta: float) -> void:
 		_cooldown -= delta
 	if _flash > 0.0:
 		_flash -= delta
+	if _dash_cd > 0.0:
+		_dash_cd -= delta
+	if _iframe > 0.0:
+		_iframe -= delta
 
-	# Knockback always applies (so a KO'd fighter still slides).
-	if velocity.length() > 1.0:
-		position += velocity * delta
-		velocity = velocity.move_toward(Vector2.ZERO, FRICTION * delta)
-		if game:
-			position = game.clamp_to_arena(position)
-	else:
-		velocity = Vector2.ZERO
+	# Knockback always applies (so a KO'd fighter still slides) - paused while dashing.
+	if not _dashing:
+		if velocity.length() > 1.0:
+			position += velocity * delta
+			velocity = velocity.move_toward(Vector2.ZERO, FRICTION * delta)
+			if game:
+				position = game.clamp_to_arena(position)
+		else:
+			velocity = Vector2.ZERO
 
 	if active:
 		var dir := Vector2.ZERO
@@ -89,17 +104,38 @@ func _process(delta: float) -> void:
 		if Input.is_physical_key_pressed(key_right): dir.x += 1.0
 		if dir != Vector2.ZERO:
 			dir = dir.normalized()
-			facing = dir
-			if not _attacking:
+			if not _dashing:
+				facing = dir
+
+		# Dash trigger (edge-detected). Gives a burst + brief i-frames.
+		var dp := Input.is_physical_key_pressed(key_dash)
+		if dp and not _dash_prev and not _dashing and _dash_cd <= 0.0:
+			_dash_dir = dir if dir != Vector2.ZERO else facing
+			_dashing = true
+			_dash_time = DASH_TIME
+			_dash_cd = DASH_COOLDOWN
+			_iframe = DASH_TIME
+			velocity = Vector2.ZERO
+		_dash_prev = dp
+
+		if _dashing:
+			position += _dash_dir * DASH_SPEED * delta
+			if game:
+				position = game.clamp_to_arena(position)
+			_dash_time -= delta
+			if _dash_time <= 0.0:
+				_dashing = false
+			_update_hitbox_position()
+		else:
+			if dir != Vector2.ZERO and not _attacking:
 				position += dir * SPEED * delta
 				if game:
 					position = game.clamp_to_arena(position)
-			_update_hitbox_position()
-
-		var ap := Input.is_physical_key_pressed(key_attack)
-		if ap and not _attack_prev and not _attacking and _cooldown <= 0.0:
-			_start_attack()
-		_attack_prev = ap
+				_update_hitbox_position()
+			var ap := Input.is_physical_key_pressed(key_attack)
+			if ap and not _attack_prev and not _attacking and _cooldown <= 0.0:
+				_start_attack()
+			_attack_prev = ap
 
 	queue_redraw()
 
@@ -132,7 +168,7 @@ func _update_hitbox_position() -> void:
 		_hitbox.position = facing * REACH
 
 func take_hit(dir: Vector2, dmg: int) -> void:
-	if not active:
+	if not active or _iframe > 0.0:   # dashing dodges the hit
 		return
 	hp -= dmg
 	velocity += dir.normalized() * KNOCKBACK
@@ -154,15 +190,27 @@ func reset_fighter(pos: Vector2) -> void:
 	_attacking = false
 	_hitbox.monitoring = false
 	_flash = 0.0
+	_dashing = false
+	_dash_cd = 0.0
+	_iframe = 0.0
 	active = true
 
 func _draw() -> void:
 	# facing indicator
 	draw_line(Vector2.ZERO, facing * (SIZE * 0.9), Color(1, 1, 1, 0.5), 2.0)
+	# dash trail (afterimages behind the burst)
+	if _dashing:
+		for i in range(1, 4):
+			var gpos := -_dash_dir * (float(i) * 11.0)
+			var ga := 0.28 - float(i) * 0.06
+			draw_rect(Rect2(gpos - Vector2(SIZE, SIZE) / 2.0, Vector2(SIZE, SIZE)),
+				Color(0.55, 0.85, 1.0, maxf(ga, 0.05)))
 	# body
 	var col := body_color
 	if _flash > 0.0:
 		col = body_color.lerp(Color(1, 1, 1), clampf(_flash / FLASH_TIME, 0.0, 1.0))
+	elif _iframe > 0.0:
+		col = body_color.lerp(Color(0.55, 0.85, 1.0), 0.55)   # cyan = invulnerable
 	if not active:
 		col = body_color.darkened(0.5)
 	var r := Rect2(-Vector2(SIZE, SIZE) / 2.0, Vector2(SIZE, SIZE))
