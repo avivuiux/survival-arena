@@ -31,18 +31,32 @@ So the whole strategy is: prove the combat is fun first, expand later.
 
 - ✅ Godot 4.7 installed (portable) at `C:\Users\Aviv\dev\tools\godot\`
 - ✅ Project scaffolded, git initialized
-- ✅ **Slice 1 done & verified**: one orange player square moves (WASD / arrows),
-  clamped inside an isometric diamond arena. Runs clean (headless exit 0).
+- ✅ **Slice 1 done & verified**: player square moves (WASD / arrows), clamped to arena.
+- ✅ **Slice 2 built & verified (headless)**: melee attack (Space) + a dummy that takes
+  knockback, flashes, and triggers hit-stop + screen-shake; HP bar + auto-refill on KO.
+  ⏳ **NOT yet feel-tested by a human** - that is the open gate (see "the gate" below).
 
 Design contract:
 - `DESIGN.md` - one-page design (pillars, core loop, out-of-scope, the combat-feel
-  hypothesis that Slice 2 tests). Read it before building Slice 2.
+  hypothesis Slice 2 tests). Read it before changing combat.
 
-Files:
-- `project.godot` - minimal config (gl_compatibility renderer, window size)
-- `main.tscn` - single Node2D root running `main.gd`
-- `main.gd` - the whole slice (arena draw + player move + clamp). Everything is
-  code-driven on purpose to keep .tscn trivial during greybox.
+Project structure (reorganized into proper folders at Slice 2):
+- `project.godot` - config; main scene = `res://scenes/game.tscn`
+- `scenes/game.tscn` - trivial root running `scripts/game.gd`
+- `scripts/game.gd` - orchestration: spawns entities, owns arena bounds, provides
+  juice services (`hit_stop`, `add_shake`). Uses `preload` (not class_name) so it
+  runs headless too.
+- `entities/player/player.gd` - movement, facing, melee attack + hitbox
+- `entities/dummy/dummy.gd` - HP, knockback, flash, return-to-home, drives the juice
+
+## THE GATE (do this before Slice 3)
+
+Open the editor, press F5, and **play it**. Move with WASD, attack with Space.
+Judge the DESIGN.md hypothesis honestly:
+- Does landing a hit feel *weighty* and make you want to do it again? -> proceed to Slice 3.
+- Does it feel limp / floaty / unclear? -> tune ONLY the feel (hit-stop duration,
+  knockback strength, flash, shake) before adding anything. Do not add features to
+  paper over a hit that doesn't feel good.
 
 ## How to run it
 
@@ -59,9 +73,7 @@ C:\Users\Aviv\dev\tools\godot\Godot_v4.7-stable_win64_console.exe --headless --p
 
 ## Next steps (in order - one slice at a time)
 
-1. **Slice 2 - combat feel**: add an attack (button), a stationary dummy, and a
-   visible hit (knockback + flash). This is the first slice that can actually be
-   *fun*. Stop and ask: "is the hit satisfying?"
+1. ~~**Slice 2 - combat feel**~~ ✅ built; awaiting the human feel-test gate above.
 2. **Slice 3 - second player, local**: two players, same keyboard (or two windows),
    fighting. First real "is this fun with another human" test. Still no netcode.
 3. **Slice 4 - health, win/lose**: HP, a round that ends. The minimal full loop.
