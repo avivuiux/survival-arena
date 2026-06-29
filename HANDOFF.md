@@ -27,36 +27,45 @@ So the whole strategy is: prove the combat is fun first, expand later.
 | Networking | **Deferred to phase 2** | Prove combat is fun LOCALLY first (two players, one machine). Real online netcode is the hard wall - solve it only once the core is proven |
 | ai-os / Design OS / deep-spec | **Deferred to phase 2** | Process/scope discipline is valuable for a sustained build, but pure overhead during find-the-fun. Adopt when building structure AROUND a proven core |
 
-## Current state - Phase 1 (greybox), LOCAL milestone reached
+## Current state - Phase 1 (greybox). Layer 0 done, Layer 1 mostly done.
+
+A genuinely playable greybox arena fighter. Every step was feel-tested live by Aviv.
 
 - ✅ Godot 4.7 installed (portable) at `C:\Users\Aviv\dev\tools\godot\`
-- ✅ **Slice 1**: movement in an isometric arena.
-- ✅ **Slice 2**: melee attack + satisfying hit (knockback + hit-stop + flash + shake).
-  **Feel-test PASSED by Aviv** ("feels good") - the core combat-feel hypothesis is validated.
-- ✅ **Slice 3+4**: local two-player duel. Two fighters share one keyboard, hit each
-  other, KO -> winner banner -> auto-reset. Verified headless (exit 0).
+- ✅ **L0 combat core**: isometric arena, melee attack, satisfying hit
+  (knockback + hit-stop + flash + screen-shake), HP, KO, winner banner, round reset.
+  Combat-feel hypothesis **PASSED** ("feels good").
+- ✅ **Local two-player duel** (shared keyboard).
+- ✅ **L1 dash** with i-frames (dodge -> punish). PASSED.
+- ✅ **L1 momentum movement**: gradual acceleration + glide-to-stop - the weighty
+  "hover" feel Aviv specifically remembered from Survival Project. PASSED ("מעולה").
+  Two tunable knobs in fighter.gd: `ACCEL` (ramp) and `DRAG` (glide).
+- ✅ **L1 first skill - "chill"**: AoE slow that catches a group (expanding ice ring;
+  caught enemies slowed + can't dash). PASSED. Built the skill+status foundation.
+- ✅ **Bot opponent**: reactive AI on P2 (chase, attack, dodge with cooldown, retreat
+  spacing, chill). Tuned to be beatable. Toggle P2 bot/human with **B**.
 
-**Aviv's call after the feel-test: "I already know this game is fun - progress beyond."**
-So we are moving faster on local content. The ONE thing we deliberately do NOT rush is
-networking (phase 2) - that is the real wall for this genre.
+**Aviv's stance: "I already know this game is fun - progress beyond."** Moving fast on
+local content. The ONE thing we deliberately do NOT rush is networking (Phase 2 / L6) -
+the real wall for this genre.
 
-Design contract:
-- `DESIGN.md` - one-page design (pillars, core loop, out-of-scope, combat-feel hypothesis).
+Docs: `DESIGN.md` (combat-feel contract) · `VISION.md` (full 8-layer system map + build
+order; "chill" and other skill ideas logged there).
 
 Project structure:
 - `project.godot` - config; main scene = `res://scenes/game.tscn`
-- `scenes/game.tscn` - trivial root running `scripts/game.gd`
-- `scripts/game.gd` - orchestration: spawns 2 fighters, owns arena bounds, juice
-  services (`hit_stop`, `add_shake`), round flow (KO/banner/reset). Uses `preload`
-  (not class_name) so it runs headless.
-- `entities/fighter/fighter.gd` - one configurable combatant (key set, color, HP,
-  knockback, attack). Two instances = the duel.
+- `scenes/game.tscn` + `scripts/game.gd` - orchestration: spawns 2 fighters, arena
+  bounds, juice (`hit_stop`/`add_shake`), round flow, AoE `apply_chill`, bot toggle.
+  Uses `preload` (not class_name) so it runs headless.
+- `entities/fighter/fighter.gd` - one configurable combatant driven by an **intent
+  layer** (human keys OR `_bot_think()`), so bot and human share the exact same rules.
 
 ## How to play
 
-P1: **WASD + Space**.  P2: **Arrows + Enter**.  First to KO the other wins; auto-resets.
-(Note: cheap keyboards may "ghost" when many keys are pressed at once - a known local-2P
-limitation, irrelevant once we go online.)
+P1: **WASD** move · **Space** attack · **Shift** dash · **E** chill.
+P2: **Arrows** move · **Enter** attack · **/** dash · **.** chill.
+**B** toggles P2 between BOT and HUMAN. First to KO wins; auto-resets.
+(Cheap keyboards may "ghost" on many simultaneous keys in 2-human mode - irrelevant online.)
 
 ## How to run it
 
@@ -73,14 +82,14 @@ C:\Users\Aviv\dev\tools\godot\Godot_v4.7-stable_win64_console.exe --headless --p
 
 ## Next steps (in order - one slice at a time)
 
-1. ~~**Slice 2 - combat feel**~~ ✅ feel-test PASSED.
-2. ~~**Slice 3+4 - local duel + win/lose**~~ ✅ done.
-3. **Next local options** (pick one, still cheap/safe to move fast on):
-   - A second attack / a skill (e.g. a dash or a ranged poke) - adds combat depth.
-   - A second character archetype with different stats - the "variety" pillar.
-   - Better juice / readability pass (telegraphs, hit sparks, KO pop).
-   - A simple best-of-3 score so a match has an arc.
-4. **Phase 2 - ONLINE (the wall - do NOT rush)**: bring in networking. Start with
+1. ~~L0 combat + L1 dash/momentum/chill + bot~~ ✅ all done & feel-tested.
+2. **Next local options** (pick one - all cheap/safe to move fast on):
+   - **A second character archetype** with different stats + skill - starts the
+     "variety" pillar; the systems now exist so it's cheap. (Strong candidate.)
+   - **More skills / status effects** (ranged poke, knockup, stun) on the chill foundation.
+   - **Best-of-3 score** so a match has an arc; or a juice/readability polish pass.
+   - **Bot tuning** if it ever feels off (knobs: dodge chance/cooldown, retreat, ranges).
+3. **Phase 2 - ONLINE (the wall - do NOT rush)**: bring in networking. Start with
    Godot's built-in high-level multiplayer (ENet) for 1v1; only escalate to heavier
    options (rollback) if the feel demands it. THIS is where we slow down, design the
    authority model, and where ai-os scope discipline starts paying off.
