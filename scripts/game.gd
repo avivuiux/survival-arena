@@ -9,7 +9,6 @@ extends Node2D
 
 const ARENA_RADIUS_X := 320.0
 const ARENA_SQUASH := 0.6
-const RINGOUT_M := 1.18           # shoved past this multiple of the edge = ring-out
 const FighterScript := preload("res://entities/fighter/fighter.gd")
 
 const P1_SPAWN := Vector2(-140.0, 0.0)
@@ -236,13 +235,6 @@ func clamp_to_arena(pos: Vector2) -> Vector2:
 		return arena_center + off / m
 	return pos
 
-# True once a fighter has been shoved past the ring-out boundary.
-func is_ringout(pos: Vector2) -> bool:
-	var off := pos - arena_center
-	var rx := ARENA_RADIUS_X
-	var ry := ARENA_RADIUS_X * ARENA_SQUASH
-	return (absf(off.x) / rx + absf(off.y) / ry) > RINGOUT_M
-
 func add_shake(amount: float) -> void:
 	_shake = maxf(_shake, amount)
 
@@ -325,16 +317,6 @@ func _draw() -> void:
 	draw_colored_polygon(pts, Color(0.15, 0.17, 0.22))
 	var outline := pts + PackedVector2Array([pts[0]])
 	draw_polyline(outline, Color(0.35, 0.40, 0.48), 2.0)
-
-	# ring-out boundary (faint red): get shoved past this and you're out
-	var ro := RINGOUT_M
-	var rpts := PackedVector2Array([
-		arena_center + Vector2(0.0, -ry * ro),
-		arena_center + Vector2(rx * ro, 0.0),
-		arena_center + Vector2(0.0, ry * ro),
-		arena_center + Vector2(-rx * ro, 0.0),
-	])
-	draw_polyline(rpts + PackedVector2Array([rpts[0]]), Color(0.80, 0.30, 0.30, 0.35), 2.0)
 
 	for s in _sparks:
 		var a := clampf(s["life"] / s["max"], 0.0, 1.0)

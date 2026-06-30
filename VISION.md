@@ -52,7 +52,7 @@ The "variety" pillar - Survival Project's CKs.
 
 ### Layer 3 - Arenas  `[ ]`  ← CONTENT
 - [ ] Multiple arena layouts
-- [x] Ring-out / edges as a mechanic - shove a foe past the red boundary = round win
+- [ ] Ring-out / edges as a mechanic - NOTE: Aviv rejected this; SP had no ring-out. Do not add without approval.
 - [ ] Hazards / interactive elements
 - [ ] Arena select
 
