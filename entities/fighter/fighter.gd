@@ -35,6 +35,9 @@ const SHOCK_RADIUS := 130.0
 const SHOCK_KNOCKBACK := 620.0
 const SHOCK_DAMAGE := 8
 const RANGED_COOLDOWN := 0.45    # long-range aimed attack (every fighter has it)
+const BLOCK_DMG_MULT := 0.25     # damage taken while blocking a frontal hit
+const BLOCK_KNOCK_MULT := 0.3
+const PARRY_WINDOW := 0.18        # block just started = perfect parry (full negate)
 
 # Configured by Game before add_child:
 var game
@@ -56,6 +59,7 @@ var key_attack := KEY_SPACE
 var key_dash := KEY_SHIFT
 var key_skill := KEY_E
 var key_ranged := KEY_Q
+var key_defense := KEY_C
 var is_bot := false
 
 var active := true
@@ -81,6 +85,8 @@ var _skill_cd_max := 1.0
 var _skill_prev := false
 var _ranged_cd := 0.0
 var _ranged_prev := false
+var _blocking := false
+var _block_time := 0.0
 var _chill_time := 0.0          # how long THIS fighter stays slowed
 var _cast_anim := 0.0           # expanding-ring visual timer
 var _cast_radius := 140.0       # radius the cast ring draws to
@@ -155,6 +161,7 @@ func _process(delta: float) -> void:
 		var want_dash := false
 		var want_skill := false
 		var want_ranged := false
+		var want_block := false
 		if is_bot:
 			var intent := _bot_think()
 			in_dir = intent["dir"]
@@ -162,6 +169,7 @@ func _process(delta: float) -> void:
 			want_dash = intent["dash"]
 			want_skill = intent["skill"]
 			want_ranged = intent["ranged"]
+			want_block = intent["block"]
 		else:
 			if Input.is_physical_key_pressed(key_up): in_dir.y -= 1.0
 			if Input.is_physical_key_pressed(key_down): in_dir.y += 1.0
@@ -179,11 +187,32 @@ func _process(delta: float) -> void:
 			var kp_r := Input.is_physical_key_pressed(key_ranged)
 			want_ranged = kp_r and not _ranged_prev
 			_ranged_prev = kp_r
+			want_block = Input.is_physical_key_pressed(key_defense)
 
 		if in_dir != Vector2.ZERO:
 			in_dir = in_dir.normalized()
 			if not _dashing:
 				facing = in_dir
+
+		# Defense (hold): blocks + parry window. Roots you; you can still turn to face.
+		if want_block and not _dashing:
+			if not _blocking:
+				_blocking = true
+				_block_time = 0.0
+			else:
+				_block_time += delta
+		else:
+			_blocking = false
+
+		if _blocking:
+			_move_vel = _move_vel.move_toward(Vector2.ZERO, DRAG * delta)
+			if _move_vel != Vector2.ZERO:
+				position += _move_vel * delta
+				if game:
+					position = game.clamp_to_arena(position)
+			_update_hitbox_position()
+			queue_redraw()
+			return
 
 		# Dash: a burst + brief i-frames
 		if want_dash and not _dashing and _dash_cd <= 0.0 and _chill_time <= 0.0:
@@ -314,7 +343,7 @@ func _cast_shockwave() -> void:
 # Reactive AI: chase, attack in range, then space out; dodge the foe's swing
 # but only occasionally (dodge cooldown) so the player gets punish windows.
 func _bot_think() -> Dictionary:
-	var out := {"dir": Vector2.ZERO, "attack": false, "dash": false, "skill": false, "ranged": false}
+	var out := {"dir": Vector2.ZERO, "attack": false, "dash": false, "skill": false, "ranged": false, "block": false}
 	var foe = null
 	if game:
 		for f in game._fighters:
@@ -327,6 +356,12 @@ func _bot_think() -> Dictionary:
 	var to_foe: Vector2 = foe.position - position
 	var dist := to_foe.length()
 	var dir_to: Vector2 = to_foe.normalized() if dist > 0.001 else Vector2.RIGHT
+
+	# Sometimes block a close swing instead of dodging (mix it up).
+	if foe._attacking and dist < 75.0 and _chill_time <= 0.0 and randf() < 0.25:
+		out["dir"] = dir_to
+		out["block"] = true
+		return out
 
 	# Dodge the foe's swing - gated by a cooldown + a roll, so it's beatable.
 	if foe._attacking and dist < 85.0 and _dash_cd <= 0.0 and _bot_dodge_cd <= 0.0 \
@@ -366,6 +401,17 @@ func _bot_think() -> Dictionary:
 func take_hit(dir: Vector2, dmg: int, knock: float = KNOCKBACK) -> void:
 	if not active or _iframe > 0.0:   # dashing dodges the hit
 		return
+	# Blocking a frontal hit: parry (block just started) negates; otherwise chip.
+	if _blocking and facing.dot(-dir.normalized()) > 0.25:
+		if _block_time <= PARRY_WINDOW:
+			_flash = FLASH_TIME
+			_iframe = 0.12
+			if game:
+				game.add_shake(4.0)
+				game.spawn_sparks(position + facing * REACH, -dir, 10, Color(0.7, 0.95, 1.0))
+			return
+		dmg = int(round(float(dmg) * BLOCK_DMG_MULT))
+		knock *= BLOCK_KNOCK_MULT
 	hp -= dmg
 	velocity += dir.normalized() * knock
 	_flash = FLASH_TIME
@@ -398,11 +444,18 @@ func reset_fighter(pos: Vector2) -> void:
 	_cast_anim = 0.0
 	_bot_retreat = 0.0
 	_bot_dodge_cd = 0.0
+	_blocking = false
+	_block_time = 0.0
 	active = true
 
 func _draw() -> void:
 	# facing indicator
 	draw_line(Vector2.ZERO, facing * (SIZE * 0.9), Color(1, 1, 1, 0.5), 2.0)
+	# block / parry shield arc in front
+	if _blocking:
+		var bc := Color(0.65, 0.95, 1.0) if _block_time <= PARRY_WINDOW else Color(0.5, 0.7, 0.9, 0.85)
+		var bang := facing.angle()
+		draw_arc(facing * (SIZE * 0.55), 24.0, bang - 0.95, bang + 0.95, 18, bc, 4.0)
 	# chill cast ring (expanding outward)
 	if _cast_anim > 0.0:
 		var cp := 1.0 - (_cast_anim / CHILL_CAST_ANIM)

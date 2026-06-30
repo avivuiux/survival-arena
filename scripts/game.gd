@@ -99,7 +99,7 @@ func _ready() -> void:
 	queue_redraw()
 
 func _make_fighter(fname: String, color: Color, ku: int, kd: int, kl: int, kr: int,
-		ka: int, kdash: int, kskill: int, kranged: int, archetype: String, pos: Vector2) -> Node2D:
+		ka: int, kdash: int, kskill: int, kranged: int, kdef: int, archetype: String, pos: Vector2) -> Node2D:
 	var f := FighterScript.new()
 	f.game = self
 	f.fighter_name = fname
@@ -120,6 +120,7 @@ func _make_fighter(fname: String, color: Color, ku: int, kd: int, kl: int, kr: i
 	f.key_dash = kdash
 	f.key_skill = kskill
 	f.key_ranged = kranged
+	f.key_defense = kdef
 	f.position = pos
 	add_child(f)
 	return f
@@ -178,14 +179,14 @@ func _begin_match() -> void:
 
 	_title_label.visible = false
 	_select_label.visible = false
-	_hint.text = "P1 %s: WASD move  Space melee  Q ranged  E skill  Shift dash       P2 %s: Arrows  Enter melee  ,(comma) ranged  . skill  / dash       B=bot  R=re-pick" % [p1_arch.to_upper(), p2_arch.to_upper()]
+	_hint.text = "P1 %s: WASD  Space melee  Q ranged  C block  E skill  Shift dash      P2 %s: Arrows  Enter melee  ,ranged  ;block  .skill  /dash      B=bot  R=re-pick" % [p1_arch.to_upper(), p2_arch.to_upper()]
 	_hint.visible = true
 	_mode_label.visible = true
 
 	_p1 = _make_fighter("P1", Color(0.95, 0.55, 0.20),
-		KEY_W, KEY_S, KEY_A, KEY_D, KEY_SPACE, KEY_SHIFT, KEY_E, KEY_Q, p1_arch, arena_center + P1_SPAWN)
+		KEY_W, KEY_S, KEY_A, KEY_D, KEY_SPACE, KEY_SHIFT, KEY_E, KEY_Q, KEY_C, p1_arch, arena_center + P1_SPAWN)
 	_p2 = _make_fighter("P2", Color(0.35, 0.65, 0.95),
-		KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, KEY_SLASH, KEY_PERIOD, KEY_COMMA, p2_arch, arena_center + P2_SPAWN)
+		KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, KEY_SLASH, KEY_PERIOD, KEY_COMMA, KEY_SEMICOLON, p2_arch, arena_center + P2_SPAWN)
 	_fighters = [_p1, _p2]
 	_p2.is_bot = true
 	_update_mode_label()
