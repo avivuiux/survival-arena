@@ -224,16 +224,7 @@ func _process(delta: float) -> void:
 			queue_redraw()
 			return
 
-		# Dash: a burst + brief i-frames
-		if want_dash and not _dashing and _dash_cd <= 0.0 and _chill_time <= 0.0:
-			_dash_dir = in_dir if in_dir != Vector2.ZERO else facing
-			_dashing = true
-			_dash_time = DASH_TIME
-			_dash_cd = DASH_COOLDOWN
-			_iframe = DASH_TIME
-			velocity = Vector2.ZERO
-			_move_vel = Vector2.ZERO
-
+		# Dash removed (SP had no momentary dash). Lunge still uses the burst internally.
 		if _dashing:
 			position += _dash_dir * DASH_SPEED * delta
 			if game:
@@ -371,18 +362,10 @@ func _bot_think() -> Dictionary:
 	var dist := to_foe.length()
 	var dir_to: Vector2 = to_foe.normalized() if dist > 0.001 else Vector2.RIGHT
 
-	# Sometimes block a close swing instead of dodging (mix it up).
-	if foe._attacking and dist < 75.0 and _chill_time <= 0.0 and randf() < 0.25:
+	# Block a close swing (the bot's defensive option now that dash is gone).
+	if foe._attacking and dist < 80.0 and _chill_time <= 0.0 and randf() < 0.4:
 		out["dir"] = dir_to
 		out["block"] = true
-		return out
-
-	# Dodge the foe's swing - gated by a cooldown + a roll, so it's beatable.
-	if foe._attacking and dist < 85.0 and _dash_cd <= 0.0 and _bot_dodge_cd <= 0.0 \
-			and _chill_time <= 0.0 and randf() < 0.5:
-		out["dir"] = -dir_to
-		out["dash"] = true
-		_bot_dodge_cd = BOT_DODGE_CD
 		return out
 
 	# After a swing, back off to reset spacing (less glued / aggressive).

@@ -183,7 +183,7 @@ func _begin_match() -> void:
 
 	_title_label.visible = false
 	_select_label.visible = false
-	_hint.text = "%s   -   Arrows steer · A run · S melee · D ranged · R skill · Space block · Shift dash       Tab = re-pick" % p1_arch.to_upper()
+	_hint.text = "%s   -   Arrows steer · A run · S melee · D ranged · R skill · Space block       Tab = re-pick · P = practice" % p1_arch.to_upper()
 	_hint.visible = true
 	_mode_label.text = "vs BOT (%s)   P = practice" % p2_arch.to_upper()
 	_mode_label.visible = true
