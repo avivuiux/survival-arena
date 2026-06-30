@@ -16,6 +16,20 @@ Aviv's approval.** Every claim is tagged by confidence so we don't repeat the fa
 
 Tags: `[CONFIRMED]` multiple solid sources · `[LIKELY]` Aviv-recalled + consistent with sources · `[OPEN]` not pinned
 
+## CRITICAL framing - single-client multiplayer (Aviv 2026-07-01)
+
+This is **NOT a couch / same-keyboard 2-player game.** It's **multiplayer - you play
+ALONE** (one human per client), like SP. This corrects a wrong assumption baked into the
+current code (P1-vs-P2-on-one-keyboard).
+
+Implications:
+- **One comfortable control scheme** for the single local player. Drop the 2nd-keyboard player.
+- The opponent is a **bot for now = placeholder for REMOTE players** (the netcode wall, deferred).
+- **Unlocks mouse-aim**: move with keys, aim/fire toward the mouse. This cleanly answers
+  the "separate aim from movement" `[OPEN]` item (Aviv leaned this way) - only clean in a
+  single-client setup, which is what we have.
+- Controls stop being cramped: one player holds the full 6-action kit (keys + mouse).
+
 ## The skeleton
 
 ### Action toolkit - SIX parts `[CONFIRMED]`
