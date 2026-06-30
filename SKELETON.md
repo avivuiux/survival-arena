@@ -47,8 +47,11 @@ From the SP:GENERATIONS control categories + the reviews. Every fighter has:
 - **`A` = Booster = run / accelerate** (부스터) - central enough that there are
   "booster-disable" weapons/skills. NOT a momentary dash.
 - **Heavy inertia / glide** - release and you slide along your heading; gives a
-  "flying / floating" feel (부유감). We already have the glide (ACCEL/DRAG); we are
-  MISSING the not-instant turn + the explicit Booster=run.
+  "flying / floating" feel (부유감).
+- **IMPLEMENTED 2026-07-01**: arrow-steer with turn-momentum (`TURN_RATE`) + `A` = Booster
+  run (`BOOSTER_MULT`) + the existing glide; single-player layout (arrows steer, left hand
+  = A/S/D/R/Space/Shift), opponent always a bot. Open: our momentary i-frame **dash (Shift)
+  still coexists** with Booster - reconcile after feel-test (keep both? drop dash?).
 - **NO mouse** - zero occurrences of 마우스 on the namu.wiki page. Mouse-aim = dropped.
 - Equipment ("shoes") affects speed - a much-later gear layer.
 - Exact key map for melee/ranged/magic/defense (S/D/R/space order) still to pin; we adapt.

@@ -21,6 +21,8 @@ const DASH_COOLDOWN := 0.55
 # --- Movement momentum (the two feel knobs) ---
 const ACCEL := 1300.0           # ramp-up to max speed (lower = more sluggish start)
 const DRAG := 600.0             # glide-to-stop after release (lower = more floaty drift)
+const TURN_RATE := 7.0          # heading turn speed (rad/s) - you STEER, not snap (SP feel)
+const BOOSTER_MULT := 1.7       # Booster (A) held = run faster
 # --- Chill skill (first skill: AoE slow that catches a group) ---
 const CHILL_COOLDOWN := 3.0
 const CHILL_RADIUS := 140.0
@@ -60,6 +62,7 @@ var key_dash := KEY_SHIFT
 var key_skill := KEY_E
 var key_ranged := KEY_Q
 var key_defense := KEY_C
+var key_booster := KEY_A
 var is_bot := false
 
 var active := true
@@ -162,6 +165,7 @@ func _process(delta: float) -> void:
 		var want_skill := false
 		var want_ranged := false
 		var want_block := false
+		var want_booster := false
 		if is_bot:
 			var intent := _bot_think()
 			in_dir = intent["dir"]
@@ -170,6 +174,7 @@ func _process(delta: float) -> void:
 			want_skill = intent["skill"]
 			want_ranged = intent["ranged"]
 			want_block = intent["block"]
+			want_booster = intent["booster"]
 		else:
 			if Input.is_physical_key_pressed(key_up): in_dir.y -= 1.0
 			if Input.is_physical_key_pressed(key_down): in_dir.y += 1.0
@@ -188,11 +193,14 @@ func _process(delta: float) -> void:
 			want_ranged = kp_r and not _ranged_prev
 			_ranged_prev = kp_r
 			want_block = Input.is_physical_key_pressed(key_defense)
+			want_booster = Input.is_physical_key_pressed(key_booster)
 
 		if in_dir != Vector2.ZERO:
 			in_dir = in_dir.normalized()
 			if not _dashing:
-				facing = in_dir
+				# Steer: turn the heading toward input, NOT instantly (선회 momentum).
+				var diff := wrapf(in_dir.angle() - facing.angle(), -PI, PI)
+				facing = facing.rotated(clampf(diff, -TURN_RATE * delta, TURN_RATE * delta))
 
 		# Defense (hold): blocks + parry window. Roots you; you can still turn to face.
 		if want_block and not _dashing:
@@ -237,15 +245,17 @@ func _process(delta: float) -> void:
 					_hitbox.monitoring = false
 			_update_hitbox_position()
 		else:
-			# Momentum movement: accelerate toward the target, glide to a stop.
+			# SP movement: accelerate ALONG your heading (which steers), Booster = run, glide.
 			var spd := speed
+			if want_booster:
+				spd *= BOOSTER_MULT
 			var acc := ACCEL
 			if _chill_time > 0.0:        # chilled = sluggish
 				spd *= CHILL_SLOW
 				acc *= CHILL_SLOW
 			var target_vel := Vector2.ZERO
 			if in_dir != Vector2.ZERO and not _attacking:
-				target_vel = in_dir * spd
+				target_vel = facing * spd          # move along the heading (steer + glide)
 			var rate := acc if target_vel != Vector2.ZERO else DRAG
 			_move_vel = _move_vel.move_toward(target_vel, rate * delta)
 			if _move_vel != Vector2.ZERO:
@@ -343,7 +353,7 @@ func _cast_shockwave() -> void:
 # Reactive AI: chase, attack in range, then space out; dodge the foe's swing
 # but only occasionally (dodge cooldown) so the player gets punish windows.
 func _bot_think() -> Dictionary:
-	var out := {"dir": Vector2.ZERO, "attack": false, "dash": false, "skill": false, "ranged": false, "block": false}
+	var out := {"dir": Vector2.ZERO, "attack": false, "dash": false, "skill": false, "ranged": false, "block": false, "booster": false}
 	var foe = null
 	if game:
 		for f in game._fighters:
@@ -391,6 +401,8 @@ func _bot_think() -> Dictionary:
 	# Approach, or commit to an attack when actually ready (then space out).
 	if dist > REACH + 14.0:
 		out["dir"] = dir_to
+		if dist > 160.0:
+			out["booster"] = true     # run to close the gap
 	else:
 		out["dir"] = dir_to
 		if _cooldown <= 0.0:

@@ -99,7 +99,7 @@ func _ready() -> void:
 	queue_redraw()
 
 func _make_fighter(fname: String, color: Color, ku: int, kd: int, kl: int, kr: int,
-		ka: int, kdash: int, kskill: int, kranged: int, kdef: int, archetype: String, pos: Vector2) -> Node2D:
+		ka: int, kdash: int, kskill: int, kranged: int, kdef: int, kboost: int, archetype: String, pos: Vector2) -> Node2D:
 	var f := FighterScript.new()
 	f.game = self
 	f.fighter_name = fname
@@ -121,6 +121,7 @@ func _make_fighter(fname: String, color: Color, ku: int, kd: int, kl: int, kr: i
 	f.key_skill = kskill
 	f.key_ranged = kranged
 	f.key_defense = kdef
+	f.key_booster = kboost
 	f.position = pos
 	add_child(f)
 	return f
@@ -156,10 +157,7 @@ func _input(event: InputEvent) -> void:
 		elif event.keycode == KEY_SPACE or event.keycode == KEY_ENTER:
 			_begin_match()
 		return
-	if event.keycode == KEY_B:
-		_p2.is_bot = not _p2.is_bot
-		_update_mode_label()
-	elif event.keycode == KEY_R:
+	if event.keycode == KEY_TAB:
 		_return_to_select()
 
 func _refresh_select() -> void:
@@ -179,17 +177,21 @@ func _begin_match() -> void:
 
 	_title_label.visible = false
 	_select_label.visible = false
-	_hint.text = "P1 %s: WASD  Space melee  Q ranged  C block  E skill  Shift dash      P2 %s: Arrows  Enter melee  ,ranged  ;block  .skill  /dash      B=bot  R=re-pick" % [p1_arch.to_upper(), p2_arch.to_upper()]
+	_hint.text = "%s   -   Arrows steer · A run · S melee · D ranged · R skill · Space block · Shift dash       Tab = re-pick" % p1_arch.to_upper()
 	_hint.visible = true
+	_mode_label.text = "vs BOT (%s)" % p2_arch.to_upper()
 	_mode_label.visible = true
 
+	# Single-client: you (P1) steer with arrows; left hand on the action keys. Opponent = bot.
 	_p1 = _make_fighter("P1", Color(0.95, 0.55, 0.20),
-		KEY_W, KEY_S, KEY_A, KEY_D, KEY_SPACE, KEY_SHIFT, KEY_E, KEY_Q, KEY_C, p1_arch, arena_center + P1_SPAWN)
+		KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT,
+		KEY_S, KEY_SHIFT, KEY_R, KEY_D, KEY_SPACE, KEY_A,
+		p1_arch, arena_center + P1_SPAWN)
 	_p2 = _make_fighter("P2", Color(0.35, 0.65, 0.95),
-		KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, KEY_SLASH, KEY_PERIOD, KEY_COMMA, KEY_SEMICOLON, p2_arch, arena_center + P2_SPAWN)
+		KEY_KP_8, KEY_KP_2, KEY_KP_4, KEY_KP_6, KEY_KP_5, KEY_KP_0, KEY_KP_7, KEY_KP_9, KEY_KP_1, KEY_KP_3,
+		p2_arch, arena_center + P2_SPAWN)
 	_fighters = [_p1, _p2]
-	_p2.is_bot = true
-	_update_mode_label()
+	_p2.is_bot = true            # opponent always a bot (single-client; stand-in for remote players)
 	_p1_score = 0
 	_p2_score = 0
 	_score_label.visible = true
