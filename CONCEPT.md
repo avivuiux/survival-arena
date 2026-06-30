@@ -27,11 +27,74 @@ Why now: the core combat is proven fun (greybox), so giving it an identity is le
 - **Name** - the game's name.
 - **Identity hook** - the one thing that makes it memorable / "ours", not a generic brawler.
 
-## AI asset tools (bookmark for the content/production phase - NOT now)
+## Asset pipeline & tools (DECIDED 2026-06-30)
 
-- **OpenGame** (prompt->web game generator) - not for us; different stack.
-- **ai-game-devtools** (Yuan-ManX) - curated catalog of AI tools for art / 3D / texture /
-  animation / audio / music. A useful menu once we reach the asset/production phase.
+**Critique that drives this:** the real wall is NOT "prettiest tool" - it's **consistency
++ animation**. One-off key-art (the moodboards) is the easy 5%; a consistent, animatable
+roster is the hard 95%. Frame-by-frame AI sprites = a trap (the character flickers /
+changes between frames). Video AI (start/end frames) = beautiful for trailers, useless
+for clean looping gameplay animation.
+
+**Decisions:**
+- **Animation approach: cutout / bone-rig** (draw the character once - AI's strength -
+  cut into parts, attach bones, animate like a puppet). Consistency solved (same drawing),
+  fits the game's philosophy (readable, juice-over-flash, not ultra-fluid hand-drawn).
+- **Facings: start small - 2-4 directions + mirror** (the iso camera hides a lot); expand
+  toward 8 later. NOTE: true 8-directional is the threshold where pure cutout gets
+  expensive (8 rigs/char) and the industry trick is **3D model -> render to 2D sprites**
+  (model once, 8 camera angles). Kept on the table for when 8-dir becomes non-negotiable.
+
+**The 6-step pipeline:**
+1. **The "profile" / style bible = the consistency anchor.** A locked reference set: the
+   style (`A_sports-anime-clean`) + a per-character reference sheet (front, profile, the
+   2-4 facings, neutral pose). EVERY future generation runs against this. This is the
+   roster engine - it's what makes a big roster look like one game.
+2. **Generate a RIG-READY pose** (NOT key-art): neutral pose, limbs away from body, flat
+   even lighting, full body, transparent/plain background, so it cuts cleanly into parts.
+   Key-art (dramatic light, overlapping limbs) is for marketing, not rigging.
+3. **Cut into parts** (head/torso/arms/hands/legs/hair). Tools: Photopea / Krita / GIMP
+   (free, manual) + `rembg` for background removal.
+4. **Rig + animate.** Tools: **Godot built-in** (Skeleton2D, free, no export) to start ·
+   **DragonBones** (free, friendlier) · **Spine** (paid, industry standard, best mesh
+   deform) when rigging becomes the bottleneck.
+5. **Effects + juice separately** - skill VFX + impact flash on top of existing
+   hit-stop/shake. (Already Aviv's strength.)
+6. **Video AI (Seedance / Higgsfield / Kling) = trailers + character-intro cinematics
+   ONLY**, never gameplay. (Where start/end frames are relevant.)
+
+**Reference generation tools:** gpt-image-1 (supports reference images; already wired in
+this repo's workflow) / Midjourney (`--cref` character, `--sref` style).
+
+**Bookmarked catalogs (for later):** ai-game-devtools (Yuan-ManX) - curated AI tools for
+art / 3D / texture / animation / audio / music.
+
+**Available MCP tools - CORRECTED 2026-06-30 (Aviv): only Higgsfield is wired.**
+Higgsfield (image: GPT Image 2 + video). **NO Tripo AI, NO Magnific.** This removes the
+"image -> 3D" route entirely - which actually SIMPLIFIES the plan: there is no 3D->2D
+branch left to test or decide. (gpt-image-1 is also available in the repo workflow and
+made the FANG assets.)
+
+### FANG profile assets - built 2026-06-30 (step 1 started)
+Generated with gpt-image-1 (the MCPs aren't wired to the design session). In
+`concept/characters/fang/`:
+- `fang_front_clean.png` - clean full-body front, neutral A-pose, flat light, plain bg =
+  the **Tripo input**.
+- `fang_turnaround_front_side.png` - front + side, consistent = **rig / profile reference**.
+- Notes: came out genuinely rig-ready (neutral pose, flat light, consistent across views).
+  Model printed "FANG" on the tank - cute identity touch but remove for the rigged
+  game version (text warps on a deforming mesh).
+
+### Pipeline LOCKED 2026-06-30 (no Tripo -> no decision to make): cutout / bone-rig
+With no image->3D tool, the 3D->2D-sprite branch is gone. The primary plan is now the
+only plan:
+- **Cutout / bone-rig** is THE animation approach (draw once, cut, rig, puppet).
+- **Facings: 2-4 + mirror to start** (the iso camera hides a lot). Extra facings come from
+  **2D turnaround generation** (Higgsfield / gpt-image with the reference sheet - FANG
+  already has a front+side turnaround), each rigged as a cutout. NOT via 3D.
+- **8 directions: deferred** until genuinely non-negotiable (revisit a 3D route then).
+- **Next concrete step (show-before-spend): rig FANG in Godot (Skeleton2D)** - prove ONE
+  generated character cuts + rigs + animates well BEFORE generating a roster. This is
+  hands-on editor work (cut parts -> Skeleton2D -> a test animation).
 
 ## Method
 
@@ -221,3 +284,66 @@ A's character design + serious complex shading; liked C's flashiness; we tested 
 
 **Visual anchor files:** `concept/moodboards/` - `A_sports-anime-clean.png` is THE anchor.
 (B/C/D/E kept as exploration record: B = marketing/poster key-art only, never in-game.)
+
+---
+
+## Round 6 - CHARACTER DEPTH (2026-06-30, awaiting Aviv's reaction)
+
+**Critique that drives this:** the first rig-ready `fang_front_clean.png` came out generic
+(plain tank + jeans + sneakers, single-tone hair, bland symmetric face, "FANG" text as the
+only identity). Root cause: we never *designed* FANG - we wrote a line of adjectives and the
+model filled in defaults. Depth in character design comes from three things, none of which
+are adjectives: (1) **specificity** (not "second-hand gear" but *which* item and why),
+(2) a **story-bearing signature detail** you remember, (3) an **internal contradiction**
+that makes a person, not an archetype.
+
+**Aviv's anchoring choices (via AskUserQuestion):**
+- **Nature of fighters = beast-kin AND beyond.** Not just animals: creatures, powered
+  beings, people from other eras / the future / who made their own gear. FANG specifically
+  is a **tiger beast-kin** (real ears/fangs/feral eyes, maybe tail).
+- **FANG's energy = Naruto** (loud outcast, heart over talent, "watch me" charisma; his
+  beast-motif maps perfectly - the tiger-kid nobody believed in).
+- **World texture = deliberately mixed** (leans gritty-street + retro-arcade, but "could be
+  all of them" - time-travelers, future-fighters, self-made gear).
+
+**KEY UNLOCK - the world has no single setting, on purpose.** The Circuit pulls fighters
+from every place and every era into one arena. That justifies a wild roster (beast-kin +
+creatures + powered beings + cross-era people) without the game falling apart. Cohesion
+comes NOT from a shared setting but from the two already-locked anchors: the **art DNA**
+(`sports-anime-clean`) and the **broadcast frame** (one league branding / studio lighting /
+identity colors). This is the moat vs a generic brawler.
+
+### FANG - design spec (draft, beast-kin tiger rookie)
+**The contradiction (his heart):** a tiger beast-kin is *built* to be an apex predator -
+everyone expects a killer. FANG is the **runt of his kind**: he has the fangs and claws but
+not the size or the bloodline. So he fights loud and reckless to prove a "broken" predator
+still belongs at the top. The feral grin is armor, not confidence. (= Naruto's outcast fuel,
+and it makes the tiger ironic instead of generic.)
+
+**Concrete visual anchors (replace the adjectives):**
+- **Silhouette hook:** lean, wiry, *small* frame - NOT buff (he's the runt, that's the point).
+  Coiled, low, ready-to-pounce stance even at rest. A tail that reads emotion (lashes when
+  hyped). One **notched / torn ear** - a tell that he's survived fights he shouldn't have.
+- **Hair = a messy two-tone tiger-mane** (dark roots -> orange tips, the moodboard look that
+  the clean version lost), spiky/Naruto-energy but reads as a mane.
+- **Face:** bright amber/gold predator eyes; oversized real canines (the literal "fang");
+  natural orange-black tiger **fur-markings** (not dye anymore - he's beast-kin); a scar
+  through one brow. Grin that's a hair too wide - bravado covering the runt.
+- **Color identity:** orange (locked) - tiger-orange fur + black stripes; warm-orange
+  impact-glow on lunges only (glow lives in motion, per Round 5).
+- **Drop "FANG" text on the shirt** (warps on a deforming mesh; identity now lives in the
+  body, not a logo).
+
+**OPEN CHOICE for Aviv - the one signature story-bearing object** (pick / react; this is the
+detail people will remember him by):
+- (a) **Hand-wraps torn from a discarded champion's banner** - a nobody literally wrapping
+  himself in the dream he's chasing. (Strongest tie to "topple the legend, claim the wish".)
+- (b) **A single mismatched / scavenged glove or gauntlet** - self-made gear, the only thing
+  he owns; the asymmetry IS the silhouette tell.
+- (c) **A cracked, too-big championship-style belt** worn as a sash/scarf - found/stolen, way
+  above his rank, pure underdog audacity.
+
+### ZERO - to do next (mirror of FANG)
+Once FANG locks, design ZERO as the deliberate opposite on every axis above (cool veteran,
+blue, control). His "nature" likely a *different* kind of being than beast-kin (reinforces
+the mixed roster) - decide when we get there.
