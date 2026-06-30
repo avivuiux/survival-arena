@@ -24,58 +24,54 @@ So the whole strategy is: prove the combat is fun first, expand later.
 | Engine | **Godot 4.7** (GDScript, not C#) | Free, light (portable), great 2D/isometric, AI-friendly, no build step |
 | Methodology | **Vertical slice + find-the-fun** | Build one complete fun moment end-to-end before widening anything |
 | Art | **Greybox** (colored shapes) | Zero art investment until the mechanic is proven fun |
-| Networking | **Deferred to phase 2** | Prove combat is fun LOCALLY first (two players, one machine). Real online netcode is the hard wall - solve it only once the core is proven |
+| Networking | **Deferred (but it IS the real mode)** | **Single-client multiplayer - you play ALONE vs others online** (like SP). Bots stand in for now. Online is the hard wall; solve it once the single-player game is solid |
+| Source-of-truth on SP | **Research, not memory** | Claude fabricated SP "facts" twice early on. Now every SP claim is grounded (namu.wiki, mmos/mmohuts) + confidence-tagged in `SKELETON.md` |
 | ai-os / Design OS / deep-spec | **Deferred to phase 2** | Process/scope discipline is valuable for a sustained build, but pure overhead during find-the-fun. Adopt when building structure AROUND a proven core |
 
-## Current state - Phase 1 (greybox). Layer 0 done, Layer 1 mostly done.
+## Current state - SP-faithful skeleton COMPLETE (2026-07-01)
 
-A genuinely playable greybox arena fighter. Every step was feel-tested live by Aviv.
+Two parallel tracks share this repo:
+- **Mechanics chat** (this one) - engine / Godot / gameplay.
+- **Concept/asset chat** (separate) - identity / art. See `CONCEPT.md` + `ROSTER.md`.
 
-- ✅ Godot 4.7 installed (portable) at `C:\Users\Aviv\dev\tools\godot\`
-- ✅ **L0 combat core**: isometric arena, melee attack, satisfying hit
-  (knockback + hit-stop + flash + screen-shake), HP, KO, winner banner, round reset.
-  Combat-feel hypothesis **PASSED** ("feels good").
-- ✅ **Local two-player duel** (shared keyboard).
-- ✅ **L1 dash** with i-frames (dodge -> punish). PASSED.
-- ✅ **L1 momentum movement**: gradual acceleration + glide-to-stop - the weighty
-  "hover" feel Aviv specifically remembered from Survival Project. PASSED ("מעולה").
-  Two tunable knobs in fighter.gd: `ACCEL` (ramp) and `DRAG` (glide).
-- ✅ **L1 first skill - "chill"**: AoE slow that catches a group (expanding ice ring;
-  caught enemies slowed + can't dash). PASSED. Built the skill+status foundation.
-- ✅ **Bot opponent**: reactive AI on P2 (chase, attack, dodge with cooldown, retreat
-  spacing, chill). Tuned to be beatable. Toggle P2 bot/human with **B**.
-- ✅ **L2 start - data-driven archetypes + 2nd character "Rusher"** (fast/fragile/
-  hard-hitting, `lunge` skill). Feel-test passed. P1 = Rusher (you play it), P2 bot = Balanced.
+**Read `ROSTER.md` first** for per-character status across both chats, and **`SKELETON.md`**
+for the research-grounded SP control/combat model (confidence-tagged).
 
-**Concept track** (creative identity: world/tone/character-fiction/art/name) is being
-developed in a SEPARATE chat - see `CONCEPT.md`. Keep mechanics (this track) and concept
-separate so neither floods the other.
+### Big framing corrections made this session (these were wrong before)
+- **Single-client multiplayer - you play ALONE** (one human per client), like SP. NOT
+  couch / same-keyboard 2P. Opponent = a **bot, standing in for remote players**.
+- **SP controls VERIFIED via namu.wiki**: arrows STEER the heading (turn is not instant -
+  선회 momentum), `A` = Booster = RUN (arrows alone = light walk), heavy inertia / "flying"
+  glide, **NO mouse**. (An earlier mouse-aim idea was dropped; "rotate" guess dropped.)
 
-**`ROSTER.md` = the shared status index across BOTH chats.** Read it first to know any
-character's state (ready / in progress / not started) per pipeline stage. Update the cell
-when a stage changes. This is how each chat stays aware of the other without re-asking.
+### The SP skeleton - all six actions, movement feel-validated ("מרגיש מעולה")
+- ✅ **Movement**: arrow-steer + turn-momentum + `A`=Booster run + walk-kicks-in-on-alignment
+  + glide. Knobs in fighter.gd: `TURN_RATE`, `WALK_FACTOR`, `ACCEL`, `DRAG`.
+- ✅ **Melee** (S) · **Ranged** aimed projectile (D) · **Magic/skill** (R: chill/lunge/shockwave)
+  · **Defense** block + parry window (Space). Juice: hit-stop, flash, shake, sparks.
+- ✅ **Dash REMOVED** (SP had none; the Rusher lunge still reuses the burst internally).
+- ✅ **3 archetypes** (data-driven `ARCHETYPES`): Rusher(=FANG) · Balanced(=ZERO) · Tank(open).
+  Character SELECT, best-of-3 matches, bot opponent, **practice mode (`P` freezes the bot)**.
+- ✅ **FANG art in-game**: the Rusher renders `concept/characters/fang/FANG_rigpose_FINAL.png`
+  (static sprite; flips by facing; flash on hit). Proves the asset pipeline end-to-end.
 
-**Aviv's stance: "I already know this game is fun - progress beyond."** Moving fast on
-local content. The ONE thing we deliberately do NOT rush is networking (Phase 2 / L6) -
-the real wall for this genre.
+### Roster (live status in ROSTER.md)
+- **FANG** = Rusher (orange tiger, lunge). Identity ✅ · art ✅ · **rig-ready cutout done → READY TO RIG**.
+- **ZERO** = Balanced (control/chill, blue). Concept chat building next.
+- **Tank** = open future-character slot (mechanics only, no fiction yet).
 
-Docs: `DESIGN.md` (combat-feel contract) · `VISION.md` (full 8-layer system map + build
-order; "chill" and other skill ideas logged there).
+Docs: `SKELETON.md` (SP model) · `DESIGN.md` (combat-feel + greybox-polish principle) ·
+`VISION.md` (8-layer map) · `CONCEPT.md` + `ROSTER.md` (concept/asset track).
 
-Project structure:
-- `project.godot` - config; main scene = `res://scenes/game.tscn`
-- `scenes/game.tscn` + `scripts/game.gd` - orchestration: spawns 2 fighters, arena
-  bounds, juice (`hit_stop`/`add_shake`), round flow, AoE `apply_chill`, bot toggle.
-  Uses `preload` (not class_name) so it runs headless.
-- `entities/fighter/fighter.gd` - one configurable combatant driven by an **intent
-  layer** (human keys OR `_bot_think()`), so bot and human share the exact same rules.
+Code: `scripts/game.gd` (orchestration, archetypes, projectiles, juice, rounds, select) ·
+`entities/fighter/fighter.gd` (one combatant via an **intent layer** - human keys OR
+`_bot_think()` - so bot and player share identical rules). Runs headless (uses `preload`).
 
-## How to play
+## How to play (single player vs bot)
 
-P1: **WASD** move · **Space** attack · **Shift** dash · **E** chill.
-P2: **Arrows** move · **Enter** attack · **/** dash · **.** chill.
-**B** toggles P2 between BOT and HUMAN. First to KO wins; auto-resets.
-(Cheap keyboards may "ghost" on many simultaneous keys in 2-human mode - irrelevant online.)
+**Arrows** steer · **A** run (Booster) · **S** melee · **D** ranged · **R** skill ·
+**Space** block/parry · **Tab** re-pick character · **P** practice (freeze bot).
+Pick your fighter on the select screen (A/D or arrows; Space to start). First to 2 round wins.
 
 ## How to run it
 
@@ -90,19 +86,25 @@ Then press F5 (Play). Move with WASD or arrow keys.
 C:\Users\Aviv\dev\tools\godot\Godot_v4.7-stable_win64_console.exe --headless --path "C:\Users\Aviv\dev\survival-arena" --quit-after 5
 ```
 
-## Next steps (in order - one slice at a time)
+## Next steps
 
-1. ~~L0 combat + L1 dash/momentum/chill + bot~~ ✅ all done & feel-tested.
-2. **Next local options** (pick one - all cheap/safe to move fast on):
-   - **A second character archetype** with different stats + skill - starts the
-     "variety" pillar; the systems now exist so it's cheap. (Strong candidate.)
-   - **More skills / status effects** (ranged poke, knockup, stun) on the chill foundation.
-   - **Best-of-3 score** so a match has an arc; or a juice/readability polish pass.
-   - **Bot tuning** if it ever feels off (knobs: dodge chance/cooldown, retreat, ranges).
-3. **Phase 2 - ONLINE (the wall - do NOT rush)**: bring in networking. Start with
-   Godot's built-in high-level multiplayer (ENet) for 1v1; only escalate to heavier
-   options (rollback) if the feel demands it. THIS is where we slow down, design the
-   authority model, and where ai-os scope discipline starts paying off.
+1. **FANG rigging (collaborative, hands-on - the next milestone for "in-game art")**:
+   cut `FANG_rigpose_FINAL.png` into parts (head/torso/arms/legs) + Skeleton2D + a test
+   animation in Godot. Needs a LIVE editor session with Aviv (can't be done headless).
+2. **Tune the assembled SP combat**: all six actions exist now - play vs the bot and tune
+   the gestalt (movement knobs, ranged, parry timing, bot difficulty).
+3. **More characters**: ZERO + others, once concept produces their art (cheap via `ARCHETYPES`).
+4. **Phase 2 - ONLINE (the wall, the REAL mode)**: single-client multiplayer. Start with
+   Godot built-in multiplayer (ENet); design the authority model. Only once the
+   single-player game is solid.
+
+## Working method that worked this session
+
+Build a small slice -> verify headless (`--quit-after N`, exit 0) -> launch the window
+(Claude opens it) -> Aviv plays & judges -> lock or tune. **Recommend ONE next step, don't
+enumerate a menu; a recommendation is NOT permission - get a yes before direction changes
+or new mechanics** (ring-out was built unapproved and reverted). Don't fabricate facts -
+verify with sources. See memory `feedback_prioritize-not-enumerate`.
 
 ## Opening a dedicated workspace
 
