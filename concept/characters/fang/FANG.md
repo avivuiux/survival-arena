@@ -8,6 +8,16 @@ One-liner: **the hot-blooded tiger beast-kin rookie - built like a monster, with
 heart in the Circuit.** Signature color: orange (locked since greybox). Mechanics: fast,
 hard-hitting, reckless lunge.
 
+**Archetype: RUSHER** (confirmed 2026-06-30, corrected ROSTER's "tank?"). His muscular build
+reads big but he plays as a **fast heavyweight** - trades durability for speed, a glass-cannon
+bruiser, NOT a slow damage-sponge tank. The lunge = a literal pounce. (ZERO = balanced; the
+tank archetype is a future character, not FANG.)
+
+**Visual anchor: `fang_v5_digitigrade_2.png`** (human face + tiger features, orange-dominant,
+banner-wraps, beast paws). NOTE: true digitigrade legs hit a generator wall and don't read at
+gameplay scale (see `fang_scale_mock.png`) - deferred to optional hero-art later. In-game = this
+SAME art style, but cut + rigged as a 2D cutout puppet, seen small from the isometric camera.
+
 ---
 
 ## Layer 1 - THE SEED (LOCKED)

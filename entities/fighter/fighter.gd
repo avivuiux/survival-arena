@@ -129,12 +129,13 @@ func _process(delta: float) -> void:
 		_bot_dodge_cd -= delta
 
 	# Knockback always applies (so a KO'd fighter still slides) - paused while dashing.
+	# NOT clamped: a big enough shove carries you past the edge = ring-out.
 	if not _dashing:
 		if velocity.length() > 1.0:
 			position += velocity * delta
 			velocity = velocity.move_toward(Vector2.ZERO, FRICTION * delta)
-			if game:
-				position = game.clamp_to_arena(position)
+			if active and game and game.is_ringout(position):
+				_ring_out()
 		else:
 			velocity = Vector2.ZERO
 
@@ -355,6 +356,16 @@ func take_hit(dir: Vector2, dmg: int, knock: float = KNOCKBACK) -> void:
 			game.add_shake(14.0)
 			game.spawn_burst(position, 24, body_color.lerp(Color(1, 1, 1), 0.5))
 			game.on_ko(self)
+
+func _ring_out() -> void:
+	if not active:
+		return
+	active = false
+	velocity = Vector2.ZERO
+	if game:
+		game.add_shake(12.0)
+		game.spawn_burst(position, 22, body_color.lerp(Color(1, 1, 1), 0.4))
+		game.on_ko(self)
 
 func reset_fighter(pos: Vector2) -> void:
 	hp = max_hp

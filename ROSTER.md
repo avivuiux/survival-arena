@@ -15,12 +15,14 @@ update the cell **and** the "last update" note.
 
 | Character | Archetype | Mechanics | Identity/concept | Assets (ref+pose) | Rigged (Godot) | In-game art |
 |---|---|---|---|---|---|---|
-| **FANG**   | tank?      | ✅ | 🔨 (characterizing now) | 🔨 (front + side done) | ⬜ | ⬜ |
-| _(rusher)_ | rusher     | ✅ | ⬜ | ⬜ | ⬜ | ⬜ |
-| _(balanced)_ | balanced | ✅ | ⬜ | ⬜ | ⬜ | ⬜ |
+| **FANG**   | **rusher** | ✅ | 🔨 (bible LOCKED, see `concept/characters/fang/FANG.md`) | 🔨 (v5_2 design candidate; rig-ready pose pending) | ⬜ | ⬜ |
+| **ZERO**   | balanced (control / chill) | ✅ | ⬜ (bible next) | ⬜ | ⬜ | ⬜ |
+| _(unnamed)_ | tank      | ✅ | ⬜ (no fiction yet - future character) | ⬜ | ⬜ | ⬜ |
 
-_Archetype mapping (which identity = which mechanical archetype) is owned by the concept
-chat - correct the table if FANG is not the tank._
+_Archetype mapping CORRECTED by the concept chat 2026-06-30: **FANG = rusher** (orange tiger,
+lunge = pounce - matches greybox + the whole FANG bible), **ZERO = balanced** (the chill/AoE
+controller, blue). The **tank** archetype has mechanics but NO fiction yet - it's an open
+future-character slot, NOT FANG._
 
 ## Stage definitions
 
@@ -40,3 +42,9 @@ chat - correct the table if FANG is not the tank._
 
 - 2026-06-30 - index created (mechanics chat). FANG = characterizing + front/side assets done;
   rusher & balanced = mechanically done, no identity/assets yet.
+- 2026-06-30 (concept chat) - archetype map corrected: FANG=rusher, ZERO=balanced, tank=open
+  future slot (was wrongly "FANG=tank?"). FANG bible LOCKED (6-layer deep-dive,
+  `concept/characters/fang/FANG.md`). FANG art iterated v1->v5 via gpt-image-1 (human face +
+  tiger features + beast paws + banner-wraps, orange). v5_2 = design candidate; true digitigrade
+  legs hit a generator wall + don't read at gameplay scale, so deferred to hero-art. Next:
+  lock v5_2 -> rig-ready neutral pose -> hand to mechanics chat for Godot rigging.
