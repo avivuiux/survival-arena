@@ -47,6 +47,7 @@ var damage := 12
 var attack_cooldown := 0.34
 var skill_type := "chill"       # "chill" | "lunge" | "shockwave"
 var display_name := ""          # archetype name shown above the head
+var art_path := ""              # optional character art (res:// png); else greybox square
 var key_up := KEY_W
 var key_down := KEY_S
 var key_left := KEY_A
@@ -62,6 +63,7 @@ var hp := 100
 var facing := Vector2.RIGHT
 var velocity := Vector2.ZERO        # knockback velocity
 var _move_vel := Vector2.ZERO       # input movement velocity (has momentum)
+var _art_tex: Texture2D = null      # loaded character art, if any
 var _attacking := false
 var _lunge := false
 var _attack_time := 0.0
@@ -90,6 +92,8 @@ var _already_hit: Array = []
 
 func _ready() -> void:
 	hp = max_hp
+	if art_path != "":
+		_art_tex = load(art_path)
 	_hurtbox = Area2D.new()
 	_hurtbox.monitoring = false
 	_hurtbox.monitorable = true
@@ -411,19 +415,36 @@ func _draw() -> void:
 			var ga := 0.28 - float(i) * 0.06
 			draw_rect(Rect2(gpos - Vector2(SIZE, SIZE) / 2.0, Vector2(SIZE, SIZE)),
 				Color(0.55, 0.85, 1.0, maxf(ga, 0.05)))
-	# body
-	var col := body_color
-	if _flash > 0.0:
-		col = body_color.lerp(Color(1, 1, 1), clampf(_flash / FLASH_TIME, 0.0, 1.0))
-	elif _iframe > 0.0:
-		col = body_color.lerp(Color(0.55, 0.85, 1.0), 0.55)   # cyan = invulnerable
-	elif _chill_time > 0.0:
-		col = body_color.lerp(Color(0.50, 0.70, 1.0), 0.55)   # icy = chilled / slowed
-	if not active:
-		col = body_color.darkened(0.5)
-	var r := Rect2(-Vector2(SIZE, SIZE) / 2.0, Vector2(SIZE, SIZE))
-	draw_rect(r, col)
-	draw_rect(r, Color(1, 1, 1, 0.9), false, 2.0)
+	# body - character art if present, else the greybox square
+	if _art_tex != null:
+		var th := 116.0
+		var tw := th * (float(_art_tex.get_width()) / float(_art_tex.get_height()))
+		var flip := -1.0 if facing.x < -0.05 else 1.0
+		var mod := Color(1, 1, 1)
+		if _flash > 0.0:
+			mod = Color(2.2, 2.2, 2.2)            # white hit flash
+		elif _iframe > 0.0:
+			mod = Color(0.7, 1.1, 1.5)            # cyan dodge
+		elif _chill_time > 0.0:
+			mod = Color(0.7, 0.85, 1.3)           # icy
+		if not active:
+			mod = Color(0.5, 0.5, 0.55)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2(flip, 1.0))
+		draw_texture_rect(_art_tex, Rect2(-tw / 2.0, -th * 0.62, tw, th), false, mod)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	else:
+		var col := body_color
+		if _flash > 0.0:
+			col = body_color.lerp(Color(1, 1, 1), clampf(_flash / FLASH_TIME, 0.0, 1.0))
+		elif _iframe > 0.0:
+			col = body_color.lerp(Color(0.55, 0.85, 1.0), 0.55)   # cyan = invulnerable
+		elif _chill_time > 0.0:
+			col = body_color.lerp(Color(0.50, 0.70, 1.0), 0.55)   # icy = chilled / slowed
+		if not active:
+			col = body_color.darkened(0.5)
+		var r := Rect2(-Vector2(SIZE, SIZE) / 2.0, Vector2(SIZE, SIZE))
+		draw_rect(r, col)
+		draw_rect(r, Color(1, 1, 1, 0.9), false, 2.0)
 	# attack telegraph
 	if _attacking:
 		var t := clampf(_attack_time / ATTACK_ACTIVE, 0.0, 1.0)

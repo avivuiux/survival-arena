@@ -17,7 +17,7 @@ const P2_SPAWN := Vector2(140.0, 0.0)
 # Character archetypes (data-driven; first step of the L2 roster)
 const ARCHETYPES := {
 	"balanced": {"hp": 100, "speed": 320.0, "damage": 12, "atk_cd": 0.34, "skill": "chill"},
-	"rusher":   {"hp": 70,  "speed": 430.0, "damage": 18, "atk_cd": 0.26, "skill": "lunge"},
+	"rusher":   {"hp": 70,  "speed": 430.0, "damage": 18, "atk_cd": 0.26, "skill": "lunge", "art": "res://concept/characters/fang/FANG_rigpose_FINAL.png"},
 	"tank":     {"hp": 150, "speed": 240.0, "damage": 14, "atk_cd": 0.40, "skill": "shockwave"},
 }
 const WINS_NEEDED := 2           # best-of-3: first to 2 round wins takes the match
@@ -110,6 +110,7 @@ func _make_fighter(fname: String, color: Color, ku: int, kd: int, kl: int, kr: i
 	f.damage = a["damage"]
 	f.attack_cooldown = a["atk_cd"]
 	f.skill_type = a["skill"]
+	f.art_path = a.get("art", "")
 	f.display_name = archetype.to_upper()
 	f.key_up = ku
 	f.key_down = kd
