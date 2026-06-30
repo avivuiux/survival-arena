@@ -64,6 +64,7 @@ var key_ranged := KEY_Q
 var key_defense := KEY_C
 var key_booster := KEY_A
 var is_bot := false
+var passive := false            # bot stands idle (practice mode)
 
 var active := true
 var hp := 100
@@ -167,14 +168,15 @@ func _process(delta: float) -> void:
 		var want_block := false
 		var want_booster := false
 		if is_bot:
-			var intent := _bot_think()
-			in_dir = intent["dir"]
-			want_attack = intent["attack"]
-			want_dash = intent["dash"]
-			want_skill = intent["skill"]
-			want_ranged = intent["ranged"]
-			want_block = intent["block"]
-			want_booster = intent["booster"]
+			if not passive:                       # practice mode: bot stands idle
+				var intent := _bot_think()
+				in_dir = intent["dir"]
+				want_attack = intent["attack"]
+				want_dash = intent["dash"]
+				want_skill = intent["skill"]
+				want_ranged = intent["ranged"]
+				want_block = intent["block"]
+				want_booster = intent["booster"]
 		else:
 			if Input.is_physical_key_pressed(key_up): in_dir.y -= 1.0
 			if Input.is_physical_key_pressed(key_down): in_dir.y += 1.0

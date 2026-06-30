@@ -159,6 +159,12 @@ func _input(event: InputEvent) -> void:
 		return
 	if event.keycode == KEY_TAB:
 		_return_to_select()
+	elif event.keycode == KEY_P and _p2:
+		_p2.passive = not _p2.passive
+		if _p2.passive:
+			_mode_label.text = "PRACTICE - bot idle   (P = wake bot)"
+		else:
+			_mode_label.text = "vs BOT (%s)   P = practice" % _p2.display_name
 
 func _refresh_select() -> void:
 	var t := ""
@@ -179,7 +185,7 @@ func _begin_match() -> void:
 	_select_label.visible = false
 	_hint.text = "%s   -   Arrows steer · A run · S melee · D ranged · R skill · Space block · Shift dash       Tab = re-pick" % p1_arch.to_upper()
 	_hint.visible = true
-	_mode_label.text = "vs BOT (%s)" % p2_arch.to_upper()
+	_mode_label.text = "vs BOT (%s)   P = practice" % p2_arch.to_upper()
 	_mode_label.visible = true
 
 	# Single-client: you (P1) steer with arrows; left hand on the action keys. Opponent = bot.
