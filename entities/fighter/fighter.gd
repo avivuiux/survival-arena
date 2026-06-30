@@ -22,7 +22,7 @@ const DASH_COOLDOWN := 0.55
 const ACCEL := 1300.0           # ramp-up to max speed (lower = more sluggish start)
 const DRAG := 600.0             # glide-to-stop after release (lower = more floaty drift)
 const TURN_RATE := 7.0          # heading turn speed (rad/s) - you STEER, not snap (SP feel)
-const BOOSTER_MULT := 1.7       # Booster (A) held = run faster
+const WALK_FACTOR := 0.55       # arrows = light WALK; holding A (Booster) = full RUN speed
 # --- Chill skill (first skill: AoE slow that catches a group) ---
 const CHILL_COOLDOWN := 3.0
 const CHILL_RADIUS := 140.0
@@ -245,17 +245,19 @@ func _process(delta: float) -> void:
 					_hitbox.monitoring = false
 			_update_hitbox_position()
 		else:
-			# SP movement: accelerate ALONG your heading (which steers), Booster = run, glide.
+			# SP movement: arrows = light WALK that follows the heading as it lines up;
+			# holding A (Booster) = full RUN. You steer the heading; you glide.
 			var spd := speed
-			if want_booster:
-				spd *= BOOSTER_MULT
+			if not want_booster:
+				spd *= WALK_FACTOR
 			var acc := ACCEL
 			if _chill_time > 0.0:        # chilled = sluggish
 				spd *= CHILL_SLOW
 				acc *= CHILL_SLOW
 			var target_vel := Vector2.ZERO
 			if in_dir != Vector2.ZERO and not _attacking:
-				target_vel = facing * spd          # move along the heading (steer + glide)
+				var align := clampf(facing.dot(in_dir), 0.0, 1.0)   # walk kicks in as the heading aligns
+				target_vel = facing * spd * align
 			var rate := acc if target_vel != Vector2.ZERO else DRAG
 			_move_vel = _move_vel.move_toward(target_vel, rate * delta)
 			if _move_vel != Vector2.ZERO:
