@@ -21,10 +21,16 @@ const ARCHETYPES := {
 	"tank":     {"hp": 150, "speed": 240.0, "damage": 14, "atk_cd": 0.40, "skill": "shockwave"},
 }
 const WINS_NEEDED := 2           # best-of-3: first to 2 round wins takes the match
+const PROJ_SPEED := 560.0        # ranged shot
+const PROJ_LIFE := 0.9
+const PROJ_DAMAGE := 8
+const PROJ_KNOCK := 180.0
+const PROJ_RADIUS := 12.0
 
 var arena_center := Vector2.ZERO
 var _shake := 0.0
 var _sparks: Array = []
+var _projectiles: Array = []
 var _p1: Node2D
 var _p2: Node2D
 var _fighters: Array = []
@@ -93,7 +99,7 @@ func _ready() -> void:
 	queue_redraw()
 
 func _make_fighter(fname: String, color: Color, ku: int, kd: int, kl: int, kr: int,
-		ka: int, kdash: int, kskill: int, archetype: String, pos: Vector2) -> Node2D:
+		ka: int, kdash: int, kskill: int, kranged: int, archetype: String, pos: Vector2) -> Node2D:
 	var f := FighterScript.new()
 	f.game = self
 	f.fighter_name = fname
@@ -112,6 +118,7 @@ func _make_fighter(fname: String, color: Color, ku: int, kd: int, kl: int, kr: i
 	f.key_attack = ka
 	f.key_dash = kdash
 	f.key_skill = kskill
+	f.key_ranged = kranged
 	f.position = pos
 	add_child(f)
 	return f
@@ -170,14 +177,14 @@ func _begin_match() -> void:
 
 	_title_label.visible = false
 	_select_label.visible = false
-	_hint.text = "P1 %s: WASD / Space / Shift / E=skill      P2 %s: Arrows / Enter / (/) / .=skill      B=bot   R=re-pick" % [p1_arch.to_upper(), p2_arch.to_upper()]
+	_hint.text = "P1 %s: WASD move  Space melee  Q ranged  E skill  Shift dash       P2 %s: Arrows  Enter melee  ,(comma) ranged  . skill  / dash       B=bot  R=re-pick" % [p1_arch.to_upper(), p2_arch.to_upper()]
 	_hint.visible = true
 	_mode_label.visible = true
 
 	_p1 = _make_fighter("P1", Color(0.95, 0.55, 0.20),
-		KEY_W, KEY_S, KEY_A, KEY_D, KEY_SPACE, KEY_SHIFT, KEY_E, p1_arch, arena_center + P1_SPAWN)
+		KEY_W, KEY_S, KEY_A, KEY_D, KEY_SPACE, KEY_SHIFT, KEY_E, KEY_Q, p1_arch, arena_center + P1_SPAWN)
 	_p2 = _make_fighter("P2", Color(0.35, 0.65, 0.95),
-		KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, KEY_SLASH, KEY_PERIOD, p2_arch, arena_center + P2_SPAWN)
+		KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, KEY_SLASH, KEY_PERIOD, KEY_COMMA, p2_arch, arena_center + P2_SPAWN)
 	_fighters = [_p1, _p2]
 	_p2.is_bot = true
 	_update_mode_label()
@@ -225,6 +232,21 @@ func _process(delta: float) -> void:
 		_sparks = _sparks.filter(func(s): return s["life"] > 0.0)
 		queue_redraw()
 
+	if not _projectiles.is_empty():
+		for p in _projectiles:
+			p["pos"] += p["vel"] * delta
+			p["life"] -= delta
+			for f in _fighters:
+				if f == p["owner"] or not f.active:
+					continue
+				if p["pos"].distance_to(f.position) < PROJ_RADIUS + 16.0:
+					f.take_hit(p["vel"].normalized(), PROJ_DAMAGE, PROJ_KNOCK)
+					spawn_sparks(p["pos"], p["vel"], 6, p["col"])
+					p["life"] = 0.0
+					break
+		_projectiles = _projectiles.filter(func(p): return p["life"] > 0.0)
+		queue_redraw()
+
 # Keep a position inside the isometric diamond: |dx|/rx + |dy|/ry <= 1
 func clamp_to_arena(pos: Vector2) -> Vector2:
 	var off := pos - arena_center
@@ -245,6 +267,11 @@ func spawn_sparks(pos: Vector2, dir: Vector2, count: int, color: Color) -> void:
 		var ang := base + randf_range(-0.8, 0.8)
 		var spd := randf_range(120.0, 340.0)
 		_sparks.append({"pos": pos, "vel": Vector2(cos(ang), sin(ang)) * spd, "life": 0.28, "max": 0.28, "col": color})
+
+# Fire a ranged shot in a direction (from a fighter's aim/facing).
+func spawn_projectile(pos: Vector2, dir: Vector2, owner) -> void:
+	var d := dir.normalized() if dir.length() > 0.01 else Vector2.RIGHT
+	_projectiles.append({"pos": pos + d * 26.0, "vel": d * PROJ_SPEED, "owner": owner, "life": PROJ_LIFE, "col": owner.body_color})
 
 # Omnidirectional burst (KO pop).
 func spawn_burst(pos: Vector2, count: int, color: Color) -> void:
@@ -324,3 +351,9 @@ func _draw() -> void:
 		c.a = a
 		var p: Vector2 = s["pos"]
 		draw_line(p, p - s["vel"].normalized() * (4.0 + 7.0 * a), c, 2.0)
+
+	for pr in _projectiles:
+		var pp: Vector2 = pr["pos"]
+		var pc: Color = pr["col"]
+		draw_line(pp, pp - pr["vel"].normalized() * 14.0, Color(pc.r, pc.g, pc.b, 0.5), 3.0)
+		draw_circle(pp, 5.0, pc)

@@ -34,6 +34,7 @@ const SHOCK_COOLDOWN := 2.4     # tank skill
 const SHOCK_RADIUS := 130.0
 const SHOCK_KNOCKBACK := 620.0
 const SHOCK_DAMAGE := 8
+const RANGED_COOLDOWN := 0.45    # long-range aimed attack (every fighter has it)
 
 # Configured by Game before add_child:
 var game
@@ -53,6 +54,7 @@ var key_right := KEY_D
 var key_attack := KEY_SPACE
 var key_dash := KEY_SHIFT
 var key_skill := KEY_E
+var key_ranged := KEY_Q
 var is_bot := false
 
 var active := true
@@ -75,6 +77,8 @@ var _iframe := 0.0
 var _skill_cd := 0.0
 var _skill_cd_max := 1.0
 var _skill_prev := false
+var _ranged_cd := 0.0
+var _ranged_prev := false
 var _chill_time := 0.0          # how long THIS fighter stays slowed
 var _cast_anim := 0.0           # expanding-ring visual timer
 var _cast_radius := 140.0       # radius the cast ring draws to
@@ -119,6 +123,8 @@ func _process(delta: float) -> void:
 		_iframe -= delta
 	if _skill_cd > 0.0:
 		_skill_cd -= delta
+	if _ranged_cd > 0.0:
+		_ranged_cd -= delta
 	if _chill_time > 0.0:
 		_chill_time -= delta
 	if _cast_anim > 0.0:
@@ -144,12 +150,14 @@ func _process(delta: float) -> void:
 		var want_attack := false
 		var want_dash := false
 		var want_skill := false
+		var want_ranged := false
 		if is_bot:
 			var intent := _bot_think()
 			in_dir = intent["dir"]
 			want_attack = intent["attack"]
 			want_dash = intent["dash"]
 			want_skill = intent["skill"]
+			want_ranged = intent["ranged"]
 		else:
 			if Input.is_physical_key_pressed(key_up): in_dir.y -= 1.0
 			if Input.is_physical_key_pressed(key_down): in_dir.y += 1.0
@@ -164,6 +172,9 @@ func _process(delta: float) -> void:
 			var kp_s := Input.is_physical_key_pressed(key_skill)
 			want_skill = kp_s and not _skill_prev
 			_skill_prev = kp_s
+			var kp_r := Input.is_physical_key_pressed(key_ranged)
+			want_ranged = kp_r and not _ranged_prev
+			_ranged_prev = kp_r
 
 		if in_dir != Vector2.ZERO:
 			in_dir = in_dir.normalized()
@@ -218,6 +229,10 @@ func _process(delta: float) -> void:
 					_cast_shockwave()
 				else:
 					_cast_chill()
+			if want_ranged and _ranged_cd <= 0.0:
+				_ranged_cd = RANGED_COOLDOWN
+				if game:
+					game.spawn_projectile(position, facing, self)
 
 	queue_redraw()
 
@@ -295,7 +310,7 @@ func _cast_shockwave() -> void:
 # Reactive AI: chase, attack in range, then space out; dodge the foe's swing
 # but only occasionally (dodge cooldown) so the player gets punish windows.
 func _bot_think() -> Dictionary:
-	var out := {"dir": Vector2.ZERO, "attack": false, "dash": false, "skill": false}
+	var out := {"dir": Vector2.ZERO, "attack": false, "dash": false, "skill": false, "ranged": false}
 	var foe = null
 	if game:
 		for f in game._fighters:
@@ -326,6 +341,12 @@ func _bot_think() -> Dictionary:
 	if dist < CHILL_RADIUS * 0.9 and _skill_cd <= 0.0 and foe._chill_time <= 0.0 and _chill_time <= 0.0:
 		out["dir"] = dir_to
 		out["skill"] = true
+		return out
+
+	# Poke with the ranged attack at mid-distance.
+	if dist > REACH + 25.0 and dist < 320.0 and _ranged_cd <= 0.0 and randf() < 0.05:
+		out["dir"] = dir_to
+		out["ranged"] = true
 		return out
 
 	# Approach, or commit to an attack when actually ready (then space out).

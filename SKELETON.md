@@ -21,7 +21,8 @@ Tags: `[CONFIRMED]` multiple solid sources · `[LIKELY]` Aviv-recalled + consist
 ### Action toolkit - SIX parts `[CONFIRMED]`
 From the SP:GENERATIONS control categories + the reviews. Every fighter has:
 1. **Walk** - move.
-2. **Booster** - dash / acceleration burst (Aviv recalls the `A` key).
+2. **Booster** - **sustained acceleration / RUN** (hold `A` to run faster), NOT a
+   momentary dash (Aviv 2026-06-30). Different from our current burst-dash + i-frames.
 3. **Melee** - short-range attack.
 4. **Ranged** - long-range attack.
 5. **Magic** - a special burst that must be **aimed**.
@@ -67,3 +68,6 @@ Have: free move ✅ · dash/booster ✅ · melee ✅ · AoE skills (chill/shockw
 - **Movement model** - confirm free-directional (Aviv leans free; sources don't contradict).
 - **Aim model** - is facing locked to movement, or steered separately? (big control difference).
 - **Exact control layout** - we adapt sensibly, not copy literally.
+- **Booster vs our dash** - SP's Booster is a *sustained run* (hold `A`); our current
+  "dash" is a *momentary i-frame dodge*. Different mechanic - reconcile later (keep both?
+  replace dash with a run? both, on different keys?). NOT part of the aiming slice.
