@@ -25,9 +25,8 @@ current code (P1-vs-P2-on-one-keyboard).
 Implications:
 - **One comfortable control scheme** for the single local player. Drop the 2nd-keyboard player.
 - The opponent is a **bot for now = placeholder for REMOTE players** (the netcode wall, deferred).
-- **Unlocks mouse-aim**: move with keys, aim/fire toward the mouse. This cleanly answers
-  the "separate aim from movement" `[OPEN]` item (Aviv leaned this way) - only clean in a
-  single-client setup, which is what we have.
+- Aim is via **arrow keys** (you steer the heading), **NOT mouse** - verified on namu.wiki
+  2026-07-01 (zero occurrences of 마우스 on the page). The earlier mouse-aim idea was wrong.
 - Controls stop being cramped: one player holds the full 6-action kit (keys + mouse).
 
 ## The skeleton
@@ -42,12 +41,17 @@ From the SP:GENERATIONS control categories + the reviews. Every fighter has:
 5. **Magic** - a special burst that must be **aimed**.
 6. **Defense** - block / parry, **distinct from the booster/dash**.
 
-### Movement & aim
-- **Free directional movement** (arrows), NOT rotate-and-move. `[LIKELY]` - Aviv + consistent
-  with sources; the "rotate" idea came from a weak auto-summary and is dropped.
-- **Aiming is directional** - attacks fire in an aimed direction; spacing matters. `[CONFIRMED]`
-- **Aim may be steerable separately from movement** (walk one way, attack another). `[OPEN]` -
-  Aviv leaned this way; a search hint said ranged shots steer with the arrow keys.
+### Movement & aim  `[CONFIRMED via namu.wiki 2026-07-01]`
+- **Arrow keys STEER your heading / facing** (선회 = turning) - and **NOT instantly**;
+  the turn itself has momentum. You point with the arrows and the character swings around.
+- **`A` = Booster = run / accelerate** (부스터) - central enough that there are
+  "booster-disable" weapons/skills. NOT a momentary dash.
+- **Heavy inertia / glide** - release and you slide along your heading; gives a
+  "flying / floating" feel (부유감). We already have the glide (ACCEL/DRAG); we are
+  MISSING the not-instant turn + the explicit Booster=run.
+- **NO mouse** - zero occurrences of 마우스 on the namu.wiki page. Mouse-aim = dropped.
+- Equipment ("shoes") affects speed - a much-later gear layer.
+- Exact key map for melee/ranged/magic/defense (S/D/R/space order) still to pin; we adapt.
 
 ### Hit model
 - Basic attacks (melee / ranged / magic) are **aimed / directional - skill-based**, NOT
