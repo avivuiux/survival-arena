@@ -51,6 +51,10 @@ A genuinely playable greybox arena fighter. Every step was feel-tested live by A
 developed in a SEPARATE chat - see `CONCEPT.md`. Keep mechanics (this track) and concept
 separate so neither floods the other.
 
+**`ROSTER.md` = the shared status index across BOTH chats.** Read it first to know any
+character's state (ready / in progress / not started) per pipeline stage. Update the cell
+when a stage changes. This is how each chat stays aware of the other without re-asking.
+
 **Aviv's stance: "I already know this game is fun - progress beyond."** Moving fast on
 local content. The ONE thing we deliberately do NOT rush is networking (Phase 2 / L6) -
 the real wall for this genre.
