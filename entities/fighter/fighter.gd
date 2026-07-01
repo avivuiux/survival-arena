@@ -22,7 +22,7 @@ const DASH_COOLDOWN := 0.55
 const ACCEL := 2600.0           # walk ramp (boost now uses the envelope below, not this)
 const DRAG := 163.0             # glide-to-stop after release ~= release_time 2s from top (Aviv tuner)
 const TURN_RATE := 4.3          # heading turn speed (rad/s) - you STEER, not snap (SP feel) - Aviv: slower turn
-const WALK_SPEED := 150.0       # light-walk speed - DORMANT (walk removed for now; re-add later, Aviv tuner)
+const WALK_SPEED := 150.0       # walk FLOOR: hold a dir to sustain current speed, or build up to this (Aviv tuner)
 
 # Booster movement ENVELOPE - the run-speed curve, tuned in tools/tuner/movement-tuner.html (Aviv 2026-07-01).
 # top speed = each fighter's `speed`; the shape below is shared.
@@ -266,11 +266,21 @@ func _process(delta: float) -> void:
 			else:
 				_boosting_prev = false
 				_boost_t = 0.0                               # not boosting - envelope resets
-				# WALK REMOVED for now (Aviv): arrows only STEER the heading (above). Not boosting =
-				# glide to a stop via DRAG - but the glide FOLLOWS your facing, so steering still bends
-				# the momentum after you release A. Walk re-added later so it can't trample the run.
-				var glide_mag := move_toward(_move_vel.length(), 0.0, DRAG * delta)
-				_move_vel = facing * glide_mag
+				var cur := _move_vel.length()
+				if not _attacking and in_dir != Vector2.ZERO:
+					# WALK = SUSTAIN, never brake: hold a direction to KEEP your current speed
+					# ("runs in the background" - carry the momentum you glided in with after a run),
+					# or build up to the WALK_SPEED floor if you're slower than it. Never decelerates.
+					var floor_spd := WALK_SPEED
+					if _chill_time > 0.0:
+						floor_spd *= CHILL_SLOW
+					var maintain := maxf(cur, floor_spd)     # sustain current, at least the floor
+					var mag := move_toward(cur, maintain, ACCEL * delta)
+					_move_vel = facing * mag                 # direction follows facing (steering bends it)
+				else:
+					# no direction held: glide to a stop via DRAG, following your facing.
+					var glide_mag := move_toward(cur, 0.0, DRAG * delta)
+					_move_vel = facing * glide_mag
 			if _move_vel != Vector2.ZERO:
 				position += _move_vel * delta
 				if game:
@@ -388,8 +398,7 @@ func _bot_think() -> Dictionary:
 
 	# After a swing, back off to reset spacing (less glued / aggressive).
 	if _bot_retreat > 0.0:
-		out["dir"] = -dir_to
-		out["booster"] = true          # walk removed - boost to move
+		out["dir"] = -dir_to           # walk back off (no boost = gentle spacing)
 		return out
 
 	# Chill: foe in range, skill ready, foe not already chilled.
@@ -407,7 +416,8 @@ func _bot_think() -> Dictionary:
 	# Approach, or commit to an attack when actually ready (then space out).
 	if dist > REACH + 14.0:
 		out["dir"] = dir_to
-		out["booster"] = true         # walk removed - boost is the only way to move
+		if dist > 200.0:
+			out["booster"] = true     # boost only to close a big gap; walk for short spacing
 	else:
 		out["dir"] = dir_to
 		# Less aggressive: don't swing the instant it can - hesitate, then space out longer

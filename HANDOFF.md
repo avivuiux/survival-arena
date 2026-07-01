@@ -51,8 +51,13 @@ for the research-grounded SP control/combat model (confidence-tagged).
   glide, **NO mouse**. (An earlier mouse-aim idea was dropped; "rotate" guess dropped.)
 
 ### The SP skeleton - all six actions, movement feel-validated ("מרגיש מעולה")
-- ✅ **Movement**: arrow-steer + turn-momentum + `A`=Booster run + walk-kicks-in-on-alignment
-  + glide. Knobs in fighter.gd: `TURN_RATE`, `WALK_FACTOR`, `ACCEL`, `DRAG`.
+- ✅ **Movement (overhauled session 3, 2026-07-01, feel-tuned by Aviv "מעולה")**: unified
+  model - velocity is ALWAYS `facing * magnitude`, so steering bends momentum in every state.
+  `A`=Booster **run is ENVELOPE-DRIVEN** (ease-in attack + overshoot), tuned in
+  `tools/tuner/movement-tuner.html`. **Continuity**: run seeds from your current speed (no
+  snap-to-0); glide follows facing. **Walk = SUSTAIN** (hold a dir with no A = keep the speed
+  you glided in with, or build to the `WALK_SPEED` floor; NEVER brakes). Knobs in fighter.gd:
+  `TURN_RATE`, `BOOST_ATTACK_TIME/SHARP`, `BOOST_OVERSHOOT`, `DRAG`, `WALK_SPEED`; `speed` per archetype.
 - ✅ **Melee** (S) · **Ranged** aimed projectile (D) · **Magic/skill** (R: chill/lunge/shockwave)
   · **Defense** block + parry window (Space). Juice: hit-stop, flash, shake, sparks.
 - ✅ **Dash REMOVED** (SP had none; the Rusher lunge still reuses the burst internally).
@@ -75,9 +80,14 @@ Code: `scripts/game.gd` (orchestration, archetypes, projectiles, juice, rounds, 
 
 ## How to play (single player vs bot)
 
-**Arrows** steer · **A** run (Booster) · **S** melee · **D** ranged · **R** skill ·
-**Space** block/parry · **Tab** re-pick character · **P** practice (freeze bot).
+**Arrows** steer (+ walk-sustain when no A) · **A** run (Booster, envelope) · **S** melee ·
+**D** ranged · **R** skill · **Space** block/parry · **Tab** re-pick · **P** practice (freeze bot) ·
+**F3** debug overlay (velocity-vs-facing vectors + live readout) · **F4** slow-mo (25%).
 Pick your fighter on the select screen (A/D or arrows; Space to start). First to 2 round wins.
+
+**Dev tools:** `tools/tuner/movement-tuner.html` (open in a browser) - shape the run envelope
+live (attack/sharpness/overshoot/release + walk floor), auto-saves, paste-import a config, exports
+Godot-ready JSON. Aviv's current run: speed 325, attack 1.08, sharpness 0.7, overshoot 7%, release 2s.
 
 ## How to run it
 
@@ -94,11 +104,15 @@ C:\Users\Aviv\dev\tools\godot\Godot_v4.7-stable_win64_console.exe --headless --p
 
 ## Next steps
 
-1. **FANG rigging (collaborative, hands-on - the next milestone for "in-game art")**:
-   cut `FANG_rigpose_FINAL.png` into parts (head/torso/arms/legs) + Skeleton2D + a test
-   animation in Godot. Needs a LIVE editor session with Aviv (can't be done headless).
-2. **Tune the assembled SP combat**: all six actions exist now - play vs the bot and tune
-   the gestalt (movement knobs, ranged, parry timing, bot difficulty).
+0. **(Session 3 done)** Movement feel overhauled + tuned by Aviv (envelope run, continuity,
+   walk-sustain, whole-screen arena, F3/F4 debug, tuner tool). **Movement now feels right.**
+   The remaining feel-tune is the RUN CURVE via the tuner if Aviv wants to keep dialing.
+1. **Retest the combat GESTALT on the new movement**: melee/ranged/parry/skills were built
+   BEFORE this movement overhaul + whole-screen arena. Play and check spacing/poking/parry
+   still feel right with envelope-run + walk-sustain; tune reach/ranged/parry timing.
+2. **FANG rigging (collaborative, hands-on - the "in-game art" milestone)**: cut
+   `FANG_rigpose_FINAL.png` into parts + Skeleton2D + a test animation. Needs a LIVE editor
+   session with Aviv (can't be done headless).
 3. **More characters**: ZERO + others, once concept produces their art (cheap via `ARCHETYPES`).
 4. **Phase 2 - ONLINE (the wall, the REAL mode)**: single-client multiplayer. Start with
    Godot built-in multiplayer (ENet); design the authority model. Only once the
