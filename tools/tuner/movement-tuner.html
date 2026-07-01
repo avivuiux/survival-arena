@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Survival Arena — Movement Envelope Tuner</title>
+<style>
+  :root{
+    --bg:#14161c; --panel:#1c2029; --panel2:#232834; --line:#39414f;
+    --ink:#e7ecf5; --dim:#8b93a3; --accel:#f5a03a; --accel2:#ffcf6b;
+    --run:#5aa6ff; --grid:#2a303c; --ok:#57c98a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.4 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+  header{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  header h1{font-size:16px;margin:0;letter-spacing:.3px}
+  header .sub{color:var(--dim);font-size:12px}
+  .tabs{display:flex;gap:6px;margin-left:auto}
+  .tab{padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);cursor:pointer;font-size:13px}
+  .tab.active{background:var(--accel);color:#20160a;border-color:var(--accel);font-weight:600}
+  .tab.soon{opacity:.4;cursor:not-allowed}
+  .tab.soon::after{content:" · soon";color:var(--dim);font-size:11px}
+  main{display:grid;grid-template-columns:340px 1fr;gap:18px;padding:18px 20px;max-width:1200px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .panel h2{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin:0 0 12px}
+  .slider{margin-bottom:16px}
+  .slider label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+  .slider label b{color:var(--accel2);font-variant-numeric:tabular-nums}
+  .slider .hint{color:var(--dim);font-size:11px;margin-top:3px}
+  input[type=range]{width:100%;accent-color:var(--accel)}
+  canvas{display:block;background:var(--panel2);border:1px solid var(--line);border-radius:10px;width:100%}
+  .row{display:flex;gap:18px;flex-wrap:wrap}
+  .hold{width:100%;padding:20px;margin-top:14px;border:2px dashed var(--run);border-radius:12px;background:#1a2130;
+        color:var(--run);font-size:15px;font-weight:600;letter-spacing:.5px;cursor:pointer;user-select:none;text-align:center;touch-action:none}
+  .hold.down{background:var(--run);color:#08111f;border-style:solid}
+  .preview{margin-top:16px}
+  .track{position:relative;height:70px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .dot{position:absolute;top:50%;left:0;width:26px;height:26px;margin-top:-13px;border-radius:50%;
+       background:radial-gradient(circle at 35% 35%,var(--accel2),var(--accel));box-shadow:0 0 14px var(--accel)}
+  .readout{display:flex;gap:20px;margin-top:10px;font-variant-numeric:tabular-nums}
+  .readout div span{color:var(--dim);font-size:11px;display:block}
+  .readout div b{font-size:20px;color:var(--accel2)}
+  pre{background:#0f1218;border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;color:#cfe;font-size:12px;margin:0}
+  .copy{margin-top:8px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);color:var(--ink);cursor:pointer;font-size:12px}
+  .copy.done{border-color:var(--ok);color:var(--ok)}
+  .note{color:var(--dim);font-size:11px;margin-top:8px}
+  textarea{width:100%;height:78px;background:#0f1218;border:1px solid var(--line);border-radius:10px;
+           color:#cfe;font:12px/1.4 ui-monospace,Consolas,monospace;padding:10px;resize:vertical;margin-top:6px}
+  .impok{color:var(--ok)} .imperr{color:#ff8b6b}
+</style>
+</head>
+<body>
+<header>
+  <h1>🚗 Survival Arena — Movement Envelope Tuner</h1>
+  <span class="sub">shape the speed curve · hold to test · export to Godot</span>
+  <div class="tabs">
+    <button class="tab active">🚗 Movement</button>
+    <button class="tab soon" title="add when it earns it">🫨 Camera Shake</button>
+    <button class="tab soon" title="add when it earns it">✨ UI Pop</button>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>Envelope</h2>
+
+    <div class="slider">
+      <label>Attack time <b id="v-attack">0.55 s</b></label>
+      <input id="s-attack" type="range" min="0" max="1.2" step="0.01" value="0.55" />
+      <div class="hint">how long to reach top speed while holding boost</div>
+    </div>
+
+    <div class="slider">
+      <label>Attack sharpness <b id="v-sharp">1.0×</b></label>
+      <input id="s-sharp" type="range" min="0.35" max="5" step="0.05" value="1" />
+      <div class="hint">below&nbsp;1 = gentle start, builds &amp; accelerates at the end (ease-in) · 1 = linear · above&nbsp;1 = punchy at the very start (ease-out)</div>
+    </div>
+
+    <div class="slider">
+      <label>Top speed (run) <b id="v-top">300 px/s</b></label>
+      <input id="s-top" type="range" min="120" max="800" step="5" value="300" />
+      <div class="hint">the sustained RUN speed while holding boost (Godot <code>speed</code>)</div>
+    </div>
+
+    <div class="slider">
+      <label>Walk speed <b id="v-walk">150 px/s</b></label>
+      <input id="s-walk" type="range" min="40" max="400" step="5" value="150" />
+      <div class="hint">light walk (arrows, no boost) — <b>decoupled</b> from run, tune the walk↔run gap directly</div>
+    </div>
+
+    <div class="slider">
+      <label>Overshoot <b id="v-over">14 %</b></label>
+      <input id="s-over" type="range" min="0" max="40" step="1" value="14" />
+      <div class="hint">brief blow-past top then settle — SP "floaty" pop (0 = none)</div>
+    </div>
+
+    <div class="slider">
+      <label>Release time <b id="v-release">2.00 s</b></label>
+      <input id="s-release" type="range" min="0" max="2" step="0.01" value="2" />
+      <div class="hint">glide-to-stop after you let go (Godot <code>DRAG</code>)</div>
+    </div>
+
+    <div class="hold" id="hold">PRESS &amp; HOLD to boost</div>
+    <div class="note">hold = boost engaged · release = glide out. Space bar works too.</div>
+  </section>
+
+  <section>
+    <div class="panel">
+      <h2>Speed profile</h2>
+      <canvas id="graph" width="760" height="240"></canvas>
+
+      <div class="preview">
+        <div class="track"><div class="dot" id="dot"></div></div>
+        <div class="readout">
+          <div><span>current speed</span><b id="r-speed">0</b> px/s</div>
+          <div><span>phase</span><b id="r-phase">idle</b></div>
+          <div><span>% of top</span><b id="r-pct">0%</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:18px">
+      <h2>Export → Godot</h2>
+      <pre id="out"></pre>
+      <button class="copy" id="copy">Copy JSON</button>
+      <div class="note">
+        The <b>godot</b> block is paste-ready for the current model
+        (<code>ACCEL</code>, <code>DRAG</code>, <code>speed</code>). The <b>envelope</b> block is the
+        richer curve — if sharpness&nbsp;≠&nbsp;1 or overshoot&gt;0 we'll wire movement to read it directly.
+      </div>
+
+      <h2 style="margin-top:18px">Import / restore</h2>
+      <textarea id="imp" placeholder="paste a config JSON here (a full export, or just the envelope block) then press Load"></textarea>
+      <button class="copy" id="load">Load config</button>
+      <span id="impStatus" class="note"></span>
+      <div class="note">Your settings also <b>auto-save</b> and restore on refresh — you won't lose them again.</div>
+    </div>
+  </section>
+</main>
+
+<script>
+// ---- state ----
+const S = { attack:0.55, sharp:1, top:300, over:14, release:2, walk:150 };   // Aviv's baseline config
+const els = {
+  attack:['s-attack','v-attack', v=>v.toFixed(2)+' s'],
+  sharp :['s-sharp','v-sharp',  v=>v.toFixed(1)+'×'],
+  top   :['s-top','v-top',      v=>Math.round(v)+' px/s'],
+  walk  :['s-walk','v-walk',    v=>Math.round(v)+' px/s'],
+  over  :['s-over','v-over',    v=>Math.round(v)+' %'],
+  release:['s-release','v-release', v=>v.toFixed(2)+' s'],
+};
+
+// ---- envelope math ----
+// attackValue(t): 0..1 fraction of top reached t seconds into the hold (sharpness = ease-out punch).
+function attackFrac(t){
+  if(S.attack<=0) return 1;
+  const x=Math.min(t/S.attack,1);
+  return 1-Math.pow(1-x,S.sharp);          // p>1 => fast at the start
+}
+// full speed value (px/s) given time held (or, if released, time since release).
+const OVERSHOOT_SETTLE=0.22;               // seconds to settle from overshoot back to top
+function heldSpeed(t){
+  const base=attackFrac(t)*S.top;
+  if(S.over<=0 || t<S.attack) return base;
+  // after attack: pop to top*(1+over) then settle back to top
+  const peak=S.top*(1+S.over/100);
+  const dt=t-S.attack;
+  if(dt>=OVERSHOOT_SETTLE) return S.top;
+  const k=dt/OVERSHOOT_SETTLE;
+  return peak+(S.top-peak)*(1-Math.pow(1-k,2));  // ease back to top
+}
+function releaseSpeed(fromV,t){
+  if(S.release<=0) return 0;
+  const x=Math.min(t/S.release,1);
+  return fromV*(1-(1-Math.pow(1-x,2)));    // ease-out decay to 0
+}
+
+// ---- graph ----
+const g=document.getElementById('graph'), gc=g.getContext('2d');
+function peakSpeed(){ return S.top*(1+S.over/100); }
+function drawGraph(){
+  const W=g.width,H=g.height,pad=28;
+  gc.clearRect(0,0,W,H);
+  const maxT=Math.max(1.2, S.attack+OVERSHOOT_SETTLE+S.release+0.2);
+  const maxV=Math.max(S.top*1.05, peakSpeed());
+  const X=t=>pad+(t/maxT)*(W-pad*2);
+  const Y=v=>H-pad-(v/maxV)*(H-pad*2);
+  // grid
+  gc.strokeStyle=getCSS('--grid'); gc.lineWidth=1;
+  for(let i=0;i<=4;i++){ const y=pad+i*(H-pad*2)/4; line(pad,y,W-pad,y); }
+  for(let i=0;i<=6;i++){ const x=pad+i*(W-pad*2)/6; line(x,pad,x,H-pad); }
+  // top-speed reference
+  gc.strokeStyle=getCSS('--run'); gc.setLineDash([4,4]); line(pad,Y(S.top),W-pad,Y(S.top)); gc.setLineDash([]);
+  // walk-speed reference (faint) — the gap between this and top is the walk↔run separation
+  gc.strokeStyle=getCSS('--dim'); gc.setLineDash([2,5]); line(pad,Y(S.walk),W-pad,Y(S.walk)); gc.setLineDash([]);
+  gc.fillStyle=getCSS('--dim'); gc.font='11px Segoe UI'; gc.fillText('walk '+Math.round(S.walk),pad+4,Y(S.walk)-4);
+  // attack+sustain region (hold assumed until 60% of maxT, then release)
+  const holdEnd=maxT*0.55;
+  gc.strokeStyle=getCSS('--accel'); gc.lineWidth=2.5; gc.beginPath();
+  let started=false, endV=0;
+  for(let t=0;t<=holdEnd;t+=maxT/480){ const v=heldSpeed(t); endV=v; plot(X(t),Y(v),started); started=true; }
+  gc.stroke();
+  // release region
+  gc.strokeStyle=getCSS('--accel2'); gc.beginPath(); started=false;
+  for(let t=0;t<=maxT-holdEnd;t+=maxT/480){ const v=releaseSpeed(endV,t); plot(X(holdEnd+t),Y(v),started); started=true; }
+  gc.stroke();
+  // playhead
+  if(sim.active||sim.releasing){
+    const px=X(sim.active?Math.min(sim.t,holdEnd):holdEnd+Math.min(sim.rt,maxT-holdEnd));
+    gc.strokeStyle='#fff'; gc.globalAlpha=.5; line(px,pad,px,H-pad); gc.globalAlpha=1;
+  }
+  // labels
+  gc.fillStyle=getCSS('--dim'); gc.font='11px Segoe UI';
+  gc.fillText('speed',6,pad-8); gc.fillText('time →',W-52,H-8);
+  gc.fillStyle=getCSS('--run'); gc.fillText('top '+Math.round(S.top),W-pad-70,Y(S.top)-6);
+  function plot(x,y,cont){ cont?gc.lineTo(x,y):gc.moveTo(x,y); }
+}
+function line(a,b,c,d){ gc.beginPath(); gc.moveTo(a,b); gc.lineTo(c,d); gc.stroke(); }
+function getCSS(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+// ---- live simulation (press & hold) ----
+const sim={active:false,releasing:false,t:0,rt:0,speed:0,releaseFrom:0,pos:0};
+const dot=document.getElementById('dot'), track=document.querySelector('.track');
+const rSpeed=document.getElementById('r-speed'),rPhase=document.getElementById('r-phase'),rPct=document.getElementById('r-pct');
+let last=performance.now();
+function loop(now){
+  const dt=Math.min((now-last)/1000,0.05); last=now;
+  if(sim.active){ sim.t+=dt; sim.speed=heldSpeed(sim.t); sim.releaseFrom=sim.speed; setPhase(sim.t<S.attack?'attack':(S.over>0&&sim.t<S.attack+OVERSHOOT_SETTLE?'overshoot':'sustain')); }
+  else if(sim.releasing){ sim.rt+=dt; sim.speed=releaseSpeed(sim.releaseFrom,sim.rt); if(sim.speed<1){sim.releasing=false;sim.speed=0;setPhase('idle');} else setPhase('release'); }
+  // move dot
+  const tw=track.clientWidth-26;
+  sim.pos+=sim.speed*dt; if(sim.pos>tw){sim.pos=0;} dot.style.left=sim.pos+'px';
+  rSpeed.textContent=Math.round(sim.speed);
+  rPct.textContent=Math.round(sim.speed/S.top*100)+'%';
+  if(sim.active||sim.releasing) drawGraph();
+  requestAnimationFrame(loop);
+}
+function setPhase(p){ rPhase.textContent=p; }
+
+function press(){ sim.active=true; sim.releasing=false; sim.t=0; document.getElementById('hold').classList.add('down'); }
+function release(){ if(!sim.active)return; sim.active=false; sim.releasing=true; sim.rt=0; sim.releaseFrom=sim.speed; document.getElementById('hold').classList.remove('down'); }
+const holdBtn=document.getElementById('hold');
+holdBtn.addEventListener('mousedown',press); holdBtn.addEventListener('touchstart',e=>{e.preventDefault();press();});
+window.addEventListener('mouseup',release); window.addEventListener('touchend',release);
+window.addEventListener('keydown',e=>{ if(e.code==='Space'&&!e.repeat){e.preventDefault();press();} });
+window.addEventListener('keyup',e=>{ if(e.code==='Space'){e.preventDefault();release();} });
+
+// ---- export ----
+const LS_KEY='sa_movement_tuner';
+const out=document.getElementById('out');
+function writeOut(){
+  // closest linear equivalents for the CURRENT Godot model (move_toward):
+  const accel=Math.round(S.top/Math.max(S.attack,0.001));   // px/s^2 to reach top in attack time
+  const drag =Math.round(S.top/Math.max(S.release,0.001));  // px/s^2 to glide to 0 in release time
+  const cfg={
+    feature:"movement",
+    godot:{ speed:Math.round(S.top), WALK_SPEED:Math.round(S.walk), ACCEL:accel, DRAG:drag },
+    envelope:{ attack_time:+S.attack.toFixed(3), attack_sharpness:+S.sharp.toFixed(2),
+               top_speed:Math.round(S.top), walk_speed:Math.round(S.walk),
+               overshoot_pct:Math.round(S.over), release_time:+S.release.toFixed(3) }
+  };
+  out.textContent=JSON.stringify(cfg,null,2);
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(cfg.envelope)); }catch(e){}
+}
+
+// Apply an envelope-like object to the sliders (accepts the full export or just the envelope block).
+function applyConfig(env){
+  if(!env || typeof env!=='object') return 0;
+  const map={attack:'attack_time',sharp:'attack_sharpness',top:'top_speed',walk:'walk_speed',over:'overshoot_pct',release:'release_time'};
+  let n=0;
+  for(const k in map){
+    let val=env[map[k]];
+    if(val==null || isNaN(val)) continue;
+    const s=document.getElementById(els[k][0]);
+    val=Math.min(parseFloat(s.max), Math.max(parseFloat(s.min), parseFloat(val)));
+    s.value=val; S[k]=val;
+    document.getElementById(els[k][1]).textContent=els[k][2](val);
+    n++;
+  }
+  drawGraph(); writeOut();
+  return n;
+}
+document.getElementById('copy').addEventListener('click',()=>{
+  navigator.clipboard.writeText(out.textContent).then(()=>{
+    const b=document.getElementById('copy'); b.textContent='Copied ✓'; b.classList.add('done');
+    setTimeout(()=>{b.textContent='Copy JSON';b.classList.remove('done');},1200);
+  });
+});
+
+// ---- import box ----
+const imp=document.getElementById('imp'), impStatus=document.getElementById('impStatus');
+document.getElementById('load').addEventListener('click',()=>{
+  try{
+    const o=JSON.parse(imp.value.trim());
+    const env=(o && o.envelope) ? o.envelope : o;
+    const n=applyConfig(env);
+    impStatus.className='note '+(n?'impok':'imperr');
+    impStatus.textContent = n ? ('loaded '+n+' values ✓') : 'no recognizable fields';
+  }catch(e){ impStatus.className='note imperr'; impStatus.textContent='invalid JSON'; }
+});
+
+// ---- wire sliders LAST (everything above is now defined) & start ----
+for(const k in els){
+  const [sid,vid,fmt]=els[k];
+  const s=document.getElementById(sid), lab=document.getElementById(vid);
+  const sync=()=>{ S[k]=parseFloat(s.value); lab.textContent=fmt(S[k]); drawGraph(); writeOut(); };
+  s.addEventListener('input',sync); sync();
+}
+// restore last session (overrides the defaults above) so a refresh never loses your work
+try{ const saved=localStorage.getItem(LS_KEY); if(saved) applyConfig(JSON.parse(saved)); }catch(e){}
+writeOut(); drawGraph();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

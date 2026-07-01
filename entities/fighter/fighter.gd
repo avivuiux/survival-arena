@@ -12,17 +12,24 @@ const REACH := 42.0
 const HIT_W := 48.0
 const HIT_H := 48.0
 const ATTACK_ACTIVE := 0.12
-const KNOCKBACK := 360.0
+const KNOCKBACK := 540.0         # more shove on melee hits (Aviv: more knockback)
 const FRICTION := 900.0
 const FLASH_TIME := 0.12
 const DASH_SPEED := 720.0       # quick burst
 const DASH_TIME := 0.14         # how long the dash lasts (also the i-frame window)
 const DASH_COOLDOWN := 0.55
 # --- Movement momentum (the two feel knobs) ---
-const ACCEL := 1300.0           # ramp-up to max speed (lower = more sluggish start)
-const DRAG := 600.0             # glide-to-stop after release (lower = more floaty drift)
-const TURN_RATE := 7.0          # heading turn speed (rad/s) - you STEER, not snap (SP feel)
-const WALK_FACTOR := 0.55       # arrows = light WALK; holding A (Booster) = full RUN speed
+const ACCEL := 2600.0           # walk ramp (boost now uses the envelope below, not this)
+const DRAG := 163.0             # glide-to-stop after release ~= release_time 2s from top (Aviv tuner)
+const TURN_RATE := 4.3          # heading turn speed (rad/s) - you STEER, not snap (SP feel) - Aviv: slower turn
+const WALK_SPEED := 150.0       # light-walk speed - DORMANT (walk removed for now; re-add later, Aviv tuner)
+
+# Booster movement ENVELOPE - the run-speed curve, tuned in tools/tuner/movement-tuner.html (Aviv 2026-07-01).
+# top speed = each fighter's `speed`; the shape below is shared.
+const BOOST_ATTACK_TIME := 1.08     # seconds to ramp from 0 to top while holding A
+const BOOST_ATTACK_SHARP := 0.7     # <1 = gentle start that builds & accelerates at the end (ease-in)
+const BOOST_OVERSHOOT := 0.07       # briefly blow past top by this fraction then settle (floaty pop)
+const BOOST_OVERSHOOT_SETTLE := 0.22 # seconds to settle from the overshoot back to top
 # --- Chill skill (first skill: AoE slow that catches a group) ---
 const CHILL_COOLDOWN := 3.0
 const CHILL_RADIUS := 140.0
@@ -96,6 +103,9 @@ var _cast_anim := 0.0           # expanding-ring visual timer
 var _cast_radius := 140.0       # radius the cast ring draws to
 var _bot_retreat := 0.0         # bot: backing-off timer after a swing
 var _bot_dodge_cd := 0.0        # bot: cooldown between dodges
+var _boost_t := 0.0             # time held on the booster - drives the movement envelope
+var _boosting_prev := false     # was boosting last frame (for continuity-seeding on boost start)
+var debug_draw := false         # F3: draw the live velocity vector on this fighter
 var _hitbox: Area2D
 var _hurtbox: Area2D
 var _already_hit: Array = []
@@ -238,21 +248,29 @@ func _process(delta: float) -> void:
 					_hitbox.monitoring = false
 			_update_hitbox_position()
 		else:
-			# SP movement: arrows = light WALK that follows the heading as it lines up;
-			# holding A (Booster) = full RUN. You steer the heading; you glide.
-			var spd := speed
-			if not want_booster:
-				spd *= WALK_FACTOR
-			var acc := ACCEL
-			if _chill_time > 0.0:        # chilled = sluggish
-				spd *= CHILL_SLOW
-				acc *= CHILL_SLOW
-			var target_vel := Vector2.ZERO
-			if in_dir != Vector2.ZERO and not _attacking:
-				var align := clampf(facing.dot(in_dir), 0.0, 1.0)   # walk kicks in as the heading aligns
-				target_vel = facing * spd * align
-			var rate := acc if target_vel != Vector2.ZERO else DRAG
-			_move_vel = _move_vel.move_toward(target_vel, rate * delta)
+			# SP movement: the BOOSTER (A) is the THRUST along your facing (arrow or not).
+			# Boost speed follows the tuned ENVELOPE (ease-in ramp + overshoot); releasing it
+			# glides out via DRAG. Arrows STEER (above) + give a light WALK on their own.
+			if not _attacking and want_booster:
+				if not _boosting_prev:
+					# CONTINUITY: begin the run curve at the speed we're ALREADY moving, not from 0,
+					# so pressing run while walking flows up smoothly instead of snapping/re-ramping.
+					_boost_t = _attack_time_for_speed(_move_vel.length())
+				else:
+					_boost_t += delta
+				_boosting_prev = true
+				var mag := _boost_speed(_boost_t)
+				if _chill_time > 0.0:
+					mag *= CHILL_SLOW
+				_move_vel = facing * mag                     # envelope drives the run speed directly
+			else:
+				_boosting_prev = false
+				_boost_t = 0.0                               # not boosting - envelope resets
+				# WALK REMOVED for now (Aviv): arrows only STEER the heading (above). Not boosting =
+				# glide to a stop via DRAG - but the glide FOLLOWS your facing, so steering still bends
+				# the momentum after you release A. Walk re-added later so it can't trample the run.
+				var glide_mag := move_toward(_move_vel.length(), 0.0, DRAG * delta)
+				_move_vel = facing * glide_mag
 			if _move_vel != Vector2.ZERO:
 				position += _move_vel * delta
 				if game:
@@ -371,6 +389,7 @@ func _bot_think() -> Dictionary:
 	# After a swing, back off to reset spacing (less glued / aggressive).
 	if _bot_retreat > 0.0:
 		out["dir"] = -dir_to
+		out["booster"] = true          # walk removed - boost to move
 		return out
 
 	# Chill: foe in range, skill ready, foe not already chilled.
@@ -388,14 +407,36 @@ func _bot_think() -> Dictionary:
 	# Approach, or commit to an attack when actually ready (then space out).
 	if dist > REACH + 14.0:
 		out["dir"] = dir_to
-		if dist > 160.0:
-			out["booster"] = true     # run to close the gap
+		out["booster"] = true         # walk removed - boost is the only way to move
 	else:
 		out["dir"] = dir_to
-		if _cooldown <= 0.0:
+		# Less aggressive: don't swing the instant it can - hesitate, then space out longer
+		# so the player gets real openings (Aviv: "bot too aggressive").
+		if _cooldown <= 0.0 and randf() < 0.55:
 			out["attack"] = true
-			_bot_retreat = randf_range(0.5, 0.9)
+			_bot_retreat = randf_range(0.9, 1.5)
 	return out
+
+# Boost speed at time t held (mirrors tools/tuner/movement-tuner.html): ease-in attack
+# to `speed`, then a brief overshoot that settles back. Aviv's tuned curve.
+func _boost_speed(t: float) -> float:
+	var x := clampf(t / BOOST_ATTACK_TIME, 0.0, 1.0)
+	var base := (1.0 - pow(1.0 - x, BOOST_ATTACK_SHARP)) * speed
+	if BOOST_OVERSHOOT > 0.0 and t >= BOOST_ATTACK_TIME:
+		var peak := speed * (1.0 + BOOST_OVERSHOOT)
+		var dt := t - BOOST_ATTACK_TIME
+		if dt < BOOST_OVERSHOOT_SETTLE:
+			var k := dt / BOOST_OVERSHOOT_SETTLE
+			return peak + (speed - peak) * (1.0 - pow(1.0 - k, 2.0))
+		return speed
+	return base
+
+# Inverse of the attack ramp: the envelope time at which the run curve equals speed `v`.
+# Used to seed the boost so it CONTINUES from your current speed instead of restarting at 0.
+func _attack_time_for_speed(v: float) -> float:
+	var frac := clampf(v / speed, 0.0, 0.999)
+	var x := 1.0 - pow(1.0 - frac, 1.0 / BOOST_ATTACK_SHARP)
+	return x * BOOST_ATTACK_TIME
 
 func take_hit(dir: Vector2, dmg: int, knock: float = KNOCKBACK) -> void:
 	if not active or _iframe > 0.0:   # dashing dodges the hit
@@ -443,6 +484,8 @@ func reset_fighter(pos: Vector2) -> void:
 	_cast_anim = 0.0
 	_bot_retreat = 0.0
 	_bot_dodge_cd = 0.0
+	_boost_t = 0.0
+	_boosting_prev = false
 	_blocking = false
 	_block_time = 0.0
 	active = true
@@ -450,6 +493,11 @@ func reset_fighter(pos: Vector2) -> void:
 func _draw() -> void:
 	# facing indicator
 	draw_line(Vector2.ZERO, facing * (SIZE * 0.9), Color(1, 1, 1, 0.5), 2.0)
+	# DEBUG (F3): live velocity vector (yellow) - shows when momentum diverges from facing
+	if debug_draw and _move_vel.length() > 1.0:
+		var vv := _move_vel * 0.12
+		draw_line(Vector2.ZERO, vv, Color(1.0, 0.85, 0.15), 3.0)
+		draw_circle(vv, 3.5, Color(1.0, 0.85, 0.15))
 	# block / parry shield arc in front
 	if _blocking:
 		var bc := Color(0.65, 0.95, 1.0) if _block_time <= PARRY_WINDOW else Color(0.5, 0.7, 0.9, 0.85)

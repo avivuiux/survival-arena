@@ -7,24 +7,25 @@ extends Node2D
 #  Slice 3+4: local two-player duel with win/lose.
 # =============================================================
 
-const ARENA_RADIUS_X := 320.0
-const ARENA_SQUASH := 0.6
+const ARENA_MARGIN := 24.0      # arena = the WHOLE screen (Aviv 2026-07-01), minus a thin edge
 const FighterScript := preload("res://entities/fighter/fighter.gd")
 
-const P1_SPAWN := Vector2(-140.0, 0.0)
-const P2_SPAWN := Vector2(140.0, 0.0)
+const P1_SPAWN := Vector2(-210.0, 0.0)   # wider start gap to match the bigger arena
+const P2_SPAWN := Vector2(210.0, 0.0)
 
 # Character archetypes (data-driven; first step of the L2 roster)
+# HP raised across the board so rounds last longer (Aviv: "ends too fast, low HP");
+# spread narrowed so no matchup is wildly lopsided ("bot has more HP than me").
 const ARCHETYPES := {
-	"balanced": {"hp": 100, "speed": 320.0, "damage": 12, "atk_cd": 0.34, "skill": "chill"},
-	"rusher":   {"hp": 70,  "speed": 430.0, "damage": 18, "atk_cd": 0.26, "skill": "lunge", "art": "res://concept/characters/fang/FANG_rigpose_FINAL.png"},
-	"tank":     {"hp": 150, "speed": 240.0, "damage": 14, "atk_cd": 0.40, "skill": "shockwave"},
+	"balanced": {"hp": 170, "speed": 320.0, "damage": 12, "atk_cd": 0.34, "skill": "chill"},
+	"rusher":   {"hp": 120, "speed": 325.0, "damage": 18, "atk_cd": 0.26, "skill": "lunge", "art": "res://concept/characters/fang/FANG_rigpose_FINAL.png"},
+	"tank":     {"hp": 220, "speed": 240.0, "damage": 14, "atk_cd": 0.40, "skill": "shockwave"},
 }
 const WINS_NEEDED := 2           # best-of-3: first to 2 round wins takes the match
 const PROJ_SPEED := 560.0        # ranged shot
 const PROJ_LIFE := 0.9
 const PROJ_DAMAGE := 8
-const PROJ_KNOCK := 180.0
+const PROJ_KNOCK := 260.0        # more shove on ranged hits (Aviv: more knockback)
 const PROJ_RADIUS := 12.0
 
 var arena_center := Vector2.ZERO
@@ -45,6 +46,9 @@ var _sel_index := 0
 var _p1_score := 0
 var _p2_score := 0
 var _score_label: Label
+var _debug := false
+var _slowmo := false
+var _debug_label: Label
 
 func _ready() -> void:
 	arena_center = get_viewport_rect().size / 2.0
@@ -94,6 +98,13 @@ func _ready() -> void:
 	_score_label.size = Vector2(400.0, 30.0)
 	_score_label.visible = false
 	ui.add_child(_score_label)
+
+	_debug_label = Label.new()
+	_debug_label.position = Vector2(16.0, 58.0)
+	_debug_label.add_theme_font_size_override("font_size", 15)
+	_debug_label.add_theme_color_override("font_color", Color(0.55, 1.0, 0.65))
+	_debug_label.visible = false
+	ui.add_child(_debug_label)
 
 	_refresh_select()
 	queue_redraw()
@@ -165,6 +176,16 @@ func _input(event: InputEvent) -> void:
 			_mode_label.text = "PRACTICE - bot idle   (P = wake bot)"
 		else:
 			_mode_label.text = "vs BOT (%s)   P = practice" % _p2.display_name
+	elif event.keycode == KEY_F3:
+		_debug = not _debug
+		_debug_label.visible = _debug
+		if _p1: _p1.debug_draw = _debug
+		if _p2: _p2.debug_draw = _debug
+		if _p1: _p1.queue_redraw()
+		if _p2: _p2.queue_redraw()
+	elif event.keycode == KEY_F4:
+		_slowmo = not _slowmo
+		Engine.time_scale = 0.25 if _slowmo else 1.0
 
 func _refresh_select() -> void:
 	var t := ""
@@ -198,6 +219,8 @@ func _begin_match() -> void:
 		p2_arch, arena_center + P2_SPAWN)
 	_fighters = [_p1, _p2]
 	_p2.is_bot = true            # opponent always a bot (single-client; stand-in for remote players)
+	_p1.debug_draw = _debug
+	_p2.debug_draw = _debug
 	_p1_score = 0
 	_p2_score = 0
 	_score_label.visible = true
@@ -226,6 +249,9 @@ func _update_mode_label() -> void:
 		_mode_label.text = "P2 = %s    (press B to toggle)" % ("BOT" if _p2.is_bot else "HUMAN")
 
 func _process(delta: float) -> void:
+	if _debug and _p1 and _state == "fighting":
+		_debug_label.text = _debug_text()
+
 	# Screen shake: offset the scene root, decaying back to rest.
 	if _shake > 0.05:
 		position = Vector2(randf_range(-_shake, _shake), randf_range(-_shake, _shake))
@@ -257,15 +283,12 @@ func _process(delta: float) -> void:
 		_projectiles = _projectiles.filter(func(p): return p["life"] > 0.0)
 		queue_redraw()
 
-# Keep a position inside the isometric diamond: |dx|/rx + |dy|/ry <= 1
+# Arena = the whole screen: clamp to the viewport rect, minus a thin margin.
 func clamp_to_arena(pos: Vector2) -> Vector2:
-	var off := pos - arena_center
-	var rx := ARENA_RADIUS_X
-	var ry := ARENA_RADIUS_X * ARENA_SQUASH
-	var m := absf(off.x) / rx + absf(off.y) / ry
-	if m > 1.0:
-		return arena_center + off / m
-	return pos
+	var vp := get_viewport_rect().size
+	return Vector2(
+		clampf(pos.x, ARENA_MARGIN, vp.x - ARENA_MARGIN),
+		clampf(pos.y, ARENA_MARGIN, vp.y - ARENA_MARGIN))
 
 func add_shake(amount: float) -> void:
 	_shake = maxf(_shake, amount)
@@ -295,7 +318,7 @@ func hit_stop(duration: float) -> void:
 	Engine.time_scale = 0.0
 	var t := get_tree().create_timer(duration, true, false, true)  # ignore_time_scale
 	await t.timeout
-	Engine.time_scale = 1.0
+	Engine.time_scale = 0.25 if _slowmo else 1.0   # keep slow-mo if the debug toggle is on
 
 func on_ko(loser) -> void:
 	if _state == "round_over":
@@ -342,18 +365,32 @@ func _update_score() -> void:
 	if _score_label:
 		_score_label.text = "P1   %d  -  %d   P2      (first to %d)" % [_p1_score, _p2_score, WINS_NEEDED]
 
+# Live mechanics readout for the F3 debug overlay (reads P1's real state).
+func _debug_text() -> String:
+	var v: Vector2 = _p1._move_vel
+	var spd := v.length()
+	var top: float = _p1.speed
+	var phase := "idle"
+	if _p1._attacking:
+		phase = "attack"
+	elif _p1._boosting_prev:
+		phase = "BOOST"
+	elif spd > 5.0:
+		phase = "glide"
+	var face_ang := rad_to_deg(_p1.facing.angle())
+	var vel_ang := rad_to_deg(v.angle()) if spd > 1.0 else face_ang
+	var d_ang := absf(wrapf(vel_ang - face_ang, -180.0, 180.0))
+	var a_held: bool = Input.is_physical_key_pressed(KEY_A)
+	return "F3 debug  ·  F4 slow-mo:%s\nspeed  %5.0f / %d   (%3.0f%%)\nphase  %s     boost_t %.2fs\nfacing %4.0f°   vel %4.0f°   diff %3.0f°\nA (run): %s" % [
+		("ON" if _slowmo else "off"), spd, int(top), (spd / maxf(top, 1.0) * 100.0),
+		phase, _p1._boost_t, face_ang, vel_ang, d_ang, ("HELD" if a_held else "-")]
+
 func _draw() -> void:
-	var rx := ARENA_RADIUS_X
-	var ry := ARENA_RADIUS_X * ARENA_SQUASH
-	var pts := PackedVector2Array([
-		arena_center + Vector2(0.0, -ry),
-		arena_center + Vector2(rx, 0.0),
-		arena_center + Vector2(0.0, ry),
-		arena_center + Vector2(-rx, 0.0),
-	])
-	draw_colored_polygon(pts, Color(0.15, 0.17, 0.22))
-	var outline := pts + PackedVector2Array([pts[0]])
-	draw_polyline(outline, Color(0.35, 0.40, 0.48), 2.0)
+	# Full-screen arena floor + border.
+	var vp := get_viewport_rect().size
+	var rect := Rect2(Vector2(ARENA_MARGIN, ARENA_MARGIN), vp - Vector2(ARENA_MARGIN, ARENA_MARGIN) * 2.0)
+	draw_rect(rect, Color(0.15, 0.17, 0.22), true)
+	draw_rect(rect, Color(0.35, 0.40, 0.48), false, 2.0)
 
 	for s in _sparks:
 		var a := clampf(s["life"] / s["max"], 0.0, 1.0)
