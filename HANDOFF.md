@@ -34,6 +34,12 @@ Two parallel tracks share this repo:
 - **Mechanics chat** (this one) - engine / Godot / gameplay.
 - **Concept/asset chat** (separate) - identity / art. See `CONCEPT.md` + `ROSTER.md`.
 
+**Two-chat coordination (read `GLOSSARY.md`):** one repo = the shared truth, NOT chat
+memory. Each chat commits **only its own files** - mechanics owns `scripts/ entities/
+tools/` + its `.md`s; concept owns `concept/` + assets. `ROSTER.md` is the shared
+status-contract, section-owned. Run `git status` and add files by name (never `git add .`)
+so you never commit the other track's work-in-progress.
+
 **Read `ROSTER.md` first** for per-character status across both chats, and **`SKELETON.md`**
 for the research-grounded SP control/combat model (confidence-tagged).
 
