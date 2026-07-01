@@ -84,7 +84,11 @@ Generated with gpt-image-1 (the MCPs aren't wired to the design session). In
   Model printed "FANG" on the tank - cute identity touch but remove for the rigged
   game version (text warps on a deforming mesh).
 
-### Pipeline LOCKED 2026-06-30 (no Tripo -> no decision to make): cutout / bone-rig
+### Pipeline LOCKED 2026-06-30: cutout / bone-rig
+(UPDATE 2026-06-30: Tripo IS available after all - it's Magnific's `models3d_generate` backend.
+Tested on FANG: keeps identity + auto-rigs, but FLATTENS the locked 2D Guilty-Gear style into
+generic AI-3D. So the cutout lock now holds for a stronger reason - not "no tool" but "3D loses
+our look." Parked for pose/prop reference or a future 3D pivot only. See SYSTEM.md lessons log.)
 With no image->3D tool, the 3D->2D-sprite branch is gone. The primary plan is now the
 only plan:
 - **Cutout / bone-rig** is THE animation approach (draw once, cut, rig, puppet).
@@ -347,3 +351,53 @@ detail people will remember him by):
 Once FANG locks, design ZERO as the deliberate opposite on every axis above (cool veteran,
 blue, control). His "nature" likely a *different* kind of being than beast-kin (reinforces
 the mixed roster) - decide when we get there.
+
+---
+
+## Round 7 - ART DIRECTION CHANGED (DECIDED 2026-06-30) - SUPERSEDES Round 5
+
+**What happened:** we generated FANG full-body and Aviv reacted - the soft `sports-anime-clean`
+look (Round 5) felt generic/wrong to him. He couldn't choose from style *names* ("I don't know
+styles"), so we rendered the SAME locked FANG design in 4 styles and let him react to pictures
+(`concept/characters/fang/fang_style_compare.png`): A Street Fighter, B Guilty Gear, C western
+comic, D bold toon.
+
+**DECIDED: art direction = "Guilty Gear / arcade-fighter 2D" (style B).**
+- Bold clean cel-shading, hard rim lighting, sharp confident outlines, saturated high-contrast,
+  slick and edgy - arcade-fighter energy, cooler/sharper than soft anime, not cute.
+- Chosen for: matches Aviv's pull (he picked the Street-Fighter / arcade-fighter feel), the bold
+  clean outlines read best at small isometric scale AND cut cleanest as a 2D cutout puppet.
+- **Animation approach UNCHANGED** - Aviv clarified it was the *drawing* he disliked, not the
+  motion, so cutout / bone-rig stays (Round-5 pillars + the pipeline section above all hold).
+- **New style anchor: `fang_styleB_digitigrade_1.png`** replaces `A_sports-anime-clean.png` as
+  THE look. (A_sports-anime-clean kept only as history.)
+
+**FANG body, finalized:** full tiger legs + clawed paws (athletic, slim below the knee), NOT
+human-legs-with-paws. gpt-image-1 resisted true reverse-joint digitigrade for ~5 rounds; the
+reference-image `images.edit` route plus the approved dynamic-pose render got it acceptable.
+
+**Tooling note:** all FANG art is gpt-image-1 via the repo's `OPENAI_API_KEY` (Higgsfield MCP
+needs auth we don't have in this session; OpenAI is already wired). Use `images.edit` with a
+reference image for things text alone won't do.
+
+### Next concrete steps
+1. Generate a NEUTRAL rig-ready A-pose of FANG in this exact style B (the anchor is a dynamic
+   pose; rigging needs neutral, limbs apart, flat light) -> hand to mechanics chat for Godot.
+2. Design ZERO via the same 6-layer method, rendered in the SAME style B.
+
+---
+
+## Round 8 - ROSTER MOVEMENT: FLOATING + ZERO locked (2026-07-01)
+
+**New roster-wide direction (Aviv):** **most characters FLOAT / hover** off the ground (not all -
+FANG stays a grounded rusher with planted paws). Fits the game's slick-floor / glide feel and
+gives the roster an otherworldly range. Floating characters need a hovering neutral rig-pose
+(adapt RIGPOSE-STANDARD per-character - a GameOS note).
+
+**ZERO - LOCKED** (`concept/characters/zero/ZERO.md`, anchor `zero_cosmic_1.png`):
+an intricate **cosmic-alien ice being** who **floats**. The design went through an **inversion**
+Aviv authored: not "a man with some ice" but **almost entirely living cosmic ice (galaxy +
+constellations inside), with a small human-flesh remnant** (half the face + one arm), the ice
+intricately interwoven into the flesh at the seams. Unified etched-crystal cosmic garment + ice
+crown (the earlier tattered look was rejected). The perfect foil to FANG: grounded wild fire vs
+floating cosmic ice.

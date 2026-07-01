@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OVERTHRONE — GameOS Character Studio</title>
+<!--
+  GameOS Character Studio — internal roster tool for OVERTHRONE.
+  SINGLE self-contained file: inline CSS + JS, no build step, no external CDN.
+  Opens by double-click (file://) on Windows. Portraits use relative paths.
+
+  Data flow:
+    1) SEED_DATA below is the baked-in copy of characters.json (so the tool works
+       under file:// where fetch() is blocked by the browser).
+    2) On load we ALSO try to fetch characters.json; if it succeeds (e.g. served
+       over http) it overrides the seed, keeping the file the true source.
+    3) localStorage overlays user edits (tag edits) and saved character stubs.
+    4) "Download updated characters.json" exports the merged current state.
+-->
+<style>
+  /* ===================================================================
+     DESIGN TOKENS — OVERTHRONE fight-league dashboard, dark & confident
+     =================================================================== */
+  :root {
+    --bg:        #0b0d12;   /* app background */
+    --bg-2:      #12151c;   /* panels */
+    --bg-3:      #191d27;   /* raised cards */
+    --bg-4:      #212736;   /* hover / inputs */
+    --line:      #2a3040;   /* borders */
+    --line-2:    #384056;   /* stronger borders */
+    --txt:       #eef1f7;   /* primary text */
+    --txt-2:     #a4adc0;   /* secondary text */
+    --txt-3:     #6b7386;   /* muted text */
+    --accent:    #E8722A;   /* OVERTHRONE league orange */
+    --accent-2:  #ffb27a;
+    --blue:      #3B82F6;
+    --good:      #35c692;   /* status: done */
+    --gap:       #ff5470;   /* gaps / warnings */
+    --gap-soft:  rgba(255,84,112,.14);
+    --shadow:    0 12px 40px rgba(0,0,0,.45);
+    --radius:    14px;
+    --radius-sm: 9px;
+    --ch: #E8722A; /* per-character accent, overridden inline */
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(232,114,42,.10), transparent 60%),
+      radial-gradient(1000px 500px at -10% 10%, rgba(59,130,246,.08), transparent 55%),
+      var(--bg);
+    color: var(--txt);
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  a { color: inherit; }
+  ::selection { background: rgba(232,114,42,.35); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 11px; height: 11px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 20px; border: 3px solid var(--bg); }
+  ::-webkit-scrollbar-thumb:hover { background: #4a536b; }
+
+  /* ===================================================================
+     LAYOUT — sidebar + main
+     =================================================================== */
+  .app { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    background: linear-gradient(180deg, var(--bg-2), rgba(18,21,28,.6));
+    border-right: 1px solid var(--line);
+    padding: 22px 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .brand { display: flex; align-items: center; gap: 11px; padding: 4px 8px 20px; }
+  .brand .mark {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent), #b8531a);
+    display: grid; place-items: center;
+    font-weight: 900; font-size: 19px; color: #fff;
+    box-shadow: 0 6px 18px rgba(232,114,42,.35);
+    letter-spacing: -1px;
+  }
+  .brand .name { font-weight: 800; font-size: 15px; letter-spacing: .3px; line-height: 1.15; }
+  .brand .sub { font-size: 10.5px; color: var(--txt-3); letter-spacing: 1.6px; text-transform: uppercase; font-weight: 700; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: var(--radius-sm);
+    color: var(--txt-2); cursor: pointer; font-weight: 600; font-size: 14px;
+    border: 1px solid transparent; transition: .15s;
+    user-select: none;
+  }
+  .nav-item .ico { width: 18px; text-align: center; opacity: .9; font-size: 15px; }
+  .nav-item:hover { background: var(--bg-3); color: var(--txt); }
+  .nav-item.active {
+    background: linear-gradient(90deg, rgba(232,114,42,.16), rgba(232,114,42,.02));
+    color: #fff; border-color: rgba(232,114,42,.35);
+  }
+  .nav-item.active .ico { color: var(--accent); }
+  .nav-sep { height: 1px; background: var(--line); margin: 12px 6px; }
+  .sidebar .foot { margin-top: auto; font-size: 11px; color: var(--txt-3); padding: 8px; line-height: 1.5; }
+  .sidebar .foot b { color: var(--txt-2); }
+
+  .main { flex: 1; min-width: 0; padding: 30px 38px 60px; max-width: 1500px; }
+  @media (max-width: 900px) {
+    .app { flex-direction: column; }
+    .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; flex-wrap: wrap; gap: 4px; }
+    .sidebar .foot { display: none; }
+    .brand { width: 100%; padding-bottom: 10px; }
+    .main { padding: 22px 18px 50px; }
+  }
+
+  /* Page header */
+  .page-head { margin-bottom: 26px; }
+  .page-head h1 { margin: 0; font-size: 27px; font-weight: 800; letter-spacing: -.4px; }
+  .page-head p { margin: 6px 0 0; color: var(--txt-2); font-size: 14.5px; max-width: 720px; }
+  .eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+
+  /* ===================================================================
+     REUSABLE BITS
+     =================================================================== */
+  .panel { background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); }
+  .grid { display: grid; gap: 18px; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 40px;
+    background: var(--bg-4); border: 1px solid var(--line-2);
+    font-size: 12px; font-weight: 600; color: var(--txt-2);
+    white-space: nowrap;
+  }
+  .chip .k { color: var(--txt-3); font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; }
+  .chip.solid { background: color-mix(in srgb, var(--ch) 18%, transparent); border-color: color-mix(in srgb, var(--ch) 45%, transparent); color: #fff; }
+
+  .status-dot { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; color: var(--txt-3); }
+  .status-dot .d { width: 8px; height: 8px; border-radius: 50%; background: var(--line-2); }
+  .status-dot.on { color: var(--good); }
+  .status-dot.on .d { background: var(--good); box-shadow: 0 0 8px rgba(53,198,146,.6); }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; justify-content: center;
+    padding: 10px 16px; border-radius: var(--radius-sm);
+    background: var(--bg-4); border: 1px solid var(--line-2); color: var(--txt);
+    font-weight: 700; font-size: 13.5px; cursor: pointer; transition: .15s; font-family: inherit;
+  }
+  .btn:hover { background: #2a3142; border-color: #46506a; }
+  .btn.primary { background: linear-gradient(135deg, var(--accent), #cf5f1e); border-color: transparent; color: #fff; box-shadow: 0 6px 18px rgba(232,114,42,.3); }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn.ghost { background: transparent; }
+  .btn.sm { padding: 7px 12px; font-size: 12.5px; }
+
+  label.field { display: block; }
+  label.field .lab { display: block; font-size: 11px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--txt-3); margin-bottom: 6px; }
+  select, input[type="text"] {
+    width: 100%; padding: 9px 11px; border-radius: var(--radius-sm);
+    background: var(--bg); border: 1px solid var(--line-2); color: var(--txt);
+    font-family: inherit; font-size: 13.5px; cursor: pointer;
+  }
+  select:focus, input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232,114,42,.15); }
+
+  /* ===================================================================
+     DASHBOARD
+     =================================================================== */
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 16px; margin-bottom: 26px; }
+  .stat { padding: 18px 20px; }
+  .stat .n { font-size: 34px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
+  .stat .l { font-size: 12.5px; color: var(--txt-2); margin-top: 8px; font-weight: 600; }
+  .stat .n.accent { color: var(--accent); }
+  .stat .n.gap { color: var(--gap); }
+  .stat .n.good { color: var(--good); }
+
+  .section-title { display: flex; align-items: center; justify-content: space-between; margin: 30px 0 14px; }
+  .section-title h2 { font-size: 17px; margin: 0; font-weight: 800; letter-spacing: -.2px; }
+  .section-title .hint { font-size: 12.5px; color: var(--txt-3); }
+
+  /* completion table */
+  .comp-list { display: flex; flex-direction: column; gap: 10px; }
+  .comp-row { display: flex; align-items: center; gap: 16px; padding: 14px 18px; }
+  .comp-row .avatar { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; object-position: top center; background: var(--bg-4); border: 2px solid var(--ch); flex-shrink: 0; }
+  .comp-row .who { min-width: 130px; }
+  .comp-row .who .nm { font-weight: 800; }
+  .comp-row .who .tl { font-size: 11.5px; color: var(--txt-3); }
+  .comp-row .bar { flex: 1; height: 8px; border-radius: 10px; background: var(--bg-4); overflow: hidden; min-width: 80px; }
+  .comp-row .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--ch), color-mix(in srgb,var(--ch) 40%, #fff)); border-radius: 10px; }
+  .comp-row .stats { display: flex; gap: 14px; }
+
+  /* coverage / gaps */
+  .cov-axis { padding: 15px 18px; margin-bottom: 12px; }
+  .cov-axis .cov-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
+  .cov-axis .cov-head .ax { font-weight: 800; font-size: 14px; }
+  .cov-axis .cov-head .meta { font-size: 11.5px; color: var(--txt-3); }
+  .cov-vals { display: flex; flex-wrap: wrap; gap: 7px; }
+  .cov-val {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 5px 11px; border-radius: 40px; font-size: 12.5px; font-weight: 600;
+    border: 1px solid var(--line-2); background: var(--bg-3); color: var(--txt-2);
+  }
+  .cov-val .cnt { font-size: 10px; font-weight: 800; background: var(--bg); padding: 1px 6px; border-radius: 20px; color: var(--txt); }
+  .cov-val.covered { border-color: color-mix(in srgb, var(--good) 40%, transparent); color: var(--txt); }
+  .cov-val.covered .cnt { background: rgba(53,198,146,.2); color: var(--good); }
+  .cov-val.empty { border-color: color-mix(in srgb,var(--gap) 45%, transparent); background: var(--gap-soft); color: #ffb3c0; }
+  .cov-val.empty .cnt { background: rgba(255,84,112,.22); color: var(--gap); }
+
+  .gap-banner { display: flex; gap: 14px; align-items: flex-start; padding: 16px 20px; border: 1px solid color-mix(in srgb,var(--gap) 35%, transparent); background: var(--gap-soft); border-radius: var(--radius); margin-bottom: 22px; }
+  .gap-banner .big { font-size: 22px; }
+  .gap-banner b { color: #ffc2cd; }
+
+  /* ===================================================================
+     ROSTER GRID
+     =================================================================== */
+  .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 20px; }
+  .card {
+    position: relative; overflow: hidden; cursor: pointer;
+    background: var(--bg-2); border: 1px solid var(--line);
+    border-radius: var(--radius); transition: .18s;
+    border-top: 3px solid var(--ch);
+  }
+  .card:hover { transform: translateY(-4px); border-color: color-mix(in srgb,var(--ch) 55%, var(--line)); box-shadow: var(--shadow), 0 0 0 1px color-mix(in srgb,var(--ch) 30%, transparent); }
+  .card .portrait-wrap {
+    height: 230px; position: relative; overflow: hidden;
+    background:
+      radial-gradient(120% 90% at 50% 0%, color-mix(in srgb,var(--ch) 24%, transparent), transparent 62%),
+      linear-gradient(180deg, var(--bg-3), var(--bg));
+  }
+  .card .portrait-wrap img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+  .card .portrait-wrap .noimg { width:100%;height:100%;display:grid;place-items:center;color:var(--txt-3);font-size:40px; }
+  .card .portrait-wrap::after { content:""; position:absolute; inset:0; background: linear-gradient(180deg, transparent 55%, var(--bg-2)); pointer-events:none; }
+  .card .body { padding: 14px 17px 17px; position: relative; }
+  .card .cname { font-size: 19px; font-weight: 800; letter-spacing: -.3px; display:flex; align-items:center; gap:8px; }
+  .card .cname .swatch { width:11px;height:11px;border-radius:3px;background:var(--ch); box-shadow:0 0 8px color-mix(in srgb,var(--ch) 70%, transparent); }
+  .card .ctag { font-size: 12.5px; color: var(--txt-2); margin: 6px 0 12px; line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .card .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .card .footer { display: flex; gap: 12px; padding-top: 11px; border-top: 1px solid var(--line); }
+  .card.stub { border-top-style: dashed; }
+  .card .stub-flag { position:absolute; top:10px; right:10px; z-index:2; background: rgba(11,13,18,.8); backdrop-filter: blur(4px); border:1px solid var(--line-2); color:var(--txt-2); font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; padding:4px 9px; border-radius:20px; }
+
+  /* ===================================================================
+     DETAIL VIEW
+     =================================================================== */
+  .detail { display: grid; grid-template-columns: 380px 1fr; gap: 32px; }
+  @media (max-width: 850px) { .detail { grid-template-columns: 1fr; } }
+  .detail .hero-portrait {
+    border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line);
+    border-top: 4px solid var(--ch); position: sticky; top: 24px;
+    background: radial-gradient(120% 80% at 50% 0%, color-mix(in srgb,var(--ch) 26%, transparent), transparent 60%), var(--bg-2);
+  }
+  .detail .hero-portrait img { width: 100%; display: block; }
+  .detail .hero-portrait .noimg { aspect-ratio: 3/4; display:grid; place-items:center; color:var(--txt-3); font-size:60px; }
+  .detail-body .d-name { font-size: 34px; font-weight: 800; letter-spacing: -.6px; margin: 0; display:flex; align-items:center; gap:12px; }
+  .detail-body .d-name .swatch { width:16px;height:16px;border-radius:4px;background:var(--ch); box-shadow:0 0 12px var(--ch); }
+  .detail-body .d-tag { color: var(--txt-2); font-size: 15px; margin: 10px 0 4px; max-width: 640px; }
+  .detail-body .d-arche { color: var(--txt-3); font-size: 13.5px; font-style: italic; margin-bottom: 20px; }
+
+  .lore { padding: 18px 20px; margin-bottom: 16px; }
+  .lore h3 { margin: 0 0 8px; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ch); font-weight: 800; }
+  .lore p { margin: 0; color: var(--txt); font-size: 14px; line-height: 1.6; }
+
+  .tag-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 10px; margin-top: 6px; }
+  .tag-cell { padding: 11px 13px; background: var(--bg-3); border: 1px solid var(--line); border-radius: var(--radius-sm); }
+  .tag-cell .k { font-size: 10.5px; letter-spacing: .8px; text-transform: uppercase; color: var(--txt-3); font-weight: 700; }
+  .tag-cell .v { font-size: 14px; font-weight: 700; margin-top: 3px; }
+  .tag-cell.edit .v { padding: 0; }
+  .tag-cell.edit select { margin-top: 4px; font-size: 13px; padding: 6px 8px; }
+  .tag-cell .rare { display:inline-block; margin-left:6px; font-size:9px; font-weight:800; letter-spacing:.5px; color:var(--accent); background:rgba(232,114,42,.14); padding:1px 6px; border-radius:20px; vertical-align:middle; }
+
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items:center; margin: 0 0 18px; }
+
+  /* ===================================================================
+     TAG EXPLORER + MATRIX
+     =================================================================== */
+  .filters { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 12px; padding: 18px 20px; margin-bottom: 20px; }
+  .matrix-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+  table.matrix { border-collapse: collapse; width: 100%; font-size: 12.5px; min-width: 900px; }
+  table.matrix th, table.matrix td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  table.matrix thead th { background: var(--bg-3); color: var(--txt-3); font-size: 10.5px; letter-spacing: .6px; text-transform: uppercase; position: sticky; top: 0; }
+  table.matrix tbody tr:hover { background: var(--bg-3); cursor: pointer; }
+  table.matrix td.name { font-weight: 800; color: var(--txt); }
+  table.matrix td.name .swatch { display:inline-block; width:9px;height:9px;border-radius:2px; margin-right:7px; vertical-align:middle; }
+
+  /* ===================================================================
+     EXPLORE NEW CHARACTER
+     =================================================================== */
+  .explore-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 26px; align-items: start; }
+  @media (max-width: 950px){ .explore-grid { grid-template-columns: 1fr; } }
+  .picker-panel { padding: 22px 24px; }
+  .picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 14px; }
+  .stub-card { padding: 0; overflow: hidden; position: sticky; top: 24px; border-top: 3px dashed var(--accent); }
+  .stub-card .sc-head { padding: 18px 20px 14px; background: radial-gradient(100% 80% at 50% 0%, rgba(232,114,42,.16), transparent 60%); }
+  .stub-card .sc-head .t { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 800; }
+  .stub-card .sc-head .h { font-size: 21px; font-weight: 800; margin-top: 4px; }
+  .stub-card .sc-body { padding: 4px 20px 20px; }
+  .fills-box { padding: 12px 14px; border-radius: var(--radius-sm); margin: 4px 0 16px; font-size: 13px; line-height:1.55; }
+  .fills-box.good { background: rgba(53,198,146,.1); border:1px solid rgba(53,198,146,.3); }
+  .fills-box.none { background: var(--bg-3); border:1px solid var(--line); color: var(--txt-2); }
+  .fills-box .tokens { margin-top: 8px; display:flex; flex-wrap:wrap; gap:6px; }
+  .fills-box .tk { background: rgba(255,84,112,.16); border:1px solid rgba(255,84,112,.4); color:#ffb3c0; padding:3px 9px; border-radius:20px; font-size:11.5px; font-weight:700; }
+  .stub-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top: 4px; }
+
+  /* saved stubs strip */
+  .saved-strip { display:flex; flex-wrap:wrap; gap:10px; margin-top: 16px; }
+  .saved-pill { display:flex; align-items:center; gap:10px; background: var(--bg-3); border:1px solid var(--line-2); border-radius:40px; padding:6px 8px 6px 14px; font-size:12.5px; font-weight:600; }
+  .saved-pill .x { cursor:pointer; width:20px;height:20px; border-radius:50%; background:var(--bg-4); display:grid;place-items:center; color:var(--txt-3); font-size:13px; }
+  .saved-pill .x:hover { background:var(--gap); color:#fff; }
+
+  .empty-note { color: var(--txt-3); font-size: 13.5px; padding: 24px; text-align:center; }
+
+  /* toast */
+  #toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--bg-4); border: 1px solid var(--line-2); color: var(--txt); padding: 12px 20px; border-radius: 40px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: .25s; z-index: 100; }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast .dot { display:inline-block; width:8px;height:8px;border-radius:50%; background:var(--good); margin-right:8px; }
+
+  .banner-note { font-size:12px; color: var(--txt-3); background: var(--bg-3); border:1px solid var(--line); padding:8px 12px; border-radius:8px; margin-bottom:18px; }
+
+  /* ===== CREATE WIZARD ===== */
+  .wiz-steps { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  .wiz-step { display:flex; align-items:center; gap:8px; padding:8px 13px; border-radius:40px; background:var(--bg-3); border:1px solid var(--line); color:var(--txt-3); font-size:12.5px; font-weight:700; cursor:pointer; transition:.15s; }
+  .wiz-step:hover { color:var(--txt); }
+  .wiz-step .n { width:19px;height:19px;border-radius:50%; background:var(--bg-4); display:grid;place-items:center; font-size:10.5px; }
+  .wiz-step.active { color:#fff; border-color:rgba(232,114,42,.5); background:linear-gradient(90deg, rgba(232,114,42,.16), transparent); }
+  .wiz-step.active .n { background:var(--accent); color:#fff; }
+  .wiz-step.done { color:var(--good); }
+  .wiz-step.done .n { background:rgba(53,198,146,.2); color:var(--good); }
+  .wiz-progress { height:4px; background:var(--bg-4); border-radius:10px; overflow:hidden; margin-bottom:22px; }
+  .wiz-progress i { display:block; height:100%; background:linear-gradient(90deg,var(--accent),var(--accent-2)); transition:width .3s; }
+  .wiz-title { font-size:16px; font-weight:800; margin-bottom:16px; }
+  .wiz-foot { display:flex; gap:10px; align-items:center; margin-top:24px; padding-top:18px; border-top:1px solid var(--line); }
+  .wiz-swatches { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+  .wiz-sw { width:34px;height:34px;border-radius:9px; border:2px solid transparent; cursor:pointer; padding:0; }
+  .wiz-sw.sel { border-color:#fff; box-shadow:0 0 0 2px var(--bg-2), 0 0 12px rgba(255,255,255,.35); }
+  textarea { width:100%; padding:10px 12px; border-radius:var(--radius-sm); background:var(--bg); border:1px solid var(--line-2); color:var(--txt); font-family:inherit; font-size:13.5px; resize:vertical; }
+  textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(232,114,42,.15); }
+  .btn[disabled]{ opacity:.4; cursor:not-allowed; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="mark">O</div>
+      <div>
+        <div class="name">OVERTHRONE</div>
+        <div class="sub">Character Studio</div>
+      </div>
+    </div>
+    <div class="nav-item active" data-view="dashboard"><span class="ico">◉</span> Dashboard</div>
+    <div class="nav-item" data-view="roster"><span class="ico">▦</span> Roster</div>
+    <div class="nav-item" data-view="explorer"><span class="ico">⌕</span> Tag Explorer</div>
+    <div class="nav-item" data-view="explore"><span class="ico">✦</span> Create Character</div>
+    <div class="nav-sep"></div>
+    <div class="nav-item" id="btn-export"><span class="ico">↓</span> Export JSON</div>
+    <div class="foot">
+      Internal tool · <b>GameOS</b><br>
+      Roster stubs &amp; edits save to your browser. Export to update <b>characters.json</b>.
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main" id="main"><!-- views render here --></main>
+</div>
+
+<div id="toast"><span class="dot"></span><span id="toast-msg"></span></div>
+
+<!-- ===================================================================
+     SEED DATA — baked copy of characters.json (works under file://)
+     =================================================================== -->
+<script id="seed-data" type="application/json">
+{
+  "game": "OVERTHRONE",
+  "axes": {
+    "nature":      { "label": "Nature / kind",    "values": ["human","beast-kin","creature","alien","construct/golem","spirit/yokai","elemental","undead","divine/demon","transformed"] },
+    "powerSource": { "label": "Power source",      "values": ["physical/martial","elemental","magic (mage)","tech/gadget","psychic/mind","divine/cursed","innate mutation","none (pure skill)"] },
+    "archetype":   { "label": "Combat archetype",  "values": ["rusher","control/zoner","tank/bruiser","grappler","glass-cannon","trapper/setup","all-rounder"] },
+    "range":       { "label": "Range",             "values": ["close/melee","mid","long/ranged","mixed"] },
+    "movement":    { "label": "Movement mode",     "values": ["grounded","floating/hover","flying","teleport/blink","dash-heavy"] },
+    "tempo":       { "label": "Tempo / playstyle", "values": ["aggressive","defensive","patient-control","hit-and-run","setup"] },
+    "temperament": { "label": "Temperament",       "values": ["hot/loud/warm","cold/quiet/composed","wild","arrogant","stoic","playful"] },
+    "size":        { "label": "Size / silhouette", "values": ["small-nimble","average","tall-lean","large-heavy","large-agile"] },
+    "storyRole":   { "label": "Story role",        "values": ["rookie","veteran","rival","gatekeeper","champion/boss","wildcard","comic"] },
+    "era":         { "label": "Origin / era",      "values": ["present","past (displaced)","future","otherworld","unknown"] },
+    "element":     { "label": "Element / theme",   "values": ["fire","ice","lightning","earth","wind","void","light","nature","cosmic","ice/cosmic","none"] },
+    "vibe":        { "label": "Moral vibe",        "values": ["heroic","anti-hero","anti-hero -> villain lean","cold-neutral","villain","chaotic"] }
+  },
+  "characters": [
+    {
+      "id": "fang",
+      "name": "FANG",
+      "tagline": "The hot-blooded tiger beast-kin rookie - built like a monster, with the warmest heart in the Circuit.",
+      "archetypeSummary": "A fast heavyweight - a glass-cannon bruiser who trades durability for speed; the lunge is a literal pounce.",
+      "colorIdentity": "#E8722A",
+      "portrait": "../../concept/characters/fang/fang_v6_serious_1.png",
+      "status": { "bible": true, "art": true, "rig": false },
+      "tags": { "nature":"beast-kin","powerSource":"physical/martial","archetype":"rusher","range":"close/melee","movement":"grounded","tempo":"aggressive","temperament":"hot/loud/warm","size":"large-agile","storyRole":"rookie","era":"present","element":"fire","vibe":"heroic" },
+      "seed": "Built as a monster, heart of gold - and PROUD of the beast. His answer to being feared isn't 'see I'm not a beast' - it's 'I AM a beast, I'm proud of it, and I'll make you cheer for one.' NOT a clown - serious determination and a leashed, brutal power under warm, principled optimism. The fire on his fists is what that leashed ferocity looks like when he chooses to let a little out.",
+      "want": "Not validation, but self-acceptance, pride, and lifting his kind - to make the world celebrate beast-kin instead of fear them, by being unapologetically himself."
+    },
+    {
+      "id": "zero",
+      "name": "ZERO",
+      "tagline": "The cold, calculating veteran - a man who got ice powers, was trapped in ice for years, and woke into the Circuit era to find his whole world gone.",
+      "archetypeSummary": "Control / zone: freezes the stage, slows the enemy, dictates tempo. Patient, calculating, defensive - the exact opposite of FANG.",
+      "colorIdentity": "#3B82F6",
+      "portrait": "../../concept/characters/zero/zero_final_2.png",
+      "status": { "bible": true, "art": true, "rig": false },
+      "tags": { "nature":"transformed","powerSource":"elemental","archetype":"control/zoner","range":"mid","movement":"floating/hover","tempo":"patient-control","temperament":"cold/quiet/composed","size":"tall-lean","storyRole":"gatekeeper","era":"past (displaced)","element":"ice/cosmic","vibe":"anti-hero -> villain lean" },
+      "seed": "He went cold to survive. Master AND prisoner of the same power: a cosmic/supernatural merge fused him WITH the ice and left him a little cruel - a sliver of the man replaced by something colder, edging him toward antagonist. Almost entirely living cosmic ice now; the human flesh is the small remnant.",
+      "want": "To restore what the ice took - turn back the loss, his time, world, and people. His wish to the champion is to undo it."
+    }
+  ]
+}
+</script>
+
+<script>
+/* ===================================================================
+   GameOS Character Studio — application logic (vanilla JS)
+   =================================================================== */
+"use strict";
+
+/* --------- Storage keys --------- */
+const LS_EDITS = "overthrone_char_edits_v1";  // { charId: {tags:{...}, status:{...}} }
+const LS_STUBS = "overthrone_stubs_v1";        // [ stubObj, ... ]
+const LS_CREATED = "overthrone_created_v1";    // [ fullCharObj, ... ] user-created fighters
+
+// Identity-color palette offered by the create wizard.
+const COLORS = ["#E8722A","#3B82F6","#35c692","#a855f7","#ef4444","#14b8a6","#eab308","#8b93a8"];
+// The create wizard's steps. `fields` = free inputs; `axes` = tag pickers; `review` = summary.
+const CREATE_STEPS = [
+  { key:"basics", title:"Basics",        fields:["name","tagline","color"] },
+  { key:"nature", title:"Nature & Power", axes:["nature","powerSource","element"] },
+  { key:"combat", title:"Combat",         axes:["archetype","range","movement","tempo"] },
+  { key:"who",    title:"Character",      axes:["temperament","size","storyRole","era","vibe"] },
+  { key:"kernel", title:"Story",          fields:["seed","want"] },
+  { key:"review", title:"Review",         review:true },
+];
+
+/* --------- State --------- */
+let AXES = {};          // axis key -> {label, values}
+let AXIS_KEYS = [];     // ordered axis keys
+let BASE_CHARS = [];    // seed/file characters
+let STATE = { view: "dashboard", selectedId: null, filters: {} };
+
+/* --------- Boot --------- */
+function bootFromData(data) {
+  AXES = data.axes;
+  AXIS_KEYS = Object.keys(AXES);
+  BASE_CHARS = data.characters;
+  render();
+}
+
+// NOTE: boot() is invoked at the VERY END of this script (after all const/fn
+// definitions) — calling it here would hit the temporal dead zone of `$`, `esc`,
+// etc. and throw a ReferenceError that kills the whole page.
+function boot() {
+  const seed = JSON.parse(document.getElementById("seed-data").textContent);
+  bootFromData(seed);
+  // Best-effort: if served over http(s), prefer the real characters.json on disk.
+  if (location.protocol !== "file:" && typeof fetch === "function") {
+    fetch("characters.json")
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d && d.axes && d.characters) bootFromData(d); })
+      .catch(() => {});
+  }
+}
+
+/* ===================================================================
+   Data helpers — merge base characters + localStorage edits + stubs
+   =================================================================== */
+function loadEdits() { try { return JSON.parse(localStorage.getItem(LS_EDITS)) || {}; } catch { return {}; } }
+function loadStubs() { try { return JSON.parse(localStorage.getItem(LS_STUBS)) || []; } catch { return []; } }
+// Writes are guarded: some browsers block localStorage under file:// or in private mode.
+function saveEdits(e) { try { localStorage.setItem(LS_EDITS, JSON.stringify(e)); return true; }
+  catch { toast("⚠ Can't save — use Export JSON (localStorage blocked)"); return false; } }
+function saveStubs(s) { try { localStorage.setItem(LS_STUBS, JSON.stringify(s)); return true; }
+  catch { toast("⚠ Can't save — use Export JSON (localStorage blocked)"); return false; } }
+function loadCreated() { try { return JSON.parse(localStorage.getItem(LS_CREATED)) || []; } catch { return []; } }
+function saveCreated(a) { try { localStorage.setItem(LS_CREATED, JSON.stringify(a)); return true; }
+  catch { toast("⚠ Can't save — use Export JSON (localStorage blocked)"); return false; } }
+
+// Full roster = base chars (with edits applied) + saved stubs. `isStub` flags the latter.
+function getRoster() {
+  const edits = loadEdits();
+  const base = BASE_CHARS.map(c => {
+    const e = edits[c.id];
+    if (!e) return { ...c, isStub: false };
+    return { ...c, tags: { ...c.tags, ...(e.tags || {}) }, status: { ...c.status, ...(e.status || {}) }, isStub: false };
+  });
+  const created = loadCreated().map(c => ({ ...c, isStub: false, isUser: true }));
+  const stubs = loadStubs().map(s => ({ ...s, isStub: true }));
+  return base.concat(created, stubs);
+}
+
+function getChar(id) { return getRoster().find(c => c.id === id); }
+
+// Count how many characters carry each value on each axis (base + stubs).
+function coverage() {
+  const roster = getRoster();
+  const cov = {};
+  AXIS_KEYS.forEach(ax => {
+    cov[ax] = {};
+    AXES[ax].values.forEach(v => cov[ax][v] = 0);
+    roster.forEach(c => {
+      const val = c.tags && c.tags[ax];
+      if (val && cov[ax][val] !== undefined) cov[ax][val]++;
+      else if (val) cov[ax][val] = (cov[ax][val] || 0) + 1; // custom value not in enum
+    });
+  });
+  return cov;
+}
+
+// Every (axis,value) that NO character currently has = a creative gap.
+function gapList() {
+  const cov = coverage();
+  const gaps = [];
+  AXIS_KEYS.forEach(ax => {
+    AXES[ax].values.forEach(v => { if (!cov[ax][v]) gaps.push({ axis: ax, value: v }); });
+  });
+  return gaps;
+}
+
+/* ===================================================================
+   Small DOM helpers
+   =================================================================== */
+const $ = (sel, el = document) => el.querySelector(sel);
+function el(html) { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; }
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m])); }
+function toast(msg) {
+  const t = $("#toast"); $("#toast-msg").textContent = msg;
+  t.classList.add("show"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+// Portrait <img> with graceful fallback to an initial when the file is missing.
+function portraitImg(c, cls) {
+  const initial = (c.name || "?")[0];
+  if (c.portrait) {
+    // Fallback is attached via a JS helper (NOT HTML-in-attribute) to avoid a
+    // double-encoding hazard when a name has odd characters. Under file:// a
+    // missing portrait 404s and this fallback becomes the visible content.
+    return `<img class="${cls||''}" src="${esc(c.portrait)}" alt="${esc(c.name)}"
+              data-fallback="${esc(initial)}" onerror="imgFallback(this)">`;
+  }
+  return `<div class="noimg">${esc(initial)}</div>`;
+}
+function imgFallback(img) {
+  const d = document.createElement("div");
+  d.className = "noimg";
+  d.textContent = img.getAttribute("data-fallback") || "?";
+  img.replaceWith(d);
+}
+window.imgFallback = imgFallback;
+
+/* ===================================================================
+   Router / view switching
+   =================================================================== */
+function setView(v, id) {
+  STATE.view = v; STATE.selectedId = id || null;
+  document.querySelectorAll(".nav-item[data-view]").forEach(n => n.classList.toggle("active", n.dataset.view === v));
+  render(); window.scrollTo(0, 0);
+}
+document.querySelectorAll(".nav-item[data-view]").forEach(n => n.onclick = () => setView(n.dataset.view));
+$("#btn-export").onclick = exportJSON;
+
+function render() {
+  const m = $("#main");
+  switch (STATE.view) {
+    case "dashboard": m.innerHTML = ""; m.append(viewDashboard()); break;
+    case "roster":    m.innerHTML = ""; m.append(viewRoster()); break;
+    case "detail":    m.innerHTML = ""; m.append(viewDetail(STATE.selectedId)); break;
+    case "explorer":  m.innerHTML = ""; m.append(viewExplorer()); break;
+    case "explore":   m.innerHTML = ""; m.append(viewExplore()); break;
+  }
+}
+
+/* ===================================================================
+   VIEW: DASHBOARD  (synopsis of the creation set)
+   =================================================================== */
+function viewDashboard() {
+  const roster = getRoster();
+  const real = roster.filter(c => !c.isStub);
+  const stubs = roster.filter(c => c.isStub);
+  const gaps = gapList();
+  const cov = coverage();
+
+  // completion = fraction of bible/art/rig done across real characters
+  const doneCount = real.reduce((n, c) => n + (c.status ? (c.status.bible?1:0)+(c.status.art?1:0)+(c.status.rig?1:0) : 0), 0);
+  const totalSteps = real.length * 3;
+  const pct = totalSteps ? Math.round(doneCount / totalSteps * 100) : 0;
+
+  const wrap = el(`<div>
+    <div class="page-head">
+      <div class="eyebrow">Creation Synopsis</div>
+      <h1>Roster Command</h1>
+      <p>The state of the OVERTHRONE fighting league at a glance — who's built, how complete they are, and which corners of the design space are still empty.</p>
+    </div>
+  </div>`);
+
+  // stat row
+  const stats = el(`<div class="stat-row"></div>`);
+  stats.append(
+    el(`<div class="panel stat"><div class="n accent">${real.length}</div><div class="l">Fighters on the roster</div></div>`),
+    el(`<div class="panel stat"><div class="n ${pct===100?'good':''}">${pct}%</div><div class="l">Overall completion (bible · art · rig)</div></div>`),
+    el(`<div class="panel stat"><div class="n gap">${gaps.length}</div><div class="l">Open tag slots (unclaimed values)</div></div>`),
+    el(`<div class="panel stat"><div class="n">${stubs.length}</div><div class="l">Saved concept stubs</div></div>`)
+  );
+  wrap.append(stats);
+
+  // gap headline banner
+  const highlight = gaps.slice(0, 9).map(g => AXES[g.axis].label.split(" ")[0].replace("/", "") + ": " + g.value);
+  if (gaps.length) {
+    wrap.append(el(`<div class="gap-banner">
+      <div class="big">⚑</div>
+      <div><b>${gaps.length} gaps to claim.</b> Values no fighter carries yet — the fastest way to keep the roster feeling big is to build toward these. e.g. ${gaps.slice(0,6).map(g=>'<b>'+esc(g.value)+'</b>').join(", ")}…
+        <br><span style="color:var(--txt-3);font-size:12.5px;">Head to <span style="color:var(--accent);cursor:pointer;font-weight:700" onclick="setView('explore')">New Character → Surprise me</span> to auto-pick an empty combo.</span>
+      </div>
+    </div>`));
+  }
+
+  // Completion per character
+  wrap.append(el(`<div class="section-title"><h2>Per-character status</h2><span class="hint">bible · art · rig</span></div>`));
+  const compList = el(`<div class="comp-list"></div>`);
+  real.forEach(c => {
+    const s = c.status || {};
+    const cp = ((s.bible?1:0)+(s.art?1:0)+(s.rig?1:0)) / 3 * 100;
+    const row = el(`<div class="panel comp-row" style="--ch:${esc(c.colorIdentity||'#888')}">
+      ${portraitImg(c, "avatar")}
+      <div class="who"><div class="nm">${esc(c.name)}</div><div class="tl">${esc(c.tags?.archetype||'')}</div></div>
+      <div class="bar"><i style="width:${cp}%"></i></div>
+      <div class="stats">
+        <span class="status-dot ${s.bible?'on':''}"><span class="d"></span>bible</span>
+        <span class="status-dot ${s.art?'on':''}"><span class="d"></span>art</span>
+        <span class="status-dot ${s.rig?'on':''}"><span class="d"></span>rig</span>
+      </div>
+    </div>`);
+    row.onclick = () => setView("detail", c.id);
+    compList.append(row);
+  });
+  wrap.append(compList);
+
+  // Attribute coverage across all 12 axes — highlights gaps
+  wrap.append(el(`<div class="section-title"><h2>Attribute coverage — all 12 axes</h2><span class="hint"><span style="color:var(--gap)">▮</span> empty = a gap · <span style="color:var(--good)">▮</span> covered</span></div>`));
+  const covWrap = el(`<div></div>`);
+  AXIS_KEYS.forEach(ax => {
+    const vals = AXES[ax].values;
+    const emptyN = vals.filter(v => !cov[ax][v]).length;
+    const box = el(`<div class="panel cov-axis">
+      <div class="cov-head"><span class="ax">${esc(AXES[ax].label)}</span>
+        <span class="meta">${vals.length - emptyN}/${vals.length} covered${emptyN?` · <span style="color:var(--gap)">${emptyN} open</span>`:''}</span></div>
+      <div class="cov-vals"></div></div>`);
+    const cv = $(".cov-vals", box);
+    vals.forEach(v => {
+      const n = cov[ax][v] || 0;
+      cv.append(el(`<span class="cov-val ${n?'covered':'empty'}">${esc(v)} <span class="cnt">${n}</span></span>`));
+    });
+    covWrap.append(box);
+  });
+  wrap.append(covWrap);
+  return wrap;
+}
+
+/* ===================================================================
+   VIEW: ROSTER GRID
+   =================================================================== */
+function characterCard(c) {
+  const keyTags = ["archetype", "nature", "element", "range"].map(k => c.tags?.[k]).filter(Boolean);
+  const s = c.status || {};
+  const card = el(`<div class="card ${c.isStub?'stub':''}" style="--ch:${esc(c.colorIdentity||'#888')}">
+    ${c.isStub ? '<div class="stub-flag">◇ Concept stub</div>' : ''}
+    <div class="portrait-wrap">${portraitImg(c)}</div>
+    <div class="body">
+      <div class="cname"><span class="swatch"></span>${esc(c.name)}</div>
+      <div class="ctag">${esc(c.tagline || 'Unnamed concept — pick a combo, hand to Claude to design.')}</div>
+      <div class="chips">${keyTags.map(t=>`<span class="chip solid">${esc(t)}</span>`).join("")}</div>
+      <div class="footer">
+        <span class="status-dot ${s.bible?'on':''}"><span class="d"></span>bible</span>
+        <span class="status-dot ${s.art?'on':''}"><span class="d"></span>art</span>
+        <span class="status-dot ${s.rig?'on':''}"><span class="d"></span>rig</span>
+      </div>
+    </div>
+  </div>`);
+  card.onclick = () => setView("detail", c.id);
+  return card;
+}
+
+function viewRoster() {
+  const roster = getRoster();
+  const wrap = el(`<div>
+    <div class="page-head"><div class="eyebrow">The Fighters</div><h1>Roster</h1>
+      <p>Every fighter in the Circuit. Click a card for the full breakdown. Concept stubs (dashed) are combos saved for Claude to flesh out.</p></div>
+  </div>`);
+  const grid = el(`<div class="roster-grid"></div>`);
+  roster.forEach(c => grid.append(characterCard(c)));
+  wrap.append(grid);
+  return wrap;
+}
+
+/* ===================================================================
+   VIEW: CHARACTER DETAIL  (with inline tag editing)
+   =================================================================== */
+function viewDetail(id) {
+  const c = getChar(id);
+  if (!c) { const w = el(`<div class="page-head"><h1>Not found</h1></div>`); return w; }
+  const editable = !c.isStub;                       // stubs are edited in Explore; here we edit real chars
+  const cov = coverage();
+
+  const wrap = el(`<div style="--ch:${esc(c.colorIdentity||'#888')}"></div>`);
+  wrap.append(el(`<div class="toolbar">
+    <button class="btn ghost sm" onclick="setView('roster')">← Roster</button>
+  </div>`));
+
+  const detail = el(`<div class="detail"></div>`);
+
+  // left: hero portrait
+  detail.append(el(`<div class="hero-portrait">${portraitImg(c)}</div>`));
+
+  // right: body
+  const body = el(`<div class="detail-body"></div>`);
+  body.append(el(`<h1 class="d-name"><span class="swatch"></span>${esc(c.name)} ${c.isStub?'<span class="stub-flag" style="position:static">◇ stub</span>':''}</h1>`));
+  body.append(el(`<div class="d-tag">${esc(c.tagline||'Unnamed concept.')}</div>`));
+  if (c.archetypeSummary) body.append(el(`<div class="d-arche">${esc(c.archetypeSummary)}</div>`));
+
+  // status chips (editable for real chars)
+  if (!c.isStub) {
+    const s = c.status || {};
+    const st = el(`<div class="toolbar" style="margin-bottom:20px"></div>`);
+    ["bible","art","rig"].forEach(k => {
+      const b = el(`<button class="btn sm ${s[k]?'primary':''}" data-k="${k}">${s[k]?'✓ ':''}${k}</button>`);
+      b.onclick = () => toggleStatus(c.id, k);
+      st.append(b);
+    });
+    body.append(st);
+  }
+
+  // lore
+  if (c.seed) body.append(el(`<div class="panel lore"><h3>The Seed / Contradiction</h3><p>${esc(c.seed)}</p></div>`));
+  if (c.want) body.append(el(`<div class="panel lore"><h3>The Want</h3><p>${esc(c.want)}</p></div>`));
+
+  // tags (editable)
+  body.append(el(`<div class="section-title"><h2>Classification — 12 axes</h2>
+    ${editable?'<span class="hint">click a value to edit · rare = only this fighter has it</span>':''}</div>`));
+  const tg = el(`<div class="tag-grid"></div>`);
+  AXIS_KEYS.forEach(ax => {
+    const val = c.tags?.[ax];
+    const isRare = val && cov[ax][val] === 1;
+    if (editable) {
+      const cell = el(`<div class="tag-cell edit">
+        <div class="k">${esc(AXES[ax].label)} ${isRare?'<span class="rare">only 1</span>':''}</div>
+        <div class="v"></div></div>`);
+      const sel = el(`<select data-ax="${esc(ax)}"></select>`);
+      // include current value even if custom / not in enum
+      const opts = AXES[ax].values.includes(val) || !val ? AXES[ax].values : [val, ...AXES[ax].values];
+      opts.forEach(o => { const op = document.createElement("option"); op.value=o; op.textContent=o; if(o===val) op.selected=true; sel.append(op); });
+      sel.onchange = () => setCharTag(c.id, ax, sel.value);
+      $(".v", cell).append(sel);
+      tg.append(cell);
+    } else {
+      tg.append(el(`<div class="tag-cell">
+        <div class="k">${esc(AXES[ax].label)} ${isRare?'<span class="rare">only 1</span>':''}</div>
+        <div class="v">${esc(val||'—')}</div></div>`));
+    }
+  });
+  body.append(tg);
+
+  // stub actions
+  if (c.isStub || c.isUser) {
+    const acts = el(`<div class="toolbar" style="margin-top:22px"></div>`);
+    const del = el(`<button class="btn sm">Delete ${c.isStub?'stub':'fighter'}</button>`);
+    del.onclick = () => {
+      if (!confirm(`Delete this ${c.isStub?'concept stub':'fighter'}?`)) return;
+      if (c.isStub) saveStubs(loadStubs().filter(s=>s.id!==c.id));
+      else saveCreated(loadCreated().filter(s=>s.id!==c.id));
+      toast("Deleted"); setView("roster");
+    };
+    acts.append(del);
+    body.append(acts);
+  }
+
+  detail.append(body);
+  wrap.append(detail);
+  return wrap;
+}
+
+function toggleStatus(id, key) {
+  // user-created fighters live in their own store
+  const created = loadCreated(); const ci = created.findIndex(c => c.id === id);
+  if (ci >= 0) {
+    const st = { ...(created[ci].status || {}) }; st[key] = !st[key];
+    created[ci] = { ...created[ci], status: st }; saveCreated(created);
+    toast(`${created[ci].name}: ${key} ${st[key]?'done':'reset'}`); render(); return;
+  }
+  const edits = loadEdits();
+  const base = BASE_CHARS.find(c => c.id === id);
+  const cur = { ...(base?.status||{}), ...((edits[id]||{}).status||{}) };
+  cur[key] = !cur[key];
+  edits[id] = { ...(edits[id]||{}), status: cur };
+  saveEdits(edits);
+  toast(`${base?.name || '?'}: ${key} ${cur[key]?'done':'reset'}`);
+  render();
+}
+function setCharTag(id, ax, val) {
+  const created = loadCreated(); const ci = created.findIndex(c => c.id === id);
+  if (ci >= 0) {
+    created[ci] = { ...created[ci], tags: { ...created[ci].tags, [ax]: val } }; saveCreated(created);
+    toast("Tag updated — export to save to file"); render(); return;
+  }
+  const edits = loadEdits();
+  edits[id] = { ...(edits[id]||{}), tags: { ...((edits[id]||{}).tags||{}), [ax]: val } };
+  saveEdits(edits);
+  toast("Tag updated — export to save to file");
+  // re-render to refresh "rare" flags & coverage
+  render();
+}
+
+/* ===================================================================
+   VIEW: TAG EXPLORER  (filter + full matrix)
+   =================================================================== */
+function viewExplorer() {
+  const wrap = el(`<div>
+    <div class="page-head"><div class="eyebrow">Filter & Inspect</div><h1>Tag Explorer</h1>
+      <p>Slice the roster by any axis, and read the full classification matrix — the same table from CHARACTER-ATTRIBUTES.md, kept live.</p></div>
+  </div>`);
+
+  // filters
+  const filters = el(`<div class="panel filters"></div>`);
+  AXIS_KEYS.forEach(ax => {
+    const f = el(`<label class="field"><span class="lab">${esc(AXES[ax].label)}</span></label>`);
+    const sel = el(`<select data-ax="${esc(ax)}"><option value="">Any</option></select>`);
+    AXES[ax].values.forEach(v => { const o=document.createElement("option"); o.value=v; o.textContent=v; if(STATE.filters[ax]===v) o.selected=true; sel.append(o); });
+    sel.onchange = () => { STATE.filters[ax] = sel.value; renderMatrix(); };
+    f.append(sel); filters.append(f);
+  });
+  wrap.append(filters);
+
+  const bar = el(`<div class="toolbar"><span id="match-count" class="hint" style="color:var(--txt-2);font-weight:700"></span>
+    <button class="btn sm ghost" id="clear-f">Clear filters</button></div>`);
+  wrap.append(bar);
+
+  const matrixWrap = el(`<div id="matrix-host"></div>`);
+  wrap.append(matrixWrap);
+
+  // defer matrix render until in DOM so we can update count node
+  setTimeout(() => { $("#clear-f").onclick = () => { STATE.filters = {}; setView("explorer"); }; renderMatrix(); }, 0);
+  return wrap;
+}
+
+function filteredRoster() {
+  const active = Object.entries(STATE.filters).filter(([, v]) => v);
+  return getRoster().filter(c => active.every(([ax, v]) => (c.tags?.[ax]) === v));
+}
+
+function renderMatrix() {
+  const host = $("#matrix-host"); if (!host) return;
+  const rows = filteredRoster();
+  const cnt = $("#match-count"); if (cnt) cnt.textContent = `${rows.length} fighter${rows.length!==1?'s':''} match`;
+  const table = el(`<div class="matrix-wrap"><table class="matrix">
+    <thead><tr><th>Fighter</th>${AXIS_KEYS.map(ax=>`<th>${esc(AXES[ax].label.split(" ")[0])}</th>`).join("")}</tr></thead>
+    <tbody></tbody></table></div>`);
+  const tb = $("tbody", table);
+  if (!rows.length) { tb.append(el(`<tr><td colspan="${AXIS_KEYS.length+1}" class="empty-note">No fighter matches these filters — that's a gap worth building into.</td></tr>`)); }
+  rows.forEach(c => {
+    const tr = el(`<tr><td class="name"><span class="swatch" style="background:${esc(c.colorIdentity||'#888')}"></span>${esc(c.name)}${c.isStub?' <span style="color:var(--txt-3);font-weight:600">(stub)</span>':''}</td>
+      ${AXIS_KEYS.map(ax=>`<td>${esc(c.tags?.[ax]||'—')}</td>`).join("")}</tr>`);
+    tr.onclick = () => setView("detail", c.id);
+    tb.append(tr);
+  });
+  host.innerHTML = ""; host.append(table);
+}
+
+/* ===================================================================
+   VIEW: CREATE A FIGHTER  (guided multi-step wizard)
+   =================================================================== */
+function viewExplore() {
+  if (STATE._createStep == null) STATE._createStep = 0;
+  STATE._meta = STATE._meta || {};   // free fields: name, tagline, color, seed, want
+  STATE._draft = STATE._draft || {}; // tag combo across the 12 axes
+  const steps = CREATE_STEPS;
+  const step = steps[STATE._createStep];
+  const cov = coverage();
+
+  const wrap = el(`<div>
+    <div class="page-head"><div class="eyebrow">Design Space</div><h1>Create a Fighter</h1>
+      <p>A guided flow — shape the concept step by step. Skip anything; hit <b>Surprise me</b> to fill open roster gaps. Create when ready; it joins the roster as an in-progress fighter you can hand to Claude for the full Deep-Dive.</p></div>
+  </div>`);
+
+  // stepper + progress
+  const stepper = el(`<div class="wiz-steps"></div>`);
+  steps.forEach((s, i) => {
+    const st = el(`<div class="wiz-step ${i===STATE._createStep?'active':''} ${i<STATE._createStep?'done':''}">
+      <span class="n">${i<STATE._createStep?'✓':(i+1)}</span> ${esc(s.title)}</div>`);
+    st.onclick = () => { STATE._createStep = i; render(); };
+    stepper.append(st);
+  });
+  wrap.append(stepper);
+  wrap.append(el(`<div class="wiz-progress"><i style="width:${STATE._createStep/(steps.length-1)*100}%"></i></div>`));
+
+  const grid = el(`<div class="explore-grid"></div>`);
+  const panel = el(`<div class="panel picker-panel"></div>`);
+  panel.append(el(`<div class="wiz-title">Step ${STATE._createStep+1} · ${esc(step.title)}</div>`));
+  const bodyEl = el(`<div class="wiz-body"></div>`);
+
+  if (step.fields) {
+    step.fields.forEach(f => {
+      if (f === "name" || f === "tagline") {
+        const lab = f === "name" ? "Name" : "One-line pitch (tagline)";
+        const ph = f === "name" ? "e.g. VOLT" : "e.g. the reckless storm-rider who never backs down…";
+        const fld = el(`<label class="field" style="margin-bottom:16px"><span class="lab">${lab}</span></label>`);
+        const inp = el(`<input type="text">`);
+        inp.placeholder = ph; inp.value = STATE._meta[f] || "";
+        inp.oninput = () => { STATE._meta[f] = inp.value; renderWizPreview(); };
+        fld.append(inp); bodyEl.append(fld);
+      } else if (f === "color") {
+        bodyEl.append(el(`<span class="lab" style="display:block;margin-bottom:8px">Identity color</span>`));
+        const sw = el(`<div class="wiz-swatches"></div>`);
+        COLORS.forEach(col => {
+          const b = el(`<button class="wiz-sw ${STATE._meta.color===col?'sel':''}" title="${esc(col)}"></button>`);
+          b.style.background = col;
+          b.onclick = () => { STATE._meta.color = col; render(); };
+          sw.append(b);
+        });
+        bodyEl.append(sw);
+      } else { // seed / want textareas
+        const lab = f === "seed" ? "The Seed / contradiction (optional)" : "The Want (optional)";
+        const ph = f === "seed" ? "Who they are + the one contradiction that makes them a person…"
+                                : "What they actually want — the emotional engine…";
+        const fld = el(`<label class="field" style="margin-bottom:16px"><span class="lab">${lab}</span></label>`);
+        const ta = el(`<textarea rows="4"></textarea>`);
+        ta.placeholder = ph; ta.value = STATE._meta[f] || "";
+        ta.oninput = () => { STATE._meta[f] = ta.value; };
+        fld.append(ta); bodyEl.append(fld);
+      }
+    });
+  } else if (step.axes) {
+    const pg = el(`<div class="picker-grid"></div>`);
+    step.axes.forEach(ax => {
+      const f = el(`<label class="field"><span class="lab">${esc(AXES[ax].label)}</span></label>`);
+      const sel = el(`<select data-ax="${esc(ax)}"><option value="">— any —</option></select>`);
+      AXES[ax].values.forEach(v => {
+        const o = document.createElement("option"); o.value = v;
+        o.textContent = cov[ax][v] ? v : `${v}  ◇ gap`;
+        if (STATE._draft[ax] === v) o.selected = true;
+        sel.append(o);
+      });
+      sel.onchange = () => { STATE._draft[ax] = sel.value; renderWizPreview(); };
+      f.append(sel); pg.append(f);
+    });
+    bodyEl.append(pg);
+    const sm = el(`<button class="btn ghost sm" style="margin-top:16px">✦ Surprise me — fill open gaps</button>`);
+    sm.onclick = surpriseMe;
+    bodyEl.append(sm);
+  } else if (step.review) {
+    bodyEl.append(reviewBlock());
+  }
+  panel.append(bodyEl);
+
+  // footer nav
+  const foot = el(`<div class="wiz-foot"></div>`);
+  const back = el(`<button class="btn ghost">← Back</button>`);
+  if (STATE._createStep === 0) back.disabled = true;
+  back.onclick = () => { if (STATE._createStep > 0) { STATE._createStep--; render(); } };
+  foot.append(back);
+  if (STATE._createStep < steps.length - 1) {
+    const next = el(`<button class="btn primary">Next →</button>`);
+    next.onclick = () => { STATE._createStep++; render(); };
+    foot.append(next);
+  } else {
+    const create = el(`<button class="btn primary">✦ Create fighter</button>`);
+    create.onclick = createFighter;
+    foot.append(create);
+  }
+  const reset = el(`<button class="btn ghost sm" style="margin-left:auto">Reset</button>`);
+  reset.onclick = () => { STATE._createStep = 0; STATE._draft = {}; STATE._meta = {}; render(); };
+  foot.append(reset);
+  panel.append(foot);
+  grid.append(panel);
+
+  // right: live preview
+  grid.append(el(`<div id="wiz-preview-host"></div>`));
+  wrap.append(grid);
+  setTimeout(renderWizPreview, 0);
+  return wrap;
+}
+
+// The draft as a character-shaped object (for preview + create).
+function wizPreviewChar() {
+  return {
+    name: STATE._meta.name || "Unnamed Fighter",
+    tagline: STATE._meta.tagline || "",
+    colorIdentity: STATE._meta.color || "#8b93a8",
+    tags: STATE._draft || {},
+    seed: STATE._meta.seed || "", want: STATE._meta.want || "",
+    status: { bible: !!(STATE._meta.seed || STATE._meta.want), art: false, rig: false },
+    portrait: ""
+  };
+}
+// Which chosen tag values are current roster gaps this fighter would fill.
+function fillsList() {
+  const cov = coverage(); const d = STATE._draft || {};
+  return AXIS_KEYS.filter(ax => d[ax] && !cov[ax][d[ax]]).map(ax => ({ ax, v: d[ax] }));
+}
+function reviewBlock() {
+  const fills = fillsList();
+  const box = el(`<div></div>`);
+  box.append(el(`<p style="color:var(--txt-2);margin:0 0 14px">Review the concept, then create. It joins the roster as an <b>in-progress</b> fighter (art & rig still to do) — hand it to Claude to run the full Character Deep-Dive.</p>`));
+  if (fills.length) box.append(el(`<div class="fills-box good"><b>Fills ${fills.length} roster gap${fills.length>1?'s':''}:</b>
+    <div class="tokens">${fills.map(f=>`<span class="tk">${esc(AXES[f.ax].label.split(" ")[0])}: ${esc(f.v)}</span>`).join("")}</div></div>`));
+  else box.append(el(`<div class="fills-box none">This combo overlaps existing fighters on every set axis — consider a <span style="color:var(--gap)">◇ gap</span> value for variety.</div>`));
+  return box;
+}
+// Live preview card (rebuilt in place, so text inputs never lose focus).
+function renderWizPreview() {
+  const host = $("#wiz-preview-host"); if (!host) return;
+  const c = wizPreviewChar();
+  const chosen = AXIS_KEYS.filter(ax => c.tags[ax]);
+  const card = el(`<div class="panel stub-card" style="--ch:${esc(c.colorIdentity)}">
+    <div class="sc-head" style="background:radial-gradient(100% 80% at 50% 0%, color-mix(in srgb,${esc(c.colorIdentity)} 22%, transparent), transparent 60%)">
+      <div class="t">Live preview</div><div class="h">${esc(c.name)}</div>
+      <div style="color:var(--txt-2);font-size:12.5px;margin-top:4px">${esc(c.tagline || '—')}</div>
+    </div>
+    <div class="sc-body">
+      <div class="k" style="font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--txt-3);font-weight:700;margin-bottom:6px">Chosen so far (${chosen.length}/12)</div>
+      <div class="stub-tags">${chosen.length ? chosen.map(ax=>`<span class="chip"><span class="k">${esc(AXES[ax].label.split(" ")[0])}</span> ${esc(c.tags[ax])}</span>`).join("") : '<span style="color:var(--txt-3);font-size:13px">No tags chosen yet.</span>'}</div>
+    </div>
+  </div>`);
+  host.innerHTML = ""; host.append(card);
+}
+// Persist the drafted fighter into the roster (as in-progress), then open it.
+function createFighter() {
+  const c = wizPreviewChar();
+  const fighter = {
+    id: "usr_" + Date.now(),
+    name: c.name, tagline: c.tagline, colorIdentity: c.colorIdentity,
+    portrait: "", status: c.status, tags: { ...STATE._draft },
+    seed: c.seed, want: c.want
+  };
+  const created = loadCreated(); created.push(fighter);
+  if (saveCreated(created)) {
+    STATE._createStep = 0; STATE._draft = {}; STATE._meta = {};
+    toast(`${fighter.name} created — added to roster`);
+    setView("detail", fighter.id);
+  }
+}
+
+// pick a coherent-ish combo that includes at least one current gap value
+function surpriseMe() {
+  const gaps = gapList();
+  const draft = {};
+  if (gaps.length) {
+    // anchor on 1-3 random gaps
+    const shuffled = gaps.slice().sort(() => Math.random() - .5);
+    const pick = shuffled.slice(0, Math.min(3, shuffled.length));
+    pick.forEach(g => draft[g.axis] = g.value);
+  }
+  // fill remaining axes with a random valid value
+  AXIS_KEYS.forEach(ax => {
+    if (!draft[ax]) { const vals = AXES[ax].values; draft[ax] = vals[Math.floor(Math.random()*vals.length)]; }
+  });
+  STATE._draft = draft;
+  render();
+  toast(gaps.length ? "Combo built around open gaps" : "Random combo built");
+}
+
+// (Old flat-explorer helpers renderStub/saveStub/renderSaved removed —
+//  superseded by the create wizard above. Concept "stubs" still supported in
+//  the roster/detail via loadStubs/saveStubs for anything created earlier.)
+
+/* ===================================================================
+   EXPORT — download merged characters.json
+   =================================================================== */
+function exportJSON() {
+  const roster = getRoster();
+  const out = {
+    "_comment": "Exported from GameOS Character Studio. Includes base characters (with edits) + saved concept stubs (isStub omitted). Replace characters.json with this to persist.",
+    game: "OVERTHRONE",
+    tagline: "The Circuit's fighting league.",
+    axes: AXES,
+    characters: roster.map(c => { const { isStub, isUser, ...rest } = c; return rest; })
+  };
+  const blob = new Blob([JSON.stringify(out, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "characters.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast("characters.json downloaded");
+}
+window.setView = setView; // expose for inline onclick handlers
+
+// Boot LAST — every const ($), fn, and the DOM are all defined by now.
+boot();
+</script>
+</body>
+</html>

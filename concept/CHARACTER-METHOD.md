@@ -30,8 +30,11 @@ Lightweight and living, like CONCEPT.md - we don't fill 50 blank fields; we inte
 the character is a person, then stop. Output per character = a bible at
 `concept/characters/<name>/<NAME>.md`. CONCEPT.md stays world-level; bibles are per-fighter.
 
-## The 6 layers (essence -> surface)
+## The layers (essence -> surface) - v2
 
+0. **THE PITCH / PLAYER FANTASY** - one line: what fantasy does *playing* them fulfill, and why
+   would someone pick them on the select screen? (The appeal test - a deep character no one wants
+   to play still fails.)
 1. **THE SEED** - one sentence: who they are + the **contradiction** (the heart). The single
    tension that makes them a person, not an archetype. Everything hangs here.
 2. **THE WOUND & THE WANT** - compressed backstory: what happened to them, what they're chasing
@@ -46,6 +49,28 @@ the character is a person, then stop. Output per character = a bible at
    expression - each traced back to 1-3. The most-cuttable layer if it's not earned.
 6. **THE VIBE IN MOTION** - how they idle / celebrate / lose, attitude & voice, the one gesture
    that's only theirs. Feeds animation and juice directly.
+7. **RELATIONSHIPS & ROSTER FIT** - rivalries and contrasts, where they sit vs the frame and the
+   legend, and the **one axis they own that no other fighter does** (the differentiation slot).
+8. **MECHANICS <-> FICTION COHERENCE** - explicit check: each stat/move/skill *expresses* who they
+   are; fiction and kit reinforce, never contradict. (Extends Layer 3 into a gate.)
+9. **VOICE** - how they talk: speech register, a signature taunt, win/lose lines, one catchphrase.
+   Cheap, huge personality payoff in a fighting game.
+
+## THE ADVERSARY GATE (right-sized - runs once, before "locked")
+
+Not a heavy multi-agent pass and NOT a critique of every lore sentence. It attacks exactly THREE
+failure modes - the ones that actually kill a character:
+1. **Cliche / derivative** - "is this just <famous character> reskinned?" Name the closest existing
+   character; if we can't say what's *fresh*, it's not done.
+2. **Roster redundancy** - does this overlap another fighter's identity axis (Layer 7)? Two
+   characters filling the same slot = one is dead weight.
+3. **Orphan traits** - any visible/character trait with no `<- because`? Cut it or earn it.
+
+If it survives all three, lock it. If not, refine and re-attack. (This is the Design OS
+synthesize -> adversarial-attack -> refine loop, scoped down for characters.)
+
+## The loop (per character)
+Pitch -> layers 1-9 (propose+critique, ask canon, lock each) -> Adversary Gate -> human gate -> done.
 
 ## Why this is the moat
 

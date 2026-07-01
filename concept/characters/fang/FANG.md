@@ -13,10 +13,21 @@ reads big but he plays as a **fast heavyweight** - trades durability for speed, 
 bruiser, NOT a slow damage-sponge tank. The lunge = a literal pounce. (ZERO = balanced; the
 tank archetype is a future character, not FANG.)
 
-**Visual anchor: `fang_v5_digitigrade_2.png`** (human face + tiger features, orange-dominant,
-banner-wraps, beast paws). NOTE: true digitigrade legs hit a generator wall and don't read at
-gameplay scale (see `fang_scale_mock.png`) - deferred to optional hero-art later. In-game = this
-SAME art style, but cut + rigged as a 2D cutout puppet, seen small from the isometric camera.
+**VISUAL ANCHOR (LOCKED 2026-06-30): `fang_styleB_digitigrade_1.png`** - Aviv: "מושלם".
+**CURRENT PORTRAIT (adopted 2026-07-01): `fang_v6_serious_1.png`** - the refined look: serious /
+determined stare + a leashed-brutal aura shown as warm fire on the fists (same design, deeper aura).
+- **Art style = "Guilty Gear / arcade-fighter 2D"** (bold clean cel-shading, hard rim light,
+  sharp confident outlines, saturated high-contrast). Chosen over the old soft `sports-anime`
+  after Aviv reviewed FANG rendered in 4 styles (A SF / B Guilty Gear / C comic / D toon).
+  See `fang_style_compare.png`. This SUPERSEDES the old Round-5 art direction.
+- **Legs = full tiger legs + clawed paws** (furred, striped, athletic/slim below the knee),
+  not human-legs-with-paws. (True reverse-joint digitigrade fought the generator for 5 rounds;
+  this dynamic-stance render is the one Aviv approved.)
+- Human face + tiger ears/fangs/markings, two-tone hair, tail, orange tank, banner-wraps. Orange.
+- NOTE: this anchor is a DYNAMIC fighting pose (key-art-ish). The neutral rig-ready pose is DONE:
+  **`FANG_rigpose_FINAL.png`** (transparent RGBA cutout, made via the RIGPOSE-STANDARD template +
+  Magnific Nano Banana Pro + background removal) = the file the mechanics chat cuts + rigs.
+- In-game = this SAME style, cut + rigged as a 2D cutout puppet, seen small from the iso camera.
 
 ---
 
@@ -30,6 +41,13 @@ his answer to being feared is NOT "please see I'm not a beast" (that's self-reje
 to prove a beast can be the hero, not to apologize for being one. The Circuit is the one place
 where "being a beast" makes you a star instead of an outcast. (= Naruto's outcast fuel, matured
 into self-acceptance. The feral grin is pride, not menace.)
+
+**Refinement (Aviv 2026-07-01) - add weight:** FANG is NOT a clown. Under the warmth is **serious
+determination and a genuinely dangerous, brutal power** he keeps leashed. The optimism and his
+principles are the leash - he *chooses* to fight with an open heart, but everyone can feel what he
+could unleash if he stopped choosing. So his register = warm + principled + optimistic ON TOP of
+a real, heavy resolve and latent ferocity. (Makes him read serious and threatening-when-needed,
+not just a happy underdog.)
 
 **Why this is the engine:** the whole design is the tension *imposing body vs warm soul* -
 "not too scary, not too cute." Scary comes from the build/beast features; warmth comes from
