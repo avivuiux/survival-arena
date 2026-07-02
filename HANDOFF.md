@@ -55,9 +55,17 @@ for the research-grounded SP control/combat model (confidence-tagged).
   model - velocity is ALWAYS `facing * magnitude`, so steering bends momentum in every state.
   `A`=Booster **run is ENVELOPE-DRIVEN** (ease-in attack + overshoot), tuned in
   `tools/tuner/movement-tuner.html`. **Continuity**: run seeds from your current speed (no
-  snap-to-0); glide follows facing. **Walk = SUSTAIN** (hold a dir with no A = keep the speed
-  you glided in with, or build to the `WALK_SPEED` floor; NEVER brakes). Knobs in fighter.gd:
-  `TURN_RATE`, `BOOST_ATTACK_TIME/SHARP`, `BOOST_OVERSHOOT`, `DRAG`, `WALK_SPEED`; `speed` per archetype.
+  snap-to-0); glide follows facing. **Walk = SETTLE (fixed session 4, 2026-07-02, "מעולה")**:
+  hold a dir with no A = speed glides gently DOWN to the `WALK_SPEED` floor (same DRAG as free
+  glide) or builds UP to it - never brakes below, never sustains run-speed forever (the old
+  pure-SUSTAIN kept full run speed while walking; invisible until the momentum trail exposed it).
+  Knobs in fighter.gd: `TURN_RATE`, `BOOST_ATTACK_TIME/SHARP`, `BOOST_OVERSHOOT`, `DRAG`,
+  `WALK_SPEED`; `speed` per archetype.
+- ✅ **Momentum read, slice 1 (session 4, 2026-07-02, Aviv "מעולה")**: procedural visual of the
+  tuned movement on the greybox - **body stretch along the velocity axis** (up to 16% at top
+  speed; greybox path only for now) + **fading afterimage trail** above walk speed. Knobs:
+  `STRETCH_MAX`, `TRAIL_INTERVAL/LIFE/MIN_SPEED`. Per DESIGN.md §function-first: momentum was
+  the biggest unmet visual read. Bonus: the trail exposed the walk-sustain bug on first play.
 - ✅ **Melee** (S) · **Ranged** aimed projectile (D) · **Magic/skill** (R: chill/lunge/shockwave)
   · **Defense** block + parry window (Space). Juice: hit-stop, flash, shake, sparks.
 - ✅ **Dash REMOVED** (SP had none; the Rusher lunge still reuses the burst internally).
@@ -107,9 +115,11 @@ C:\Users\Aviv\dev\tools\godot\Godot_v4.7-stable_win64_console.exe --headless --p
 0. **(Session 3 done)** Movement feel overhauled + tuned by Aviv (envelope run, continuity,
    walk-sustain, whole-screen arena, F3/F4 debug, tuner tool). **Movement now feels right.**
    The remaining feel-tune is the RUN CURVE via the tuner if Aviv wants to keep dialing.
-1. **Retest the combat GESTALT on the new movement**: melee/ranged/parry/skills were built
-   BEFORE this movement overhaul + whole-screen arena. Play and check spacing/poking/parry
-   still feel right with envelope-run + walk-sustain; tune reach/ranged/parry timing.
+1. ~~**Retest the combat GESTALT on the new movement**~~ **✅ DONE (session 4, 2026-07-01,
+   Aviv "מעולה")**: melee/ranged/parry/skills were built BEFORE the movement overhaul +
+   whole-screen arena. Retested by Aviv on the new envelope-run + walk-sustain + full-screen
+   arena. **The predicted friction (drive-by melee / overshoot past the foe) did NOT bite** -
+   the combat sits clean on the new movement, no tuning needed. Gestalt LOCKED.
 2. **FANG rigging (collaborative, hands-on - the "in-game art" milestone)**: cut
    `FANG_rigpose_FINAL.png` into parts + Skeleton2D + a test animation. Needs a LIVE editor
    session with Aviv (can't be done headless).
@@ -117,6 +127,67 @@ C:\Users\Aviv\dev\tools\godot\Godot_v4.7-stable_win64_console.exe --headless --p
 4. **Phase 2 - ONLINE (the wall, the REAL mode)**: single-client multiplayer. Start with
    Godot built-in multiplayer (ENet); design the authority model. Only once the
    single-player game is solid.
+
+## External tooling evaluated (session 4, 2026-07-02) - "adopt nothing, lift 2 docs"
+
+Evaluated 5 Claude-Code-game-dev GitHub repos (Aviv-supplied) for adoption, in parallel,
+against a hard bar: *does it move the needle NOW without process overhead?* **Result: adopt
+NO framework** - every one IS the process/ceremony this project deferred (confirms our
+anti-scope instinct). Verdicts: game-development (HermeticOrmus) = **skip** (no Godot at all);
+Game-Studios (Donchitos) / gstack (fagemx) = **lift-parts**; OpenGame (CUHK) / one-button
+(abagames) = **reference-only** (Phaser/web, wrong engine).
+
+**Lifted (the only real value) → `reference/`:**
+- `reference/GODOT-4x-API-NOTES.md` - post-cutoff Godot 4.4→4.6 API delta (deprecated calls,
+  new syntax, the `rg *.gd`→`gap` gotcha). Correctness aid for writing GDScript. From
+  Game-Studios (MIT). Pinned at 4.6; we're 4.7 → verify load-bearing calls.
+- `reference/COMBAT-FEEL-CHECKLIST.md` - 4-beat feedback model + dead-time table + juice list,
+  mapped to our melee/ranged/parry. For the next feel-tuning pass. From gstack + one-button (MIT).
+- `reference/SCOPE-CREEP-RUBRIC.md` - a quantified check that turns "scope is the killer" from
+  slogan into a net-% verdict (PASS/CONCERNS/FAIL + cut/defer/keep/flag), baselined on HANDOFF +
+  git-log (not GDDs). Rubric lifted from Game-Studios `scope-check` (MIT).
+
+**Correction (Aviv pushback, same session):** first pass stopped à-la-carte mining too early -
+treated "don't adopt the framework" as "nothing else usable." Re-looked at Game-Studios deeper:
+the *skills* (vertical-slice, team-combat) ARE genuinely coupled to a GDD/sprint/gate pipeline we
+don't have (verdict holds), but the **rubrics inside them** are portable - hence the scope rubric
+above. Still un-mined but available if wanted: `vertical-slice`'s playtest-observation techniques
+(silent-obs / think-aloud / Wizard-of-Oz) and the `godot-gdscript-specialist` style persona.
+**Lesson: the unit to lift from a coupled framework is the rubric/knowledge, not the whole skill.**
+
+**Full deep-read (Aviv "read everything, think again"):** mined ALL of Game-Studios - 73 skills
++ 49 agents + infra - in parallel. **Verdict CONFIRMED at full scale:** ~all 122 items are
+coupled to the GDD/sprint/ADR/gate/multi-agent pipeline we reject. The deep read changed the
+OUTPUT, not the verdict - it surfaced a curated set worth taking. Lifted 3 more (economically:
+1 new doc + 2 folded sections):
+- `reference/FIND-THE-FUN-DECISIONS.md` (NEW) - build/keep/kill gate: falsifiable hypothesis,
+  riskiest-assumption-first, 3-PIVOTs->KILL, engine-not-browser-for-feel, + a **GRAVEYARD** of
+  killed mechanics (ring-out / dash / mouse-aim now recorded). From `prototype`/`prototyper` (MIT).
+- Folded into `COMBAT-FEEL-CHECKLIST.md` -> a **Bot-behavior** section (fun-not-optimal, telegraph
+  intent, data-tunable knobs) - the fix-lens for our "bot too aggressive" note. From `ai-programmer`.
+- Folded into `GODOT-4x-API-NOTES.md` -> a **style/perf idioms** section (no-signals-in-_process,
+  @onready caching, set_process(false), pooling, StringName). From `godot-gdscript-specialist`.
+
+**Top GameOS-future asset (logged, NOT built): the CCGS Skill Testing Framework** - a deletable,
+zero-dependency skill-QA layer (catalog -> 5-case behavioral spec -> a **static 7-check linter** +
+a **score-delta keep-or-revert loop** via git checkout). This is the ready-made answer to "how do
+we author + validate GameOS skills well." Plus the file-is-memory state machine (pre-compact/
+session-stop hooks + `<!-- STATUS -->` breadcrumb) and per-agent MEMORY.md pattern.
+
+**Catalogued, real-but-premature (available on request, NOT lifted):** test-helpers/test-flakiness/
+test-setup (GDUnit4 code+CI - premature, no tests yet), soak-test (fun-fatigue + orphan-node leak
+protocol), perf-profile, playtest-report structure, quick-design tuning ladder, smoke-check,
+settings.json safety deny-list + crash-recovery hooks, prototype-throwaway path rule. All decoupled
+and genuinely usable, but lifting them into a greybox prototype now would itself be scope creep.
+
+**reference/ now holds 4 docs:** GODOT-4x-API-NOTES, COMBAT-FEEL-CHECKLIST, SCOPE-CREEP-RUBRIC,
+FIND-THE-FUN-DECISIONS. All MIT-attributed, no framework machinery imported.
+
+**Logged for GameOS-future (NOT built - phase 2):** two patterns worth re-authoring for Godot
+if/when GameOS is real - (1) a **self-evolving debug protocol** (lessons log that promotes
+recurring fixes into proactive pre-build checks; OpenGame `debug-skill`), and (2) a
+**simulation "fun-gate"** (prove skilled play beats mashing; one-button's GA-ratio idea). Both
+map onto the SYSTEM.md + lessons-log ambition. Reference-only; no code taken.
 
 ## Working method that worked this session
 

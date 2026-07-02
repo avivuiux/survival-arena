@@ -28,7 +28,11 @@ the other chat can't hear you, so the files are the only channel.
 - **ZERO** = the **balanced** archetype (control / chill, blue).
 - **tank** = an archetype with **no character yet** (open future slot). NOT FANG.
 - **Booster / Run** - hold `A`; the thrust along your facing. Envelope-driven (see `tools/tuner/`).
-- **Walk** - light arrow-move. **Removed for now**; will return without trampling the run.
+- **Walk** - hold a direction with no `A`: speed **settles** to the walk floor - glides gently
+  DOWN from run speed (~2s, same drag as free glide) or builds UP to the floor. Never brakes
+  below it, never sustains run-speed forever (fixed 2026-07-02 after the momentum trail exposed it).
+- **Momentum read** - the procedural visual of speed on the greybox: body stretch along the
+  velocity axis + a fading afterimage trail above walk speed. Trail gone = you're at walk.
 - **Steer** - arrows rotate your facing (heading) with turn momentum. No mouse.
 - **Rig-ready / "ready to rig"** - a transparent A-pose PNG meeting `concept/RIGPOSE-STANDARD.md`.
 - **Rigged** - cut into parts + Skeleton2D + a test animation in Godot.

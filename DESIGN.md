@@ -61,6 +61,37 @@ If a task isn't on the path to "is the hit satisfying?", it is out of scope righ
 
 This is the gate. We do not build Slice 3 (second player) until the hit feels good.
 
+## In-game character: function-first (Aviv, 2026-07-02)
+
+**Decision:** the generated concept art (FANG/ZERO PNGs) is IDENTITY REFERENCE, not the in-game
+asset. How a character looks/moves in the game is **derived from what the FIGHT needs to read at
+speed** - not from a picture. We pick the technical form (sprite / frames / rig / procedural) only
+after we know what must be communicated. This defers "the look" until the game earns real art.
+
+**What an in-game character MUST communicate, ranked by gameplay need** (with what the greybox
+already does, and the gap):
+
+1. **Facing / heading** - THE core read (steering is the whole movement model). *Have:* the white
+   facing line. *Gap:* thin, but functional.
+2. **Action state** - attacking / blocking + parry-window / hit / KO / skill-casting /
+   moving-vs-idle. This is what the spacing + parry mind-game runs on. *Have:* attack telegraph
+   rect, block/parry arc, hit flash, chill tint, KO darken. *Gap:* **no attack anticipation/
+   wind-up** (the attack is instant) - flagged in `reference/COMBAT-FEEL-CHECKLIST.md`.
+3. **Momentum / speed** - the "flying / glide" SP feel we tuned to "מעולה". *Have:* **nothing
+   visual** (only the F3 debug vector). *Gap:* **the biggest unmet read** - the movement we're
+   proudest of has zero visual expression.
+4. **Identity** - me vs opponent, which archetype. *Have:* body color + name label. *Gap:* fine.
+
+**What function-first tells us to build FIRST:** momentum (#3) is the top unmet read, and #2 has one
+weak spot (no wind-up). Both are **procedural motion on the greybox** - lean/tilt into velocity,
+squash & stretch on action, a speed trail, a short attack wind-up pose. This is **code-only,
+asset-independent, headless-testable, and reversible** - it obeys the greybox-polish principle
+(timing/mechanism/readability = allowed; final art magnitude = still deferred). It expresses the
+tuned movement without committing to any art style.
+
+**Still deferred (not now):** the actual look (pixel / vector / hand-drawn) and the technical form
+(sprite-sheet vs skeletal rig). Those get decided when the game earns real art, not before.
+
 ## Greybox polish principle (learned the hard way, twice)
 
 While in greybox, only polish things that are **asset-independent**:

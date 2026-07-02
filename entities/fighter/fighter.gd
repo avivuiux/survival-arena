@@ -44,6 +44,11 @@ const SHOCK_RADIUS := 130.0
 const SHOCK_KNOCKBACK := 620.0
 const SHOCK_DAMAGE := 8
 const RANGED_COOLDOWN := 0.45    # long-range aimed attack (every fighter has it)
+# --- Momentum read (procedural, greybox - DESIGN.md function-first) ---
+const TRAIL_INTERVAL := 0.035    # seconds between afterimage samples
+const TRAIL_LIFE := 0.28         # afterimage fade time
+const TRAIL_MIN_SPEED := 190.0   # trail only above this speed (walk floor stays clean)
+const STRETCH_MAX := 0.16        # body stretch along velocity at top speed (16%)
 const BLOCK_DMG_MULT := 0.25     # damage taken while blocking a frontal hit
 const BLOCK_KNOCK_MULT := 0.3
 const PARRY_WINDOW := 0.18        # block just started = perfect parry (full negate)
@@ -105,6 +110,8 @@ var _bot_retreat := 0.0         # bot: backing-off timer after a swing
 var _bot_dodge_cd := 0.0        # bot: cooldown between dodges
 var _boost_t := 0.0             # time held on the booster - drives the movement envelope
 var _boosting_prev := false     # was boosting last frame (for continuity-seeding on boost start)
+var _trail: Array = []          # momentum afterimages: {pos, life}
+var _trail_timer := 0.0
 var debug_draw := false         # F3: draw the live velocity vector on this fighter
 var _hitbox: Area2D
 var _hurtbox: Area2D
@@ -157,6 +164,15 @@ func _process(delta: float) -> void:
 		_bot_retreat -= delta
 	if _bot_dodge_cd > 0.0:
 		_bot_dodge_cd -= delta
+	# Momentum trail: fade existing afterimages (even after KO), sample new ones at speed.
+	if not _trail.is_empty():
+		for t in _trail:
+			t["life"] -= delta
+		_trail = _trail.filter(func(t): return t["life"] > 0.0)
+	_trail_timer -= delta
+	if active and _trail_timer <= 0.0 and _move_vel.length() > TRAIL_MIN_SPEED:
+		_trail.append({"pos": position, "life": TRAIL_LIFE})
+		_trail_timer = TRAIL_INTERVAL
 
 	# Knockback always applies (so a KO'd fighter still slides) - paused while dashing.
 	if not _dashing:
@@ -268,14 +284,18 @@ func _process(delta: float) -> void:
 				_boost_t = 0.0                               # not boosting - envelope resets
 				var cur := _move_vel.length()
 				if not _attacking and in_dir != Vector2.ZERO:
-					# WALK = SUSTAIN, never brake: hold a direction to KEEP your current speed
-					# ("runs in the background" - carry the momentum you glided in with after a run),
-					# or build up to the WALK_SPEED floor if you're slower than it. Never decelerates.
+					# WALK = SETTLE to the walk floor (Aviv 2026-07-02: "speed doesn't return to
+					# walk speed" - pure sustain kept run-speed forever once the trail made it
+					# visible). Above the floor: glide DOWN gently (same DRAG as free glide, ~2s)
+					# so run momentum isn't trampled, it settles. Below: build UP to the floor.
 					var floor_spd := WALK_SPEED
 					if _chill_time > 0.0:
 						floor_spd *= CHILL_SLOW
-					var maintain := maxf(cur, floor_spd)     # sustain current, at least the floor
-					var mag := move_toward(cur, maintain, ACCEL * delta)
+					var mag: float
+					if cur > floor_spd:
+						mag = move_toward(cur, floor_spd, DRAG * delta)
+					else:
+						mag = move_toward(cur, floor_spd, ACCEL * delta)
 					_move_vel = facing * mag                 # direction follows facing (steering bends it)
 				else:
 					# no direction held: glide to a stop via DRAG, following your facing.
@@ -498,9 +518,18 @@ func reset_fighter(pos: Vector2) -> void:
 	_boosting_prev = false
 	_blocking = false
 	_block_time = 0.0
+	_trail.clear()
+	_trail_timer = 0.0
 	active = true
 
 func _draw() -> void:
+	# momentum trail (behind everything): afterimages fade out, read = "I am moving fast"
+	for t in _trail:
+		var ta: float = (t["life"] / TRAIL_LIFE)
+		var lp: Vector2 = t["pos"] - position
+		var ts: float = SIZE * (0.55 + 0.35 * ta)          # older = smaller
+		draw_rect(Rect2(lp - Vector2(ts, ts) / 2.0, Vector2(ts, ts)),
+			Color(body_color.r, body_color.g, body_color.b, ta * 0.20))
 	# facing indicator
 	draw_line(Vector2.ZERO, facing * (SIZE * 0.9), Color(1, 1, 1, 0.5), 2.0)
 	# DEBUG (F3): live velocity vector (yellow) - shows when momentum diverges from facing
@@ -552,9 +581,17 @@ func _draw() -> void:
 			col = body_color.lerp(Color(0.50, 0.70, 1.0), 0.55)   # icy = chilled / slowed
 		if not active:
 			col = body_color.darkened(0.5)
+		# Momentum stretch: elongate the body along the velocity axis, scaled by speed.
+		# The square "leans into" its motion - the visual read of the tuned glide/run.
+		var mspd := _move_vel.length()
+		var mk := clampf(mspd / maxf(speed, 1.0), 0.0, 1.15) * STRETCH_MAX
+		if active and mk > 0.01:
+			draw_set_transform(Vector2.ZERO, _move_vel.angle(), Vector2(1.0 + mk, 1.0 - mk * 0.55))
 		var r := Rect2(-Vector2(SIZE, SIZE) / 2.0, Vector2(SIZE, SIZE))
 		draw_rect(r, col)
 		draw_rect(r, Color(1, 1, 1, 0.9), false, 2.0)
+		if active and mk > 0.01:
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	# attack telegraph
 	if _attacking:
 		var t := clampf(_attack_time / ATTACK_ACTIVE, 0.0, 1.0)
