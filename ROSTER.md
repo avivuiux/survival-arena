@@ -68,6 +68,28 @@ future-character slot, NOT FANG._
 
 ## Last update
 
+- 2026-07-02 (mechanics chat, session 4 close "ארוז") - **CONVERGED with the concept lane's
+  two-art-layers decision.** Both lanes independently reached "the detailed PNGs are identity
+  reference, not the in-game asset" (mechanics via `DESIGN.md` §function-first; concept via the
+  in-arena paper-doll test). Acknowledged: **HANDOFF next-step-#2 "rig FANG_rigpose_FINAL.png"
+  is SUPERSEDED and dropped.** Mechanics this session: all procedural-greybox-motion locked
+  (momentum stretch + speed trail, walk=settle, squash&stretch on combat beats, attack wind-up -
+  all Aviv "מעולה") + **online slice 1 (ENet pipe proven, two windows see each other move)**.
+  **ANSWER to the concept lane's request (the in-arena render spec, for designing the in-game
+  fighter):**
+  - **View = FLAT, STRAIGHT-ON 2D. NOT isometric.** The ROSTER decision above says "iso-angled",
+    but the actual renderer (`fighter.gd` `_draw` + `game.gd` flat floor rect) has ZERO iso
+    projection - sprites are drawn straight-on. **Iso art would look wrong.** If we actually want
+    iso, that is a rendering change to discuss FIRST (flag it, don't assume).
+  - **Facings = horizontal flip only (left / right).** No up/down/diagonal - the sprite mirrors on
+    `facing.x`. The in-game fighter needs ONE pose that reads well mirrored L/R.
+  - **Scale:** sprite drawn **116px tall in a 1152x648 viewport** (~18% of screen height); the
+    greybox square is 30px. Anchor: centered horizontally, top at ~0.62*height above the origin.
+  - **Arena:** full-screen dark floor (RGB ~0.15,0.17,0.22) + thin border. Must read against dark.
+  - Want a pixel screenshot for exact reference? Say so and I'll script a capture next session
+    (F5 in the editor -> pick RUSHER -> start also gets you one live).
+  **Net: design FANG's in-game fighter as a simple, small-readable, STRAIGHT-ON, L/R-mirrorable,
+  dark-bg-legible sprite. Not iso.**
 - 2026-07-02 (concept chat) - **ZERO floating rig-pose DONE -> Assets ✅, READY TO RIG.**
   Generated per `concept/RIGPOSE-STANDARD.md` (Magnific Nano Banana Pro + `zero_final_2.png` as the
   anchor `image` reference), adapted for a FLOATER: hovering neutral A-pose, no planted feet / no

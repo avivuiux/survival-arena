@@ -131,10 +131,15 @@ C:\Users\Aviv\dev\tools\godot\Godot_v4.7-stable_win64_console.exe --headless --p
    whole-screen arena. Retested by Aviv on the new envelope-run + walk-sustain + full-screen
    arena. **The predicted friction (drive-by melee / overshoot past the foe) did NOT bite** -
    the combat sits clean on the new movement, no tuning needed. Gestalt LOCKED.
-2. **FANG rigging (collaborative, hands-on - the "in-game art" milestone)**: cut
-   `FANG_rigpose_FINAL.png` into parts + Skeleton2D + a test animation. Needs a LIVE editor
-   session with Aviv (can't be done headless).
-3. **More characters**: ZERO + others, once concept produces their art (cheap via `ARCHETYPES`).
+2. ~~**FANG rigging**~~ **SUPERSEDED (2026-07-02, both chats converged).** The FANG/ZERO PNGs are
+   IDENTITY REFERENCE, not in-game assets (see DESIGN.md §function-first). Aviv's **two-art-layers**
+   decision (logged by the concept chat in ROSTER): (1) detailed PNG = portrait / select-screen /
+   identity; (2) the in-game fighter = a SEPARATE, simpler, small-readable sprite the CONCEPT lane
+   designs. So mechanics does NOT rig the portrait. When concept delivers an in-game FANG sprite,
+   mechanics just drops it into the existing `art_path` slot. **The current in-arena render spec
+   (flat straight-on 2D - NOT iso - L/R flip only, 116px tall) is written for the concept lane in
+   ROSTER's latest note.** Until then, the greybox + procedural motion is the in-game look.
+3. **More characters**: ZERO + others via `ARCHETYPES`, once concept delivers in-game sprites.
 4. **Phase 2 - ONLINE (the wall, the REAL mode)**: single-client multiplayer. See `NET.md`
    for the model + slice ladder + the deferred authority-model decision.
    - ✅ **Slice 1 - pipe proven (2026-07-02, Aviv "עובד")**: two Godot windows connect over
