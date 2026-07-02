@@ -135,9 +135,15 @@ C:\Users\Aviv\dev\tools\godot\Godot_v4.7-stable_win64_console.exe --headless --p
    `FANG_rigpose_FINAL.png` into parts + Skeleton2D + a test animation. Needs a LIVE editor
    session with Aviv (can't be done headless).
 3. **More characters**: ZERO + others, once concept produces their art (cheap via `ARCHETYPES`).
-4. **Phase 2 - ONLINE (the wall, the REAL mode)**: single-client multiplayer. Start with
-   Godot built-in multiplayer (ENet); design the authority model. Only once the
-   single-player game is solid.
+4. **Phase 2 - ONLINE (the wall, the REAL mode)**: single-client multiplayer. See `NET.md`
+   for the model + slice ladder + the deferred authority-model decision.
+   - ✅ **Slice 1 - pipe proven (2026-07-02, Aviv "עובד")**: two Godot windows connect over
+     ENet localhost and see each other move in real time. Throwaway test (`scripts/net_test.gd`
+     + `scenes/net_test.tscn`), NOT wired into the game. The transport wall is breached.
+   - **Next: slice 2** - sync the REAL fighter (position + facing + action state) over the pipe,
+     still localhost. Then slice 3 = the authority-model decision (server-auth vs rollback, WITH
+     Aviv - the real netcode fork). Then slice 4 = latency handling (the hardest; a 0ms local
+     slice CANNOT validate it).
 
 ## External tooling evaluated (session 4, 2026-07-02) - "adopt nothing, lift 2 docs"
 
