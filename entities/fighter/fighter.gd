@@ -55,6 +55,10 @@ const POSE_HIT_SQUASH := 0.20      # flatten along the hit direction when you ta
 const POSE_HIT_TIME := 0.14
 const POSE_PARRY_POP := 0.16       # brief uniform pop on a perfect parry
 const POSE_PARRY_TIME := 0.12
+# --- Attack wind-up (GAMEPLAY-CHANGING test slice, Aviv-approved 2026-07-02) ---
+# A short pre-swing commit: body cocks back, THEN the hit activates. Makes attacks
+# readable/parryable-on-reaction (the SP spacing+parry mind-game). Revert = set to 0.0.
+const WINDUP_TIME := 0.08
 const BLOCK_DMG_MULT := 0.25     # damage taken while blocking a frontal hit
 const BLOCK_KNOCK_MULT := 0.3
 const PARRY_WINDOW := 0.18        # block just started = perfect parry (full negate)
@@ -122,6 +126,8 @@ var _pose := ""                 # action pose: "hit" | "parry" (attack derives f
 var _pose_time := 0.0
 var _pose_max := 1.0
 var _pose_dir := Vector2.RIGHT  # hit squash axis (the knock direction)
+var _winding := false           # attack wind-up: committed, hit not active yet
+var _windup_time := 0.0
 var debug_draw := false         # F3: draw the live velocity vector on this fighter
 var _hitbox: Area2D
 var _hurtbox: Area2D
@@ -178,6 +184,12 @@ func _process(delta: float) -> void:
 		_pose_time -= delta
 		if _pose_time <= 0.0:
 			_pose = ""
+	# Wind-up: the commit window before the swing - when it expires, the hit goes live.
+	if _winding and active:
+		_windup_time -= delta
+		if _windup_time <= 0.0:
+			_winding = false
+			_start_attack()
 	# Momentum trail: fade existing afterimages (even after KO), sample new ones at speed.
 	if not _trail.is_empty():
 		for t in _trail:
@@ -281,7 +293,7 @@ func _process(delta: float) -> void:
 			# SP movement: the BOOSTER (A) is the THRUST along your facing (arrow or not).
 			# Boost speed follows the tuned ENVELOPE (ease-in ramp + overshoot); releasing it
 			# glides out via DRAG. Arrows STEER (above) + give a light WALK on their own.
-			if not _attacking and want_booster:
+			if not _attacking and not _winding and want_booster:
 				if not _boosting_prev:
 					# CONTINUITY: begin the run curve at the speed we're ALREADY moving, not from 0,
 					# so pressing run while walking flows up smoothly instead of snapping/re-ramping.
@@ -297,7 +309,7 @@ func _process(delta: float) -> void:
 				_boosting_prev = false
 				_boost_t = 0.0                               # not boosting - envelope resets
 				var cur := _move_vel.length()
-				if not _attacking and in_dir != Vector2.ZERO:
+				if not _attacking and not _winding and in_dir != Vector2.ZERO:
 					# WALK = SETTLE to the walk floor (Aviv 2026-07-02: "speed doesn't return to
 					# walk speed" - pure sustain kept run-speed forever once the trail made it
 					# visible). Above the floor: glide DOWN gently (same DRAG as free glide, ~2s)
@@ -320,8 +332,8 @@ func _process(delta: float) -> void:
 				if game:
 					position = game.clamp_to_arena(position)
 				_update_hitbox_position()
-			if want_attack and not _attacking and _cooldown <= 0.0:
-				_start_attack()
+			if want_attack and not _attacking and not _winding and _cooldown <= 0.0:
+				_begin_windup()
 			if want_skill and _skill_cd <= 0.0 and _chill_time <= 0.0:
 				if skill_type == "lunge":
 					_cast_lunge()
@@ -354,10 +366,20 @@ func _physics_process(delta: float) -> void:
 		if not _lunge:
 			_hitbox.monitoring = false
 
+# Press -> wind-up (committed, readable). The actual hit activates when it expires.
+func _begin_windup() -> void:
+	if WINDUP_TIME <= 0.0:
+		_start_attack()
+		return
+	_winding = true
+	_windup_time = WINDUP_TIME
+	_cooldown = attack_cooldown + WINDUP_TIME   # cooldown counts from the press
+
 func _start_attack() -> void:
 	_attacking = true
 	_attack_time = ATTACK_ACTIVE
-	_cooldown = attack_cooldown
+	if _cooldown <= 0.0:
+		_cooldown = attack_cooldown             # direct path (windup disabled)
 	_already_hit.clear()
 	_update_hitbox_position()
 	_hitbox.monitoring = true
@@ -425,7 +447,8 @@ func _bot_think() -> Dictionary:
 	var dir_to: Vector2 = to_foe.normalized() if dist > 0.001 else Vector2.RIGHT
 
 	# Block a close swing (the bot's defensive option now that dash is gone).
-	if foe._attacking and dist < 80.0 and _chill_time <= 0.0 and randf() < 0.4:
+	# The wind-up is readable - the bot reacts to it like a player would.
+	if (foe._attacking or foe._winding) and dist < 80.0 and _chill_time <= 0.0 and randf() < 0.4:
 		out["dir"] = dir_to
 		out["block"] = true
 		return out
@@ -543,6 +566,8 @@ func reset_fighter(pos: Vector2) -> void:
 	_trail_timer = 0.0
 	_pose = ""
 	_pose_time = 0.0
+	_winding = false
+	_windup_time = 0.0
 	active = true
 
 func _draw() -> void:
@@ -608,7 +633,12 @@ func _draw() -> void:
 		# MOMENTUM stretch. All visual-only - no gameplay timing changes.
 		var rot := 0.0
 		var scl := Vector2.ONE
-		if _attacking:
+		if _winding:
+			# cock BACK - the readable anticipation beat (builds toward the release)
+			var we := 1.0 - clampf(_windup_time / maxf(WINDUP_TIME, 0.001), 0.0, 1.0)
+			rot = facing.angle()
+			scl = Vector2(1.0 - 0.14 * we, 1.0 + 0.10 * we)
+		elif _attacking:
 			# lean INTO the swing, strongest at the start, easing out
 			var ap := clampf(_attack_time / ATTACK_ACTIVE, 0.0, 1.0)
 			rot = facing.angle()

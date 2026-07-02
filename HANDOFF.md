@@ -71,9 +71,12 @@ for the research-grounded SP control/combat model (confidence-tagged).
   hit = flatten along the knock direction (~0.14s), perfect parry = uniform "caught it" pop.
   Pose wins over momentum stretch while active. Knobs: `POSE_ATTACK_STRETCH`, `POSE_HIT_SQUASH/
   TIME`, `POSE_PARRY_POP/TIME`. Greybox path only (FANG art untouched).
-  **OPEN (Aviv's call, gameplay-changing, NOT built): attack wind-up** - a short pre-swing
-  delay would make attacks readable/parryable-on-reaction but slows attack response. Flagged in
-  COMBAT-FEEL-CHECKLIST as the melee's weak anticipation beat.
+- ✅ **Attack wind-up (session 4, 2026-07-02, Aviv-approved as a test slice -> "מעולה", LOCKED)**:
+  melee now has a ~0.08s committed pre-swing - body cocks BACK (readable anticipation), then the
+  hit goes live. No moving/boosting during the wind-up; cooldown counts from the press. The bot
+  reads your wind-up and reacts (like a human would) - this is the SP spacing+parry mind-game
+  beat. Knob: `WINDUP_TIME` (0.0 = instant attack, full revert). Closes the "weak anticipation"
+  flag from COMBAT-FEEL-CHECKLIST.
 - ✅ **Melee** (S) · **Ranged** aimed projectile (D) · **Magic/skill** (R: chill/lunge/shockwave)
   · **Defense** block + parry window (Space). Juice: hit-stop, flash, shake, sparks.
 - ✅ **Dash REMOVED** (SP had none; the Rusher lunge still reuses the burst internally).
