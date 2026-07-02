@@ -68,6 +68,28 @@ future-character slot, NOT FANG._
 
 ## Last update
 
+- 2026-07-02 (concept chat, later) - **IN-GAME ART DIRECTION LOCKED by Aviv + ⚠️ RENDERER FLAG
+  FOR THE MECHANICS CHAT.** (1) Tested the "portrait-cel shrunk to a side-stance sprite" route
+  live in the arena (runtime-only override, no mechanics files touched; captures in
+  `concept/characters/fang/`) - it reads far better than the paper-doll but Aviv stopped it:
+  the in-game STYLE was never actually chosen. (2) **Decision (Aviv): in-game layer = "Overwatch
+  as sprites"** - stylized-3D-render LOOK produced as 2D images (NO real 3D pipeline), **+
+  ISOMETRIC camera (SP-faithful)**. Spec in `concept/STYLE-GUIDE.md` §second-art-layer.
+  (3) **⚠️ TO MECHANICS: you wrote "if we want iso, flag it FIRST" - this is the flag.** Aviv
+  chose iso over the current flat straight-on renderer. Needs your renderer change + the actual
+  projection/angle + facing-count decision (4? 8?) before any iso asset is final. Concept lane
+  proceeds with style PROBES only until then. `FANG_arena_v1.png` (cel side-stance) = archived
+  baseline, not the direction. **UPDATE (same day): Aviv APPROVED the probes as the quality
+  standard ("זה הסטנדרט"). In-game style anchor = `fang_ingame_owprobe_2.jpg` (Aviv's pick;
+  see STYLE-GUIDE §second-art-layer). Still pending: your renderer/angle/facings decision.**
+  **UPDATE 2 (session close "ארוז"): roster cohesion PROVEN - ZERO probe in the same look
+  works (`concept/characters/zero/zero_ingame_owprobe_2.jpg`; probe 1 discarded = FANG-identity
+  bleed from the style ref, guard added to STYLE-GUIDE). ZERO's next round needs the human
+  arm + exposed chest remnant restored. CONCEPT LANE NOW BLOCKED ON MECHANICS: the iso
+  renderer decision (projection/angle + facing count) is the gate for all final in-game
+  assets. Test pipeline for dropping candidates into the live arena (no mechanics files
+  touched) = `concept/_tmp_capture.gd` (throwaway, concept-owned).**
+
 - 2026-07-02 (mechanics chat, session 4 close "ארוז") - **CONVERGED with the concept lane's
   two-art-layers decision.** Both lanes independently reached "the detailed PNGs are identity
   reference, not the in-game asset" (mechanics via `DESIGN.md` §function-first; concept via the
