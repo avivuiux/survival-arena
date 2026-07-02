@@ -49,6 +49,12 @@ const TRAIL_INTERVAL := 0.035    # seconds between afterimage samples
 const TRAIL_LIFE := 0.28         # afterimage fade time
 const TRAIL_MIN_SPEED := 190.0   # trail only above this speed (walk floor stays clean)
 const STRETCH_MAX := 0.16        # body stretch along velocity at top speed (16%)
+# --- Action pose (squash & stretch on combat beats - visual only, no timing change) ---
+const POSE_ATTACK_STRETCH := 0.20  # forward lean-in while the swing is active
+const POSE_HIT_SQUASH := 0.20      # flatten along the hit direction when you take one
+const POSE_HIT_TIME := 0.14
+const POSE_PARRY_POP := 0.16       # brief uniform pop on a perfect parry
+const POSE_PARRY_TIME := 0.12
 const BLOCK_DMG_MULT := 0.25     # damage taken while blocking a frontal hit
 const BLOCK_KNOCK_MULT := 0.3
 const PARRY_WINDOW := 0.18        # block just started = perfect parry (full negate)
@@ -112,6 +118,10 @@ var _boost_t := 0.0             # time held on the booster - drives the movement
 var _boosting_prev := false     # was boosting last frame (for continuity-seeding on boost start)
 var _trail: Array = []          # momentum afterimages: {pos, life}
 var _trail_timer := 0.0
+var _pose := ""                 # action pose: "hit" | "parry" (attack derives from _attacking)
+var _pose_time := 0.0
+var _pose_max := 1.0
+var _pose_dir := Vector2.RIGHT  # hit squash axis (the knock direction)
 var debug_draw := false         # F3: draw the live velocity vector on this fighter
 var _hitbox: Area2D
 var _hurtbox: Area2D
@@ -164,6 +174,10 @@ func _process(delta: float) -> void:
 		_bot_retreat -= delta
 	if _bot_dodge_cd > 0.0:
 		_bot_dodge_cd -= delta
+	if _pose_time > 0.0:
+		_pose_time -= delta
+		if _pose_time <= 0.0:
+			_pose = ""
 	# Momentum trail: fade existing afterimages (even after KO), sample new ones at speed.
 	if not _trail.is_empty():
 		for t in _trail:
@@ -476,6 +490,9 @@ func take_hit(dir: Vector2, dmg: int, knock: float = KNOCKBACK) -> void:
 		if _block_time <= PARRY_WINDOW:
 			_flash = FLASH_TIME
 			_iframe = 0.12
+			_pose = "parry"
+			_pose_time = POSE_PARRY_TIME
+			_pose_max = POSE_PARRY_TIME
 			if game:
 				game.add_shake(4.0)
 				game.spawn_sparks(position + facing * REACH, -dir, 10, Color(0.7, 0.95, 1.0))
@@ -485,6 +502,10 @@ func take_hit(dir: Vector2, dmg: int, knock: float = KNOCKBACK) -> void:
 	hp -= dmg
 	velocity += dir.normalized() * knock
 	_flash = FLASH_TIME
+	_pose = "hit"
+	_pose_time = POSE_HIT_TIME
+	_pose_max = POSE_HIT_TIME
+	_pose_dir = dir.normalized()
 	if game:
 		game.hit_stop(0.06)
 		game.add_shake(7.0)
@@ -520,6 +541,8 @@ func reset_fighter(pos: Vector2) -> void:
 	_block_time = 0.0
 	_trail.clear()
 	_trail_timer = 0.0
+	_pose = ""
+	_pose_time = 0.0
 	active = true
 
 func _draw() -> void:
@@ -581,16 +604,38 @@ func _draw() -> void:
 			col = body_color.lerp(Color(0.50, 0.70, 1.0), 0.55)   # icy = chilled / slowed
 		if not active:
 			col = body_color.darkened(0.5)
-		# Momentum stretch: elongate the body along the velocity axis, scaled by speed.
-		# The square "leans into" its motion - the visual read of the tuned glide/run.
-		var mspd := _move_vel.length()
-		var mk := clampf(mspd / maxf(speed, 1.0), 0.0, 1.15) * STRETCH_MAX
-		if active and mk > 0.01:
-			draw_set_transform(Vector2.ZERO, _move_vel.angle(), Vector2(1.0 + mk, 1.0 - mk * 0.55))
+		# Body transform: an ACTION POSE (squash & stretch on combat beats) wins over the
+		# MOMENTUM stretch. All visual-only - no gameplay timing changes.
+		var rot := 0.0
+		var scl := Vector2.ONE
+		if _attacking:
+			# lean INTO the swing, strongest at the start, easing out
+			var ap := clampf(_attack_time / ATTACK_ACTIVE, 0.0, 1.0)
+			rot = facing.angle()
+			scl = Vector2(1.0 + POSE_ATTACK_STRETCH * ap, 1.0 - POSE_ATTACK_STRETCH * 0.6 * ap)
+		elif _pose == "hit":
+			# flatten along the knock direction - the impact "lands" on the body
+			var he := clampf(_pose_time / _pose_max, 0.0, 1.0)
+			rot = _pose_dir.angle()
+			scl = Vector2(1.0 - POSE_HIT_SQUASH * he, 1.0 + POSE_HIT_SQUASH * 0.8 * he)
+		elif _pose == "parry":
+			# clean uniform pop - "I caught it"
+			var pe := clampf(_pose_time / _pose_max, 0.0, 1.0)
+			scl = Vector2.ONE * (1.0 + POSE_PARRY_POP * pe)
+		elif active:
+			# momentum stretch: elongate along the velocity axis, scaled by speed
+			var mspd := _move_vel.length()
+			var mk := clampf(mspd / maxf(speed, 1.0), 0.0, 1.15) * STRETCH_MAX
+			if mk > 0.01:
+				rot = _move_vel.angle()
+				scl = Vector2(1.0 + mk, 1.0 - mk * 0.55)
+		var posed := scl != Vector2.ONE
+		if posed:
+			draw_set_transform(Vector2.ZERO, rot, scl)
 		var r := Rect2(-Vector2(SIZE, SIZE) / 2.0, Vector2(SIZE, SIZE))
 		draw_rect(r, col)
 		draw_rect(r, Color(1, 1, 1, 0.9), false, 2.0)
-		if active and mk > 0.01:
+		if posed:
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	# attack telegraph
 	if _attacking:

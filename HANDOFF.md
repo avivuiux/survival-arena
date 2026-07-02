@@ -66,6 +66,14 @@ for the research-grounded SP control/combat model (confidence-tagged).
   speed; greybox path only for now) + **fading afterimage trail** above walk speed. Knobs:
   `STRETCH_MAX`, `TRAIL_INTERVAL/LIFE/MIN_SPEED`. Per DESIGN.md §function-first: momentum was
   the biggest unmet visual read. Bonus: the trail exposed the walk-sustain bug on first play.
+- ✅ **Action pose, slice 2 (session 4, 2026-07-02, Aviv "מעולה")**: squash & stretch on combat
+  beats, visual only, ZERO timing changes - attack = lean-into-the-swing (eases out), taking a
+  hit = flatten along the knock direction (~0.14s), perfect parry = uniform "caught it" pop.
+  Pose wins over momentum stretch while active. Knobs: `POSE_ATTACK_STRETCH`, `POSE_HIT_SQUASH/
+  TIME`, `POSE_PARRY_POP/TIME`. Greybox path only (FANG art untouched).
+  **OPEN (Aviv's call, gameplay-changing, NOT built): attack wind-up** - a short pre-swing
+  delay would make attacks readable/parryable-on-reaction but slows attack response. Flagged in
+  COMBAT-FEEL-CHECKLIST as the melee's weak anticipation beat.
 - ✅ **Melee** (S) · **Ranged** aimed projectile (D) · **Magic/skill** (R: chill/lunge/shockwave)
   · **Defense** block + parry window (Space). Juice: hit-stop, flash, shake, sparks.
 - ✅ **Dash REMOVED** (SP had none; the Rusher lunge still reuses the burst internally).
