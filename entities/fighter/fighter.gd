@@ -87,6 +87,12 @@ var key_defense := KEY_C
 var key_booster := KEY_A
 var is_bot := false
 var passive := false            # bot stands idle (practice mode)
+# ONLINE (NET.md slice 3): intent arrives from the network instead of keys/bot.
+# dir/block/booster are held states; attack/skill/ranged are one-shot presses
+# (consumed once read, so a single press acts exactly once).
+var remote_driven := false
+var remote_intent := {"dir": Vector2.ZERO, "attack": false, "skill": false,
+	"ranged": false, "block": false, "booster": false}
 
 var active := true
 var hp := 100
@@ -229,6 +235,17 @@ func _process(delta: float) -> void:
 				want_ranged = intent["ranged"]
 				want_block = intent["block"]
 				want_booster = intent["booster"]
+		elif remote_driven:
+			# the network feeds the same intent layer as keys/bot (NET.md slice 3)
+			in_dir = remote_intent["dir"]
+			want_attack = remote_intent["attack"]
+			want_skill = remote_intent["skill"]
+			want_ranged = remote_intent["ranged"]
+			want_block = remote_intent["block"]
+			want_booster = remote_intent["booster"]
+			remote_intent["attack"] = false       # presses act once
+			remote_intent["skill"] = false
+			remote_intent["ranged"] = false
 		else:
 			if Input.is_physical_key_pressed(key_up): in_dir.y -= 1.0
 			if Input.is_physical_key_pressed(key_down): in_dir.y += 1.0

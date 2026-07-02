@@ -145,10 +145,29 @@ C:\Users\Aviv\dev\tools\godot\Godot_v4.7-stable_win64_console.exe --headless --p
    - ✅ **Slice 1 - pipe proven (2026-07-02, Aviv "עובד")**: two Godot windows connect over
      ENet localhost and see each other move in real time. Throwaway test (`scripts/net_test.gd`
      + `scenes/net_test.tscn`), NOT wired into the game. The transport wall is breached.
-   - **Next: slice 2** - sync the REAL fighter (position + facing + action state) over the pipe,
-     still localhost. Then slice 3 = the authority-model decision (server-auth vs rollback, WITH
-     Aviv - the real netcode fork). Then slice 4 = latency handling (the hardest; a 0ms local
-     slice CANNOT validate it).
+   - ✅ **Slice 2 - real fighters synced (2026-07-02, Aviv "מעולה")**: the REAL `fighter.gd`
+     (untouched) runs in two windows - position + facing + momentum velocity + action state
+     (wind-up/attack/block) synced every frame, so the whole motion read (stretch, trail,
+     wind-up, parry color) appears on the remote fighter. `scripts/net_fight.gd` +
+     `scenes/net_fight.tscn`, auto host/join via `++ host` / `++ join`. Damage deliberately
+     OFF (hurtboxes disabled) - "who really hit" IS the slice-3 question.
+   - ✅ **Slice 3 DECIDED + BUILT (2026-07-02): SERVER-AUTHORITATIVE** - Aviv chose the model
+     after a plain-language feel walkthrough (reasons in NET.md: scope, generous 0.18s parry
+     window = latency tolerance, rollback door stays open). Built the same session:
+     `net_fight.gd` evolved in place - the HOST window is the referee (simulates BOTH fighters,
+     real damage/HP/KO/best-of-3), the guest sends inputs (`fighter.gd` got a minimal
+     `remote_driven` intent hook) and renders the host's state; guest juice derived from HP
+     drops. Auto-test passed (two windows, connect+spawn+stream, zero errors) + main-game
+     regression clean. **⏳ NOT yet judged by Aviv live - that is the opening move of the next
+     session: fight a real best-of-3 in two windows, then lock or tune.**
+   - **Then: slice 4 = latency handling** (prediction/interpolation - the hardest; a 0ms local
+     slice CANNOT validate it. Only after slice 3 is locked).
+5. **⚠️ OPEN GATE the concept lane is BLOCKED on (from ROSTER, 2026-07-02): the ISO-RENDER
+   decision.** Aviv locked the in-game art style ("Overwatch-as-sprites" + an isometric camera,
+   SP-faithful) in the concept chat - but our renderer is flat straight-on, so ISO = a rendering
+   change HERE (projection/angle + how many body directions per character; iso costs 4-8
+   directions vs 2 flips). Decide WITH Aviv in a mechanics session; until then every concept
+   image is a probe, not an asset.
 
 ## External tooling evaluated (session 4, 2026-07-02) - "adopt nothing, lift 2 docs"
 

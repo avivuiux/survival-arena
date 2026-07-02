@@ -11,19 +11,23 @@ so we tackle it now, riskiest-assumption-first.
 - **Transport:** Godot built-in high-level multiplayer over **ENet** (`ENetMultiplayerPeer`).
   Start here; it is the standard, batteries-included path.
 
-## The real decision, deliberately deferred: the AUTHORITY MODEL
+## The AUTHORITY MODEL - ✅ DECIDED (2026-07-02, WITH Aviv): SERVER-AUTHORITATIVE
 
-*Who decides what actually happened* (position, hits, HP, KO) is the heavy architecture fork,
-and it changes how the game feels under latency. The options, roughly hardest-last:
+*Who decides what actually happened* (position, hits, HP, KO) was the heavy architecture fork.
+The options were:
 - **Client-authoritative** - each client owns its fighter and broadcasts state. Simplest,
-  cheatable, and "hits" get ambiguous. Fine for proving the pipe; wrong for a real fight.
-- **Server-authoritative** - the host (or a dedicated peer) simulates and clients send inputs.
-  Standard, fair, but needs prediction/interpolation or it feels laggy.
+  cheatable, "hits" ambiguous. Was used ONLY to prove the pipe (slices 1-2).
+- **Server-authoritative** - the host simulates the whole fight; clients send inputs. ← **CHOSEN**
 - **Rollback (GGPO-style)** - the gold standard for fighting-game feel, and months of work.
 
-**We do NOT decide this yet.** We decide it after the pipe is proven, as its own slice with
-Aviv. The first slice uses the cheapest throwaway (client-authoritative) ONLY to answer "does
-the pipe work at all in our setup?" - it is not the model.
+**Decision (Aviv, 2026-07-02, after a plain-language walkthrough of the feel implications):
+server-authoritative.** Reasoning: (1) scope-is-the-killer - rollback is months before any
+playable online fight exists; server-auth reaches "playing a friend online" in weeks. (2) Our
+parry window is generous (0.18s = ~10x a fighting-game frame), so we have far more latency
+tolerance than a Street-Fighter-class game - prediction/interpolation (slice 4) can carry it.
+(3) The rollback door STAYS OPEN: if real-latency play (slice 4+) feels bad, switching means
+rewriting the net core, not the game. Known cost accepted: under a bad connection there will
+be occasional "I blocked and still got hit" moments - the host's ruling wins.
 
 ## Slice ladder (build order, one at a time, each play-tested)
 
@@ -32,10 +36,54 @@ the pipe work at all in our setup?" - it is not the model.
    time, smoothly. The transport works in our setup - the netcode wall is breached at the
    principle level. Throwaway code: `scripts/net_test.gd` + `scenes/net_test.tscn`,
    client-authoritative position broadcast, NOT wired into the game (rewrite for real, per below).
-2. **Two real fighters synced** - replace squares with the actual fighter (position + facing +
-   action state). Still localhost, still throwaway model.
-3. **Authority-model decision (the real fork)** - pick server-auth vs rollback WITH Aviv, then
-   make hits/HP/KO authoritative. This is where the netcode actually begins.
+2. ~~**Two real fighters synced**~~ **✅ DONE (2026-07-02, Aviv "מעולה" - both windows worked,
+   the remote fighter moved smoothly with the full motion read).** The REAL fighter (untouched
+   `fighter.gd`) runs in two windows via `scripts/net_fight.gd` + `scenes/net_fight.tscn`;
+   auto host/join from the command line (`++ host` / `++ join`). Still throwaway
+   client-authoritative - damage deliberately OFF (that is slice 3).
+
+   **Slice 2 SPEC (2026-07-02, before build):**
+   - **New throwaway scene** `scripts/net_fight.gd` + `scenes/net_fight.tscn` - the REAL
+     `fighter.gd` (untouched), NOT the full game (no select screen / rounds / bot - that is
+     slice 3+ territory and depends on the authority decision).
+   - Each window: **my fighter** = real input + the real tuned movement (arrows steer, A run,
+     S melee, R lunge, Space block) · **remote fighter** = a PUPPET fed by the network
+     (a passive-bot fighter instance whose state is overwritten by incoming packets).
+   - **Synced every frame (unreliable):** position + facing + momentum velocity (drives the
+     stretch + trail read) + action state (idle / wind-up / attack / block, with phase time -
+     so the parry-window color reads too). Lunge syncs by itself (it is movement).
+   - **Deliberately OUT:** damage / HP / KO (hurtboxes disabled - hits SHOW but don't count;
+     deciding who "really" hit = slice 3, the authority fork), chill/shockwave (no caster here),
+     latency handling (slice 4). Ranged shot = synced as a visual-only event.
+   - **Pass =** two windows, H/J connect, both fighters are the real thing: the remote one
+     moves with the full momentum read + readable wind-up, smoothly, at localhost.
+3. **Authority-model decision (the real fork)** - ✅ DECIDED: server-authoritative (see above).
+   **🔨 BUILT (2026-07-02), ⏳ AWAITING Aviv's live judgment** - the two-window auto-test
+   passed clean (connect + spawn + state stream, zero errors) and the main game regression
+   is clean, but Aviv has NOT yet played a real networked match. Next session opens with
+   exactly that: two windows, fight a full best-of-3, judge.
+
+   **Slice 3 SPEC (2026-07-02, before build):**
+   - `scripts/net_fight.gd` evolves IN PLACE from the slice-2 throwaway into the first REAL
+     net model (slice-2 version stays in git history). Still localhost, still `++ host/join`.
+   - **Host = the referee.** The host window simulates BOTH fighters with the real `fighter.gd`
+     rules (hurtboxes ON - damage is REAL now). The guest window renders what the host says.
+   - **Guest sends INPUTS, not state:** held keys (steer/block/run) every frame + presses
+     (melee/skill/ranged) as reliable one-shot events. `fighter.gd` gets a minimal
+     `remote_driven` intent hook (the intent layer was built for exactly this - human keys,
+     bot brain, and now the network all feed the same rules).
+   - **Host broadcasts the whole picture every frame:** per fighter - position, facing,
+     momentum velocity, action/pose state (wind-up/attack/block/hit/parry), HP, active -
+     plus live projectiles. Guest puppets replay it (slice-2 mechanism, extended).
+   - **Guest-side juice derived, not sent:** an HP drop = play sparks/shake/hit-pose locally;
+     active→false at 0 HP = KO burst. Host hit-stop freezes the sim itself, so the guest
+     inherits the freeze through the state stream.
+   - **Round flow lives on the host** (KO → score → banner → reset), mirrored to the guest
+     via two reliable events (round_over / round_start).
+   - **Deliberately OUT:** latency tricks (prediction/interpolation/lag simulation) = slice 4.
+     At 0ms localhost the guest should feel identical to the host despite being a puppet.
+   - **Pass =** two windows fight a REAL match (HP drops, parry negates, KO, best-of-3 score)
+     and both windows always agree on the result.
 4. **Latency handling** - interpolation / prediction / (maybe) rollback. The hardest part;
    a local slice at 0ms CANNOT validate this (see FIND-THE-FUN-DECISIONS: network-feel caveat).
 
