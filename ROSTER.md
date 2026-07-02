@@ -16,7 +16,7 @@ update the cell **and** the "last update" note.
 | Character | Archetype | Mechanics | Identity/concept | Assets (ref+pose) | Rigged (Godot) | In-game art |
 |---|---|---|---|---|---|---|
 | **FANG**   | **rusher** | ✅ | ✅ (bible LOCKED, `concept/characters/fang/FANG.md`) | ✅ (anchor + rig-ready transparent cutout `concept/characters/fang/FANG_rigpose_FINAL.png`) | ⬜ READY TO RIG | ⬜ |
-| **ZERO**   | balanced (control / chill) | ✅ | ✅ (bible LOCKED, `concept/characters/zero/ZERO.md`) | 🔨 (FINAL anchor = `zero_final_2.png`, style-unified; floating rig-pose pending) | ⬜ | ⬜ |
+| **ZERO**   | balanced (control / chill) | ✅ | ✅ (bible LOCKED, `concept/characters/zero/ZERO.md`) | ✅ IDENTITY-REF (anchor `zero_final_2.png` + transparent cutout `ZERO_rigpose_FINAL.png`; per DESIGN.md this is IDENTITY REFERENCE, not the in-game asset) | ⬜ (deferred - see DESIGN.md) | ⬜ |
 | _(unnamed)_ | tank      | ✅ | ⬜ (no fiction yet - future character) | ⬜ | ⬜ | ⬜ |
 
 _Archetype mapping CORRECTED by the concept chat 2026-06-30: **FANG = rusher** (orange tiger,
@@ -68,6 +68,37 @@ future-character slot, NOT FANG._
 
 ## Last update
 
+- 2026-07-02 (concept chat) - **ZERO floating rig-pose DONE -> Assets ✅, READY TO RIG.**
+  Generated per `concept/RIGPOSE-STANDARD.md` (Magnific Nano Banana Pro + `zero_final_2.png` as the
+  anchor `image` reference), adapted for a FLOATER: hovering neutral A-pose, no planted feet / no
+  ground shadow, crystal robe-drapes swept clear of the legs. Two candidates rendered; Aviv picked
+  the more rig-ready one (legs shoulder-width, hands open+separated). Background removed ->
+  transparent RGBA cutout = `concept/characters/zero/ZERO_rigpose_FINAL.png` (the cut source).
+  Flat rig-pose (pre-cutout) kept = `zero_rigpose_B.png`. **HANDOFF TO MECHANICS CHAT: BOTH FANG
+  AND ZERO ARE READY TO RIG.** (Minor: a few loose ice shards drift near ZERO's feet - drop them
+  when cutting.) **DRIFT CORRECTION (2026-07-02): DO NOT RIG THESE YET.** The "READY TO RIG" flags
+  above (set 06-30) are SUPERSEDED by the mechanics chat's `DESIGN.md` decision (also 07-02, Aviv):
+  **the FANG/ZERO PNGs are IDENTITY REFERENCE, NOT the in-game asset.** The in-game character is
+  "function-first" (derived from what the fight must read: facing / action-state / momentum /
+  identity), and the technical form (sprite vs rig) + the actual in-game look are DEFERRED until the
+  game "earns real art." The next step is MECHANICS-lane **procedural motion on the greybox** (lean
+  into velocity, squash & stretch, attack wind-up) - code-only, no art. So: rig-poses = done + shelved
+  as identity/portrait reference; nothing to rig now; concept lane is genuinely idle until the game
+  earns real art. Character #3 (tank) also parked. (This note reconciles the two chats - the concept
+  lane had trusted this stale ROSTER over the newer DESIGN.md; DESIGN.md wins.)
+- 2026-07-02 (concept chat, later - after mechanics session 4) - **UPDATE: the game has now EARNED
+  real art, and the path is set.** Mechanics core is fun-proven + all procedural-greybox-motion
+  slices are locked ("מעולה"): movement, combat gestalt, momentum stretch+trail, squash&stretch,
+  attack wind-up. FANG's detailed PNG is wired in as a STATIC-SPRITE placeholder (flips by facing) -
+  and front-facing portrait in the iso arena reads wrong (paper-doll), which confirmed Aviv's "this
+  isn't the game's art." **DECISION (Aviv, this session): TWO ART LAYERS.** (1) detailed PNGs =
+  PORTRAIT / select-screen / identity ref (done). (2) a SEPARATE in-game fighter = simpler,
+  iso-angled, readable-small = to be designed by the concept lane. **This SUPERSEDES the mechanics
+  HANDOFF "next step = rig FANG_rigpose_FINAL.png" - rigging the PORTRAIT is now obsolete.** Next
+  concept-lane step: design FANG's IN-GAME fighter, to the REAL arena view (need a screenshot of
+  FANG's current in-arena sprite for exact camera-angle + scale + facings before generating). Then
+  produce ONE in-game FANG -> drop in -> Aviv judges. (Mechanics chat: please note HANDOFF next-step
+  #2 is superseded; the in-game fighter is separate art, not the rigged portrait.)
 - 2026-06-30 - index created (mechanics chat). FANG = characterizing + front/side assets done;
   rusher & balanced = mechanically done, no identity/assets yet.
 - 2026-06-30 (concept chat) - archetype map corrected: FANG=rusher, ZERO=balanced, tank=open

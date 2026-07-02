@@ -18,6 +18,10 @@ Archetype: **balanced / control** (chill AoE, zoning, tempo). FANG's gatekeeper.
 - The **face ice<->flesh boundary is a dramatic "the ice is consuming him" transition** (jagged
   crystal shards encroaching + fractal cracks), not a clean line.
 - Cold, composed, subtly malevolent. (Supersedes zero_cosmic_1 / zero_v2_malevolent_2.)
+
+**RIG-READY POSE (2026-07-02): `concept/characters/zero/ZERO_rigpose_FINAL.png`** - transparent RGBA
+cutout, floating neutral A-pose per `concept/RIGPOSE-STANDARD.md` (adapted: hovering, no planted feet).
+Flat pre-cutout source = `zero_rigpose_B.png`. This is the file the mechanics chat cuts + Skeleton2D-rigs.
 An intricate **cosmic-alien ice being**, **floating** elegantly (see roster-float direction),
 almost entirely living crystalline ice with galaxy/constellations glimmering inside it, an ice
 crown, a unified etched-crystal cosmic garment, and a small HUMAN remnant (see the inversion in
