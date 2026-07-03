@@ -213,6 +213,17 @@ anchor. Characteristics to hold in every future render:
   handles well.** So: real-3D path is VIABLE for the locked look; this GLB can replace the
   off-style 6-head `FANG_hero_3d_v1.glb` in mechanics' `game3d`. (⏳ Aviv approval on the model.)
   ZERO's asymmetry, once redone in chibi, should also convert far better than the detailed v1 did.
+- **✅ ZERO CHIBI ALSO CONVERTS CLEAN - AND ASYMMETRY SURVIVED TRIPO THIS TIME.** Generated a
+  chibi A-pose FROM the locked `zero_chibiplus_cold_2` anchor (NOT the tall portrait - first
+  A-pose attempt off the portrait drifted adult/tall; using the chibi anchor fixed it) →
+  `zero_chibi_apose_3.jpg` → Tripo-v31 → `concept/characters/zero/ZERO_chibi_3d_v1.glb`.
+  12-angle audit: ice-side vs human-arm/exposed-chest asymmetry + half-ice face HELD. **Why Tripo
+  held it here but symmetrized the detailed portrait: the chibi image has BOLD solid asymmetry
+  cues (solid blue-ice half vs solid flesh half) - Tripo reads those; subtle detailed asymmetry
+  it averages away.** REFINES the engine rule: for asymmetric chibi with bold blocked cues,
+  Tripo can work - audit to confirm. **Known downstream gaps (not blockers): this GLB is UNRIGGED
+  (Tripo returned model.glb, no auto-rig) and HEAVY (~57MB) - needs external auto-rig + decimation
+  before game-ready.** FANG's chibi GLB is rigged + light (1.4MB); ZERO needs those two steps.
 - **NEXT (Aviv, "clean the look first"):** before touching the render-path/3D question, produce
   CLEAN CANONICAL anchors of FANG + ZERO in this locked style - full-body readable stance,
   minimal ground, background-removable - as the definitive style reference set. Generated per
