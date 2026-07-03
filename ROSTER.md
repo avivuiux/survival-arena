@@ -15,7 +15,7 @@ update the cell **and** the "last update" note.
 
 | Character | Archetype | Mechanics | Identity/concept | Assets (ref+pose) | Rigged (Godot) | In-game art |
 |---|---|---|---|---|---|---|
-| **FANG**   | **rusher** | ✅ | ✅ (bible LOCKED, `concept/characters/fang/FANG.md`) | ✅ **3D MODEL (rigged)** = `FANG_hero_3d_v1.glb` (hero redesign, bone/predator motif). Also: 2D cutout fallback `FANG_ingame_v1_cutout.png`; portrait `fang_v6_serious_1.png` | ⬜ (3D pivot - mechanics wiring) | 🔨 (3D fun-test) |
+| **FANG**   | **rusher** | ✅ | ✅ (bible LOCKED, `concept/characters/fang/FANG.md`) | ✅ **CHIBI 3D MODEL (rigged, on-style)** = `FANG_chibi_3d_v1.glb` (matches locked chibi-plus look; 12-angle-audited clean; ⏳ Aviv approval). Supersedes off-style `FANG_hero_3d_v1.glb` (6-heads, fun-test only). 2D fallback `FANG_ingame_v1_cutout.png`; portrait `fang_v6_serious_1.png` | ⬜ (mechanics: swap into game3d) | ✅ (3D fun-test PASSED per mechanics S7) |
 | **ZERO**   | balanced (control / chill) | ✅ | ✅ (bible LOCKED, `concept/characters/zero/ZERO.md`) | 🔨 **3D: identity vs rig split (2026-07-03 audit).** `ZERO_hero_3d_v3_trellis.glb` = asymmetry CORRECT but UNRIGGED + **❌ quality REJECTED by Aviv** (identity-proof only, not a look-truth); `ZERO_hero_3d_v1.glb` = rigged but arms SYMMETRIZED (identity FAIL - do not use as look-truth). Also: 2D cutout fallback `ZERO_ingame_v1_cutout.png`; portrait `zero_final_2.png` | ⬜ (3D pivot) | ⬜ |
 | _(unnamed)_ | tank      | ✅ | ⬜ (no fiction yet - future character) | ⬜ | ⬜ | ⬜ |
 

@@ -204,6 +204,15 @@ anchor. Characteristics to hold in every future render:
   no longer matches the target look - fine for the FUN-TEST (fun is mechanics, not look), but
   the eventual in-game model/asset must be rebuilt to chibi-plus proportions. Do not polish
   the current GLBs toward final art.
+- **✅ RENDER-PATH DE-RISKED (2026-07-03 night): the locked chibi look converts CLEANLY to 3D.**
+  After the mechanics fun-test passed (3D combat locked), tested whether the new look can become
+  a real in-game model. Generated a clean chibi A-pose (`concept/rework/fang_chibi_apose_1.jpg`)
+  → Tripo-v31 → **`concept/characters/fang/FANG_chibi_3d_v1.glb` (rigged, skins+joints).**
+  12-angle audit = clean from every side, identity + glossy-toy finish held, face crisp. This is
+  the OPPOSITE of the detailed-ZERO mush - **chibi rounded forms are exactly what image-to-3D
+  handles well.** So: real-3D path is VIABLE for the locked look; this GLB can replace the
+  off-style 6-head `FANG_hero_3d_v1.glb` in mechanics' `game3d`. (⏳ Aviv approval on the model.)
+  ZERO's asymmetry, once redone in chibi, should also convert far better than the detailed v1 did.
 - **NEXT (Aviv, "clean the look first"):** before touching the render-path/3D question, produce
   CLEAN CANONICAL anchors of FANG + ZERO in this locked style - full-body readable stance,
   minimal ground, background-removable - as the definitive style reference set. Generated per
