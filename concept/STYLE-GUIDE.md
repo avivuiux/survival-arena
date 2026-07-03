@@ -178,3 +178,21 @@ Two references, one axis between them:
   style anchor (supersedes `fang_ingame_owprobe_2` and the whole §second-art-layer anchor).
   Probes = look-target images only, NOT assets - the render path (real 3D model vs 3D-as-
   view-exporter vs 2D) is decided AFTER the look is locked, with mechanics.
+
+### ✅ 2026-07-03 (night) - NEW IN-GAME LOOK LOCKED (Aviv): "CHIBI-PLUS 3D-TOON"
+**Anchor = `concept/rework/fang_styledial_A_attack.jpg`** (Aviv: "זה הסגנון שאני רוצה").
+Round-2 examples (FANG attack + ZERO roster-test in A and B) are in `concept/rework/`.
+This SUPERSEDES `fang_ingame_owprobe_2` and the whole "Overwatch as sprites" §second-art-layer
+anchor. Characteristics to hold in every future render:
+- **Proportions ~3.5 heads**, big expressive head, rounded soft shapes, chunky hands/feet.
+- **Finish = glossy 3D-toon render** (Dragon-Quest/Ni-no-Kuni-adjacent), NOT flat 2D cel -
+  soft rounded shading, crisp rim highlights, painterly bright arena ground.
+- **Palette bright + saturated, cute-but-fierce energy.** Hand-drawn swoosh VFX stays (runtime).
+- **⚠️ ZERO GUARD (from the failed A-probe):** chibi proportions must NOT soften ZERO's locked
+  identity - cold, unsmiling, malevolent-calm face, ice visibly CONSUMING the half-face, human
+  arm + exposed chest asymmetry present. A menacing chibi is achievable (boss-chibi tone) -
+  a happy-kid ZERO is a REJECT. `zero_styledial_A_float.jpg` = the recorded failure example.
+- **Implication for the 3D pivot (flag to mechanics):** `FANG_hero_3d_v1.glb` (6-heads serious)
+  no longer matches the target look - fine for the FUN-TEST (fun is mechanics, not look), but
+  the eventual in-game model/asset must be rebuilt to chibi-plus proportions. Do not polish
+  the current GLBs toward final art.
