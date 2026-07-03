@@ -15,8 +15,8 @@ update the cell **and** the "last update" note.
 
 | Character | Archetype | Mechanics | Identity/concept | Assets (ref+pose) | Rigged (Godot) | In-game art |
 |---|---|---|---|---|---|---|
-| **FANG**   | **rusher** | ✅ | ✅ (bible LOCKED, `concept/characters/fang/FANG.md`) | ✅ (anchor + rig-ready transparent cutout `concept/characters/fang/FANG_rigpose_FINAL.png`) | ⬜ READY TO RIG | ⬜ |
-| **ZERO**   | balanced (control / chill) | ✅ | ✅ (bible LOCKED, `concept/characters/zero/ZERO.md`) | ✅ IDENTITY-REF (anchor `zero_final_2.png` + transparent cutout `ZERO_rigpose_FINAL.png`; per DESIGN.md this is IDENTITY REFERENCE, not the in-game asset) | ⬜ (deferred - see DESIGN.md) | ⬜ |
+| **FANG**   | **rusher** | ✅ | ✅ (bible LOCKED, `concept/characters/fang/FANG.md`) | ✅ **3D MODEL (rigged)** = `FANG_hero_3d_v1.glb` (hero redesign, bone/predator motif). Also: 2D cutout fallback `FANG_ingame_v1_cutout.png`; portrait `fang_v6_serious_1.png` | ⬜ (3D pivot - mechanics wiring) | 🔨 (3D fun-test) |
+| **ZERO**   | balanced (control / chill) | ✅ | ✅ (bible LOCKED, `concept/characters/zero/ZERO.md`) | ✅ **3D MODEL (rigged)** = `ZERO_hero_3d_v1.glb` (⚠️ check asymmetry survived). Also: 2D cutout fallback `ZERO_ingame_v1_cutout.png`; portrait `zero_final_2.png` | ⬜ (3D pivot) | ⬜ |
 | _(unnamed)_ | tank      | ✅ | ⬜ (no fiction yet - future character) | ⬜ | ⬜ | ⬜ |
 
 _Archetype mapping CORRECTED by the concept chat 2026-06-30: **FANG = rusher** (orange tiger,
@@ -68,6 +68,57 @@ future-character slot, NOT FANG._
 
 ## Last update
 
+- 2026-07-03 (mechanics chat, evening) - **✅ ACK the 3D fork + scope-guard. Principle PROVEN,
+  FANG model LOCKED.** We did NOT build the 5-view system (your STOP landed in time). Proven live
+  via a throwaway slice (`scenes/threed_test.tscn` - real GLB rotating on the dark iso floor),
+  Aviv "נראה מעולה". **Locked FANG in-game model = `FANG_hero_3d_v1.glb`** (Aviv picked the hero
+  design over tank-top v2 via the slice's Tab toggle). **Taking your "first real ask" (is the 3D
+  fight FUN with the rough rigged GLB?) as our next step** - build a 3D iso arena with the rigged
+  FANG moving + feel-test BEFORE any topology/rig/anim polish. Scope-guard noted and shared.
+  Concept lane's next = **ZERO as a 3D model** (same Tripo-via-Magnific pipeline; his asymmetry
+  is exactly why 3D won). 2D cutouts (`*_ingame_v1_cutout.png`) = fallback only now.
+- 2026-07-03 (concept chat) - **⚠️⚠️ TO MECHANICS: STOP before building the 5-view sprite
+  system - Aviv is pivoting to a 3D CHARACTER PIPELINE. Read `concept/STYLE-GUIDE.md` §3D
+  CHARACTER PIPELINE for the full trail.** Short version:
+  - Your "5 drawings, mirror 3" spec has a fatal flaw Aviv caught: **mirroring flips asymmetric
+    identity** - ZERO's half-ice face + single human arm would swap sides on the mirrored headings.
+    Mirror only works for near-symmetric characters. ZERO would need 8 hand-drawn views, and AI
+    can't hold pose/detail consistency across 8 angles anyway.
+  - Aviv's fix = **make a real rigged 3D model** (consistency + asymmetry solved from every angle,
+    for free). **Image-to-3D is now VALIDATED** (Tripo-v31 via Magnific → auto-rigged T-pose GLB;
+    the old "Tripo flattens" verdict is dead). Proofs: `concept/characters/fang/FANG_3d_v2_tripo.glb`
+    + `FANG_hero_3d_v1.glb`.
+  - **✅ FORK DECIDED (Aviv, this session): REAL 3D GAME - the model is the in-game object, engine
+    → 3D + iso camera.** DO NOT build the 5-view sprite-switching system - it's obsolete. Your 2D
+    render/motion layer (`fighter.gd _draw`, flat floor, procedural stretch/squash) gets rebuilt as
+    3D; core logic (positions/velocities/combat/net/archetypes) should port to a 3D floor with little
+    drama. Aviv also leveled up FANG's look to a designed hero (bone/predator motif,
+    `fang_hero_concept_1.jpg`) - the 3D model above is built from it.
+  - **⚠️ SCOPE GUARD (Aviv agreed):** "3D like Overwatch" is the scope-death HANDOFF warns of. The
+    discipline: **prove the 3D fight is FUN with the rough auto-rigged GLB first** (drop
+    `FANG_hero_3d_v1.glb` into a simple 3D iso arena, feel-test) BEFORE anyone invests in
+    Overwatch-quality topology/rig/animation. Find-the-fun, applied to the 3D pivot. **First real
+    ask to you: a 3D iso test arena with the rigged FANG moving - is the 3D fight fun?**
+  - This does NOT change the palette-bleed method fix (portrait-only gen) or the two locked cutouts
+    (`{fang,zero}/*_ingame_v1_cutout.png`) - those stand as the 2D fallback if the 3D pivot is dropped.
+
+- 2026-07-03 (mechanics chat) - **✅ THE ISO GATE IS OPEN: FINAL RENDER SPEC (Aviv-locked,
+  including a live greybox test the same evening). You are UNBLOCKED for final in-game art.**
+  This supersedes the older mechanics note below ("FLAT, STRAIGHT-ON... Not iso") - the
+  renderer here is changing to match. The locked model, decided WITH Aviv:
+  - **View model = directional views, pro-game style: 5 DRAWINGS per character** -
+    **front / back / side / ¾-front / ¾-back** - covering **8 headings** (the three side
+    drawings mirror L/R). NOT one flipped pose, and NOT 8 separate sets.
+  - **Only the drawn view switches** (mechanics side handles sticky switching so it never
+    flickers). Aim, motion and effects stay continuous - Aviv live-rejected raw snapping,
+    so the character art itself must NOT bake in any rotation gimmick.
+  - **Camera/angle:** per your approved anchor `fang_ingame_owprobe_2` (Overwatch-as-sprites,
+    slight top-down). The arena floor here now draws an iso diamond-grid to match.
+  - **Scale:** reads at ~116px tall in a 1152x648 viewport, on the dark floor (RGB ~0.15,0.17,0.22).
+  - **First delivery = FANG, 5-view probe set** -> we wire it into the arena -> Aviv judges
+    the switching feel live (a greybox can't prove sprite-switch feel; the first real set is
+    the test). Lock there, then ZERO with the same template.
+  Also: net slice-3 LOCKED live ("מעולה") - online best-of-3 works, server-authoritative.
 - 2026-07-02 (concept chat, later) - **IN-GAME ART DIRECTION LOCKED by Aviv + ⚠️ RENDERER FLAG
   FOR THE MECHANICS CHAT.** (1) Tested the "portrait-cel shrunk to a side-stance sprite" route
   live in the arena (runtime-only override, no mechanics files touched; captures in

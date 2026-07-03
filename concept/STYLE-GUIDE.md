@@ -52,23 +52,82 @@ IN-GAME layer; everything above governs the PORTRAIT layer only.
   image is a PROBE (style validation), not an asset.
 - **✅ QUALITY BAR APPROVED (Aviv, 2026-07-02: "נראה פשוט מעולה ומקצועי, זה הסטנדרט"):**
   the probe pair `concept/characters/fang/fang_ingame_owprobe_1.jpg` / `_2.jpg` IS the
-  finish standard for the in-game layer. **In-game style anchor = `fang_ingame_owprobe_2`
-  (Aviv's explicit pick)** (pass as reference on every in-game-layer generation, same
-  enforcement as the portrait anchor). Approved = finish/quality only - NOT the camera angle (mechanics decides) and
-  NOT yet validated on the dark arena floor. Known fix for next round: the fist hand-wraps
-  rendered with stray colors - prompt "clean orange hand-wraps".
+  finish standard for the in-game layer. Approved = finish/quality only - NOT the camera
+  angle (mechanics decides) and NOT yet validated on the dark arena floor.
 - Rejected for this layer: Little Fighter chunky-2D, portrait-cel-shrunk (tested in-arena
   2026-07-02 as `FANG_arena_v1.png` = kept as baseline/archive only), real-3D-in-engine.
-- **✅ ROSTER COHESION PROVEN (2026-07-02): the look holds on ZERO** (`concept/characters/zero/
-  zero_ingame_owprobe_2.jpg`) - translucent cosmic ice in the same finish, reads as one game.
-- **⚠️ IDENTITY-BLEED GUARD (learned on ZERO probe 1, discarded):** passing another character's
-  probe as the `style` reference can leak that character's IDENTITY (probe 1 came out with
-  FANG's orange body + fists). On every non-FANG generation, add an explicit palette guard to
-  the prompt (e.g. "only icy blue/white/silver palette, NO orange") and eyeball for bleed.
-- Known identity fixes for ZERO's next round: restore the human ARM remnant + the exposed
-  human CHEST (bible: remnant = half face + one arm + chest; probe 2 has face only).
+
+### 🔑 THE GENERATION METHOD - CORRECTED & LOCKED (2026-07-03, Aviv approved)
+**The old "shared style-anchor image" method is DEAD.** It caused palette bleed: passing
+`fang_ingame_owprobe_2` as the `style` reference on ZERO dragged FANG's ORANGE + fire into
+him (probe 1 = orange body/fists; probe 2 = fully-ice, no human remnant). A gray-mannequin
+anchor was tried next and bled GRAY into ZERO's skin + ice. **Root cause (the real lesson):
+ANY image used as a style-anchor leaks its PALETTE, not just its render-finish.** So a
+single shared anchor image for "roster cohesion" is exactly what breaks each character's
+color. Cohesion must come from TEXT, not from a shared image.
+
+**The locked method for every in-game asset:**
+1. **ONE image reference only = the character's OWN portrait** (`type: image`, e.g. ZERO =
+   `zero_final_2.png`). Its palette is already correct, so nothing foreign leaks in.
+2. **NO `style`-type reference. NO other character's image. Ever.**
+3. **The finish + camera come from TEXT** (paste the same finish description every time =
+   "professional stylized 3D game render, Overwatch/hero-shooter quality, soft studio
+   lighting, clean PBR, translucent refraction, glossy vibrant, NOT anime lineart / NOT cel
+   / NO black outlines; isometric three-quarter camera from slightly above; full body,
+   plain light-gray bg, readable when small"). This shared text IS the cohesion mechanism.
+4. **Deliver as a clean CUTOUT:** `images_remove_background` on the pick → transparent PNG,
+   **shadow stripped.** The baked drop-shadow must NOT ship in the sprite (it's angled for a
+   fake floor, fights variable arena lighting, and ZERO floats). The MECHANICS engine draws
+   the grounding shadow itself so it matches the real arena floor + light. (Aviv's catch.)
+- This SUPERSEDES the "In-game style anchor = fang_ingame_owprobe_2" + "IDENTITY-BLEED
+  GUARD / palette-guard-in-prompt" bullets above - no anchor image = no bleed to guard.
 
 ## Status
 - 2026-07-01: guide written. **ZERO re-rendered to this finish + adopted = `zero_final_2.png`**
   (matched to FANG's cel look; fixed the painterly drift). FANG's styleB anchor
-  (`fang_styleB_digitigrade_1.png`) is the mandatory `style` reference for all future characters.
+  (`fang_styleB_digitigrade_1.png`) is the mandatory `style` reference for the PORTRAIT layer
+  (portrait cohesion only - this still holds for portraits, NOT for the in-game layer).
+- **2026-07-03: in-game generation method corrected + LOCKED (see box above). ✅ ZERO in-game
+  asset FINAL = `concept/characters/zero/ZERO_ingame_v1_cutout.png`** (Aviv "מעולה"; portrait-only
+  ref, warm human remnant restored, clean cosmic-ice palette, background+shadow removed).
+  Chosen from probe pair 5/6 (kept: `zero_ingame_owprobe_5.jpg` / `_6.jpg`). Probes 1-4 =
+  the bleed failures, kept as the cautionary trail.
+- **2026-07-03: ✅ FANG in-game asset FINAL = `concept/characters/fang/FANG_ingame_v1_cutout.png`**
+  (Aviv's explicit pick: "פשוט קח את התמונה הזאת"). It is the background+shadow-stripped cutout of the
+  original approved `fang_ingame_owprobe_2.jpg` (crouched pounce). ⚠️ NOTE: this specific asset
+  has the FIRE-FISTS + the stray-color hand-wrap BAKED IN (contradicts the "engine adds VFX / clean
+  base" rule 3-4 above) - kept per Aviv's direct call, flagged to him, easy to re-cut clean later.
+  The clean portrait-only probes explored this session (`fang_ingame_owprobe_3..8.jpg`: clean
+  wraps, no VFX, standing-guard pose in 7/8) are kept as the clean-base alternatives if we revisit.
+- **⚠️ Pose inconsistency to resolve when wiring in:** FANG's locked asset = a crouched action-pounce;
+  ZERO's = an upright floating idle. If a NEUTRAL idle is needed for both (engine anim base), FANG
+  may need re-cutting to a standing guard (probes 7/8 already exist). Not blocking - flagged.
+
+### 🔀 2026-07-03 (later) - PIVOT UNDER EXPLORATION: 3D CHARACTER PIPELINE (Aviv-driven)
+The 2D-sprite plan above may be superseded. Trigger: the mechanics lane opened the iso gate and
+asked for a **5-drawings-mirror-3** directional set (ROSTER 2026-07-03). Aviv found the fatal flaw:
+**mirroring flips asymmetric identity** - ZERO's half-ice face + single human arm would swap sides.
+Fix Aviv chose: **make a real 3D character** (consistency + asymmetry solved from every angle).
+- **Reverses a HANDOFF locked decision** ("no real 3D pipeline = the scope this project refuses").
+  Opened knowingly. Framed as: chase Overwatch's **quality bar on a slice**, NOT its scale.
+- **✅ Image-to-3D VALIDATED** (Magnific `models3d_generate`, `tripo-v31` + detailed texture): the
+  earlier "Tripo flattens" verdict is OBSOLETE - it now returns a solid, recognizable, **auto-rigged**
+  T-pose GLB. Two proofs in `concept/characters/fang/`: `FANG_3d_v2_tripo.glb` (from the clean
+  standing probe) and `FANG_hero_3d_v1.glb` (from the new hero concept). Front reads great; back =
+  AI-guessed texture, judge in a 3D viewer.
+- **✅ FANG HERO REDESIGN LOCKED (Aviv, "concept 1"):** the plain tank-top look → a **designed
+  hero** (Overwatch/Paladins language) with a **bone / predator-hunter motif** (bone shoulder plate,
+  bone belt buckle, claw-bone gauntlets) over an orange+charcoal fitted combat suit. Concept =
+  `concept/characters/fang/fang_hero_concept_1.jpg`. This is the new visual FANG (identity/story in
+  FANG.md unchanged - only the LOOK leveled up). `fang_hero_concept_2.jpg` (tech-hero) = rejected.
+- **✅ FORK DECIDED (Aviv, 2026-07-03): REAL 3D GAME.** The 3D model is the actual in-game object -
+  engine goes 3D + iso camera (the Overwatch-true path). This kills the entire 5-view sprite-switching
+  / mirror-asymmetry problem (rotation is free in 3D). **This is the biggest decision in the project's
+  history and it is MECHANICS-LANE territory to execute** (their 2D render/motion layer gets rebuilt;
+  core logic - positions/velocities/combat/net - survives on a 3D floor). Flagged to them in ROSTER.
+  - **⚠️ SCOPE DISCIPLINE (agreed framing):** "3D like Overwatch" = the exact scope-death HANDOFF
+    warns of. Guard: **prove the 3D game is FUN with the ROUGH auto-rigged model FIRST** (mechanics
+    drops the GLB into a simple 3D iso arena, feel-test the fight) BEFORE investing in Overwatch-quality
+    topology/rig/animation. Find-the-fun, applied to the 3D pivot. Fun first, polish later.
+- Pipeline map being walked: concept → clean ref → 3D base ✅ → sculpt/cleanup → texture → rig ✅(auto)
+  → animate → Godot integration → VFX/polish (fire+shadow = runtime layer, NOT baked).
