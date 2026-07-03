@@ -196,3 +196,8 @@ anchor. Characteristics to hold in every future render:
   no longer matches the target look - fine for the FUN-TEST (fun is mechanics, not look), but
   the eventual in-game model/asset must be rebuilt to chibi-plus proportions. Do not polish
   the current GLBs toward final art.
+- **NEXT (Aviv, "clean the look first"):** before touching the render-path/3D question, produce
+  CLEAN CANONICAL anchors of FANG + ZERO in this locked style - full-body readable stance,
+  minimal ground, background-removable - as the definitive style reference set. Generated per
+  the anti-bleed method (each from its OWN identity portrait + text finish, NO shared image
+  style-anchor). Working set in `concept/rework/`.
