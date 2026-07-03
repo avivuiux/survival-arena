@@ -77,7 +77,10 @@ future-character slot, NOT FANG._
   bright painterly arena.** Full spec + guards in STYLE-GUIDE (supersedes the Overwatch-as-
   sprites anchor). **Roster test PASSED:** cold/menacing chibi ZERO works
   (`zero_chibiplus_cold_2.jpg` = recommended ZERO anchor; the smiling A-probe failure is
-  recorded as the guard example). **⚠️ TO MECHANICS: `FANG_hero_3d_v1.glb` (6-heads serious)
+  recorded as the guard example). **FINAL (Aviv-confirmed): the two style anchors =
+  `fang_styledial_A_attack.jpg` + `zero_chibiplus_cold_2.jpg`. A clean neutral-pose canonical
+  pass was rejected (drifted taller/flatter) - these two in-arena images ARE the style truth.**
+  **⚠️ TO MECHANICS: `FANG_hero_3d_v1.glb` (6-heads serious)
   is now OFF-STYLE - still perfectly fine for the FUN-TEST (fun ≠ look; keep going), but the
   eventual in-game model/asset gets rebuilt to chibi-plus. Do not polish current GLBs toward
   final art.** Concept lane next (after your fun-test verdict): chibi-plus FANG+ZERO in-game

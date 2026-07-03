@@ -180,6 +180,14 @@ Two references, one axis between them:
   view-exporter vs 2D) is decided AFTER the look is locked, with mechanics.
 
 ### ✅ 2026-07-03 (night) - NEW IN-GAME LOOK LOCKED (Aviv): "CHIBI-PLUS 3D-TOON"
+**THE TWO STYLE ANCHORS (Aviv-confirmed, final):**
+- **FANG = `concept/rework/fang_styledial_A_attack.jpg`**
+- **ZERO = `concept/rework/zero_chibiplus_cold_2.jpg`**
+These two images ARE the style truth for the whole roster. Every future asset matches their
+proportion + finish. (The clean-canonical neutral-pose pass `fang_canonical_*` / `zero_canonical_*`
+was REJECTED by Aviv - full-body framing drifted the proportions taller/flatter; kept as evidence
+of the drift, NOT anchors.)
+
 **Anchor = `concept/rework/fang_styledial_A_attack.jpg`** (Aviv: "זה הסגנון שאני רוצה").
 Round-2 examples (FANG attack + ZERO roster-test in A and B) are in `concept/rework/`.
 This SUPERSEDES `fang_ingame_owprobe_2` and the whole "Overwatch as sprites" §second-art-layer
