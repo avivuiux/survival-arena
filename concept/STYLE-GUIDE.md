@@ -157,3 +157,24 @@ feeding a 2D pipeline) - trellis-2 solves the asymmetry-mirror flaw that killed 
 drawing before, so that path is viable again. Lesson locked: single-image 3D generation gives
 identity OR crispness, not both - quality was always going to come from a real game-ready pass,
 or from a different art direction. Waiting on Aviv's references.
+
+### 🎨 2026-07-03 (night, later) - REWORK v2 BRIEF: Aviv's references landed
+Two references, one axis between them:
+- **Ref 1 = Survival Project screenshots** (2D chibi anime arena). Aviv KEEPS: anime look, the
+  charm, the top-down readable arena, the simplicity ("אין לי בעיה שזה כזה פשוט"). Aviv REJECTS:
+  too cute for his taste and for today's games market.
+- **Ref 2 = a 3D anime-painterly action game** (cel/flat-shaded character, painterly grass,
+  strong flat cast shadow, hand-drawn-style swoosh VFX, saturated but grounded palette).
+  Aviv KEEPS: more serious, yet still radiating anime + a hand-painted feel.
+- **Target = in between.** Analysis (concept lane): the refs answer different questions -
+  Ref 1 gives camera/scale/simplicity, Ref 2 gives the FINISH (painterly cel 3D). The real
+  dial between them = **character proportion + tone**: chibi-cute (SP) ←→ serious anime (Ref 2).
+  Note: much of Ref 2's "seriousness" comes from VFX + shadow, which in our stack is the
+  RUNTIME juice layer (already locked as engine-side, not baked) - so the character can sit
+  softer than Ref 2 and the game still reads serious.
+- **Method: style-dial probe ladder.** Same scene (FANG in our top-down arena), 3 points on
+  the dial: A=SP-adjacent (chibi-plus, ~3.5 heads) · B=midpoint (~4.5-5 heads, heroic-soft)
+  · C=Ref2-adjacent (~6 heads, serious anime). Aviv points, the pick becomes the NEW in-game
+  style anchor (supersedes `fang_ingame_owprobe_2` and the whole §second-art-layer anchor).
+  Probes = look-target images only, NOT assets - the render path (real 3D model vs 3D-as-
+  view-exporter vs 2D) is decided AFTER the look is locked, with mechanics.
