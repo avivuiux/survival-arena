@@ -131,3 +131,18 @@ Fix Aviv chose: **make a real 3D character** (consistency + asymmetry solved fro
     topology/rig/animation. Find-the-fun, applied to the 3D pivot. Fun first, polish later.
 - Pipeline map being walked: concept → clean ref → 3D base ✅ → sculpt/cleanup → texture → rig ✅(auto)
   → animate → Godot integration → VFX/polish (fire+shadow = runtime layer, NOT baked).
+
+#### 2026-07-03 (night) - IMAGE-TO-3D ENGINE CHOICE RULE (from the ZERO asymmetry audit)
+Audited `ZERO_hero_3d_v1.glb` by rendering 12 angles in Godot (tool: `concept/_tmp_asym_check.gd`).
+Result: **Tripo (tripo-v31) SYMMETRIZES ARMS** - ZERO's full cosmic-ice arm became skin+gauntlet on
+both sides, in BOTH attempts (portrait source AND open-A-pose `ZERO_rigpose_FINAL.png` source). Face
+patch + exposed-pec asymmetry partially survive; whole-limb texture identity does not.
+**trellis-2 (res 1024) PRESERVED the full asymmetry** on the first try - but returns an UNRIGGED
+mesh (no skins/joints), and `models3d_rig` is not exposed in the Magnific MCP yet.
+**RULE for future characters:**
+- Near-symmetric character (like FANG) → **tripo-v31** (auto-rigged T-pose GLB, one step).
+- Asymmetric identity (like ZERO, and most "human remnant" designs) → **trellis-2 for look-truth**,
+  rig as a separate step (external auto-rig / Tripo rig API / Magnific when the rig tool ships).
+- Always audit a new GLB with the 12-angle render BEFORE calling it done - the front thumb lies.
+ZERO file state: `ZERO_hero_3d_v3_trellis.glb` = look-truth (unrigged, ⏳ Aviv approval);
+`ZERO_hero_3d_v1.glb` = rigged-but-identity-broken; `ZERO_hero_3d_v2.glb` = failed evidence only.

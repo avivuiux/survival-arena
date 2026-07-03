@@ -16,7 +16,7 @@ update the cell **and** the "last update" note.
 | Character | Archetype | Mechanics | Identity/concept | Assets (ref+pose) | Rigged (Godot) | In-game art |
 |---|---|---|---|---|---|---|
 | **FANG**   | **rusher** | ✅ | ✅ (bible LOCKED, `concept/characters/fang/FANG.md`) | ✅ **3D MODEL (rigged)** = `FANG_hero_3d_v1.glb` (hero redesign, bone/predator motif). Also: 2D cutout fallback `FANG_ingame_v1_cutout.png`; portrait `fang_v6_serious_1.png` | ⬜ (3D pivot - mechanics wiring) | 🔨 (3D fun-test) |
-| **ZERO**   | balanced (control / chill) | ✅ | ✅ (bible LOCKED, `concept/characters/zero/ZERO.md`) | ✅ **3D MODEL (rigged)** = `ZERO_hero_3d_v1.glb` (⚠️ check asymmetry survived). Also: 2D cutout fallback `ZERO_ingame_v1_cutout.png`; portrait `zero_final_2.png` | ⬜ (3D pivot) | ⬜ |
+| **ZERO**   | balanced (control / chill) | ✅ | ✅ (bible LOCKED, `concept/characters/zero/ZERO.md`) | 🔨 **3D: identity vs rig split (2026-07-03 audit).** `ZERO_hero_3d_v3_trellis.glb` = asymmetry CORRECT but UNRIGGED (visual truth, ⏳ Aviv approval); `ZERO_hero_3d_v1.glb` = rigged but arms SYMMETRIZED (identity FAIL - do not use as look-truth). Also: 2D cutout fallback `ZERO_ingame_v1_cutout.png`; portrait `zero_final_2.png` | ⬜ (3D pivot) | ⬜ |
 | _(unnamed)_ | tank      | ✅ | ⬜ (no fiction yet - future character) | ⬜ | ⬜ | ⬜ |
 
 _Archetype mapping CORRECTED by the concept chat 2026-06-30: **FANG = rusher** (orange tiger,
@@ -68,6 +68,27 @@ future-character slot, NOT FANG._
 
 ## Last update
 
+- 2026-07-03 (concept chat, night) - **ZERO 3D ASYMMETRY AUDIT DONE: the ⚠️ was justified -
+  `ZERO_hero_3d_v1.glb` (Tripo) LOST the core identity marker.** Audited by rendering the GLB
+  from 12 angles in Godot (throwaway `concept/_tmp_asym_check.gd/.tscn`, outputs outside repo).
+  Findings + fix attempts (Aviv pre-authorized "if lost - fix"):
+  - **v1 (Tripo, rigged):** face ice-patch survived weakly, one-pec-exposed chest survived, but
+    **both arms symmetrized** to skin+ice-gauntlet. The full cosmic-galaxy arm - THE reason 3D
+    won - is gone. Audit render: `zero/ZERO_hero_3d_v1_front_audit.png`.
+  - **v2 (Tripo again, source = `ZERO_rigpose_FINAL.png` open A-pose): still symmetrized.**
+    Conclusion: Tripo re-synthesizes arms symmetrically regardless of source pose. Kept on disk
+    as evidence only (`ZERO_hero_3d_v2.glb`) - not a candidate.
+  - **v3 (trellis-2, same source): ASYMMETRY SURVIVED** - full ice arm + armored torso on one
+    side, exposed human chest + veined human arm + shard shoulder on the other, half-ice face
+    reads. **BUT trellis outputs NO RIG (no skins/joints), and Magnific's `models3d_rig` is not
+    exposed in the MCP yet.** Front render: `zero/ZERO_hero_3d_v3_front.png`.
+  - **State: identity-correct model (v3, unrigged) vs rigged model (v1, identity-broken).**
+    NOT blocking the current gate - the fun-test needs only FANG. Rig path for v3 = decide
+    AFTER the fun-test (external auto-rig e.g. Mixamo / Tripo rig API / Magnific if the rig
+    tool ships) - same moment FANG gets its real game-ready pass anyway.
+  - ⚠️ NOTE FOR BOTH LANES: **FANG_hero_3d_v1 was never asymmetry-critical (FANG is near-
+    symmetric), so its Tripo rig stays valid.** The Tripo-symmetrization lesson matters for any
+    FUTURE asymmetric character: generate look-truth via trellis-2, rig separately.
 - 2026-07-03 (mechanics chat, evening) - **✅ ACK the 3D fork + scope-guard. Principle PROVEN,
   FANG model LOCKED.** We did NOT build the 5-view system (your STOP landed in time). Proven live
   via a throwaway slice (`scenes/threed_test.tscn` - real GLB rotating on the dark iso floor),
