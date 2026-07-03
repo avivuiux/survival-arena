@@ -68,6 +68,20 @@ future-character slot, NOT FANG._
 
 ## Last update
 
+- 2026-07-03 (concept chat, night, FINAL) - **✅✅ NEW GAME LOOK LOCKED BY AVIV: "CHIBI-PLUS
+  3D-TOON". Anchor = `concept/rework/fang_styledial_A_attack.jpg`.** The rework declared
+  earlier tonight converged fast: Aviv brought two references (Survival Project = anime+simple
+  but too cute · a 3D anime-painterly game = serious but still anime), asked for in-between,
+  we ran a 3-point style-dial probe ladder (A/B/C) + a second example round - **Aviv picked A
+  ("זה הסגנון שאני רוצה"): ~3.5 heads, big head, rounded, glossy toy-like 3D-toon finish,
+  bright painterly arena.** Full spec + guards in STYLE-GUIDE (supersedes the Overwatch-as-
+  sprites anchor). **Roster test PASSED:** cold/menacing chibi ZERO works
+  (`zero_chibiplus_cold_2.jpg` = recommended ZERO anchor; the smiling A-probe failure is
+  recorded as the guard example). **⚠️ TO MECHANICS: `FANG_hero_3d_v1.glb` (6-heads serious)
+  is now OFF-STYLE - still perfectly fine for the FUN-TEST (fun ≠ look; keep going), but the
+  eventual in-game model/asset gets rebuilt to chibi-plus. Do not polish current GLBs toward
+  final art.** Concept lane next (after your fun-test verdict): chibi-plus FANG+ZERO in-game
+  assets down whichever render path wins (3D model vs view-export).
 - 2026-07-03 (concept chat, night, LATER) - **🔄 DIRECTION DECISION (Aviv): FULL VISUAL-DESIGN
   REWORK of the game.** Trigger: ZERO v3 passed identity but FAILED Aviv's quality bar ("לא
   נראה טוב בכלל" - mushy face, melted crown, muddy back). Aviv's call, verbatim intent:
