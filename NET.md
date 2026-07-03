@@ -86,6 +86,39 @@ be occasional "I blocked and still got hit" moments - the host's ruling wins.
 4. **Latency handling** - interpolation / prediction / (maybe) rollback. The hardest part;
    a local slice at 0ms CANNOT validate this (see FIND-THE-FUN-DECISIONS: network-feel caveat).
 
+   **✅ SLICE 4 LOCKED (2026-07-03, Aviv live: "עובד נדיר" - ALL levels, including the
+   GUEST window at 100ms one-way = 200ms round-trip, with ZERO mitigation).** The raw
+   server-authoritative fight survives real delay: the generous 0.18s parry window +
+   momentum movement absorb it, exactly as reasoned in the authority decision. Consequences:
+   - **Server-authoritative is CONFIRMED at the feel level. The rollback door closes** (can
+     reopen only if real-internet play contradicts this).
+   - **No prediction / interpolation needed at prototype level** - a whole engineering
+     layer just fell off the plan.
+   - **Honest caveat (the remaining unknown):** localhost simulates constant delay only.
+     Real internet adds jitter / packet loss / spikes - the final proof is a two-machine
+     real-network test (PC vs Mac). That is the LAST net gate, logistics permitting.
+
+   **Slice 4 SPEC (2026-07-03, before build) - FEEL THE LAG FIRST, mitigate second:**
+   - `net_fight.gd` evolves in place again (slice-3 version stays in git history).
+     Still localhost, still `++ host/join`.
+   - **Artificial-latency injector:** every incoming network message (state -> guest,
+     inputs -> host, round events) is held in a queue and applied only after a configurable
+     ONE-WAY delay. Constant delay, order preserved. This turns localhost into a honest
+     delay simulator (jitter/packet-loss simulation = deferred, delay dominates the feel
+     question).
+   - **`L` cycles the delay live in both windows** (synced over the net): one-way
+     0 / 30 / 60 / 100 ms = round-trip 0 / 60 / 120 / 200 ms. Status line shows it.
+     Command-line preset: `++ host lag60`.
+   - **Deliberately NO mitigation in this step** - no prediction, no interpolation. The
+     point is to FEEL the raw cost: the guest's own fighter answers a full round-trip late,
+     and both players react to a world that is one-way old. Aviv plays at each level and
+     answers: at what delay does the fight stop feeling fair - and does the generous 0.18s
+     parry window carry it?
+   - **The verdict routes the next step:** playable at 60-100ms RTT = ship-shaped, move on ·
+     bad self-movement feel = client-side prediction slice · parry feels unfair = rollback
+     door reopens (the known cost accepted in the authority decision).
+   - **Pass =** a real best-of-3 at each delay level + a written verdict per level.
+
 ## How to test slice 1
 
 Launch the net-test scene in TWO windows on this machine. In one press **H** (host), in the

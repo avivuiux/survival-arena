@@ -156,6 +156,69 @@ sprite-switching, not more complex, and it is the only thing that satisfies "no 
    transforms today. Re-express them on the 3D model (scale on the Node3D) or on the composited
    sprite - decide during integration.
 
+### 3D COMBAT slice SPEC (2026-07-03, before build) - "is the 3D FIGHT fun?"
+
+**✅ LOCKED (2026-07-03, same evening, Aviv played it live: "כיף - ננעל").** The 3D fight IS
+fun with the rough auto-rigged GLB - the last risky assumption of the 3D pivot is closed.
+The A-pose did not block the reads (wind-up/parry/hit read via whole-model transforms alone).
+Also added on Aviv's ask: **F6 directional-view toggle** (smooth -> 8 -> 4 headings, display
+only, fighter.gd's sticky hysteresis reused on the model yaw) - Aviv deferred the call
+("אפשר לשנות אחר כך"), all three modes stay live in the slice. Spec below as built:
+
+The remaining risky assumption. Movement-in-3D is proven (`arena3d_test`); this slice puts the
+REAL combat in the 3D iso view: player-FANG vs bot-FANG, melee / wind-up / parry / spacing /
+knockback / KO / best-of-3, with readable action states on the 3D model.
+
+- **New scene** `scenes/arena3d_fight.tscn` + `scripts/arena3d_fight.gd`. `arena3d_test`
+  stays untouched (the locked movement-feel reference).
+- **THE SIM IS THE REAL GAME - nothing is copied.** Two real `fighter.gd` instances (player +
+  bot, both rusher/FANG mirror-match) run in a HIDDEN 2D layer; the scene root is a game-SHIM
+  providing the same services `game.gd` provides (clamp / shake / hit-stop / sparks / burst /
+  projectiles / chill / shockwave / KO+rounds), re-expressed in 3D. The 3D layer is RENDER-ONLY:
+  it mirrors sim position/facing/action-state onto the GLB every frame. (arena3d_test copied
+  movement verbatim - acceptable for a throwaway; copying COMBAT+bot would fork the game rules
+  and make the fun-verdict worthless. This structure is also the integration pattern itself.)
+- **Action reads on the model = whole-Node3D transforms ONLY** (pitch-lean + non-uniform scale
+  on a facing-aligned pivot + material overlay). NO bones, NO baked animation - that is the
+  scope guard. The locked 2D pose grammar, re-expressed: wind-up = lean-BACK (readable
+  anticipation) · attack = lean-IN · hit = squash + white flash · perfect parry = pop + cyan ·
+  momentum stretch along motion · block = shield plate w/ parry-window color · KO = the model
+  TIPS OVER. Attack telegraph = a floor quad at the TRUE hitbox (the hitbox does not lie).
+  Known approximation: hit-squash is vertical, not knock-axis-aligned like 2D - if it reads
+  weak that is DATA, not a bug.
+- **A-pose stays for now.** Stance is a look problem, not a fun problem - the minimum gets
+  decided WITH Aviv only if the live test says the reads are illegible in A-pose.
+- **HUD:** HP + skill bars projected above heads + score + banner. `P` practice (freeze bot) ·
+  `F4` slow-mo · `Esc` quit.
+- **OUT:** chill/shockwave visuals (mirror-match = lunge only), net, latency, stance/rig work,
+  any model/topology polish, wiring into the main game.
+- **Pass =** Aviv fights a real best-of-3 vs the bot in the 3D iso view and answers THE
+  question: is the 3D fight fun, and do wind-up/parry/hit read on the model?
+
+## THE UNIFIED 3D GAME (2026-07-03, Aviv approved) - step ladder, one Aviv-check per step
+
+All three walls are proven but live in three separate scenes (2D main game / 3D bot fight /
+2D net fight). Unification = ONE game from the locked parts, ZERO new mechanics. New
+`scripts/game3d.gd` + `scenes/game3d.tscn` - the 2D game stays untouched as fallback.
+
+1. **✅ Step 1 DONE (2026-07-03, Aviv "המשך" = approved) - the main game in 3D:** select
+   screen (all 3 archetypes) -> 3D arena vs bot -> best-of-3 -> Tab re-pick. Rusher = FANG
+   GLB. Balanced/tank = colored 3D greybox capsules (ZERO's GLB exists but is NOT locked -
+   concept lane owns its asymmetry check; drops into the same slot later). Practice/slow-mo/
+   F6 view carry over. `scripts/game3d.gd` + `scenes/game3d.tscn`.
+2. **✅ Step 2 DONE (2026-07-03, Aviv "עובד") - online in the same game:** host/join from the
+   select screen (H/J), each player picks their own fighter, net_fight's locked
+   server-authoritative core rendered by the same 3D layer, incl. the L lag toggle. Skills +
+   lunge now sync to the guest too (the lag test had FANG-only). Real best-of-3 across two
+   windows in 3D, scores agree.
+3. **✅ Step 3 DONE (2026-07-03) - it IS the game:** `project.godot` main scene = game3d.tscn
+   (F5 opens the unified game). The 2D game (game.tscn) + throwaway 3D slices stay in the
+   repo as fallback / feel reference. Headless boot of the default scene = clean.
+
+**RESULT: the three proven walls (3D combat / server-auth net / latency) are now ONE game.**
+No new mechanics were added - pure unification from locked parts. The scattered scenes
+(game / arena3d_test / arena3d_fight / net_fight) remain as reference; game3d is the product.
+
 ## Greybox polish principle (learned the hard way, twice)
 
 While in greybox, only polish things that are **asset-independent**:

@@ -1,14 +1,14 @@
 extends Node2D
 # =============================================================
-#  NET FIGHT - slice 3: SERVER-AUTHORITATIVE (see NET.md - the
-#  authority model DECIDED with Aviv 2026-07-02).
-#  The HOST window is the referee: it simulates BOTH fighters with
-#  the real fighter.gd rules - damage/HP/KO are REAL. The guest
-#  window sends INPUTS (held keys + one-shot presses) and renders
-#  the state the host broadcasts every frame (position, facing,
-#  momentum, action/pose, HP, projectiles). Guest-side juice
-#  (sparks/shake/KO burst) is DERIVED from HP drops, not sent.
-#  Still localhost - latency tricks (prediction etc.) = slice 4.
+#  NET FIGHT - slice 4: LATENCY (see NET.md slice-4 SPEC).
+#  Slice 3 (server-authoritative, host = referee) is LOCKED; this
+#  adds an ARTIFICIAL-LATENCY INJECTOR so localhost becomes an
+#  honest delay simulator: every incoming message (state -> guest,
+#  inputs -> host, round events) is queued and applied only after
+#  a configurable ONE-WAY delay. Constant delay, order preserved.
+#  L cycles 0/30/60/100 ms one-way (= RTT 0/60/120/200), synced to
+#  both windows. Deliberately NO mitigation yet (no prediction /
+#  interpolation) - the point is to FEEL the raw cost first.
 # =============================================================
 
 const PORT := 8910
@@ -48,6 +48,10 @@ var _projectiles: Array = []     # host: full sim dicts · guest: display-only d
 var _prev_attack := false
 var _prev_skill := false
 var _prev_ranged := false
+# --- slice 4: artificial latency (one-way, applied on RECEIVE in each window) ---
+const LAG_STEPS := [0, 30, 60, 100]   # one-way ms; round-trip = x2
+var _lag_ms := 0
+var _lag_queue: Array = []            # FIFO: {at: msec, kind: String, args: Array}
 
 func _ready() -> void:
 	var ui := CanvasLayer.new()
@@ -84,6 +88,9 @@ func _ready() -> void:
 		_host()
 	elif ua.has("join"):
 		_join()
+	for a in ua:
+		if a.begins_with("lag"):
+			_set_lag(maxi(int(a.substr(3)), 0))
 
 func _input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo):
@@ -93,6 +100,13 @@ func _input(event: InputEvent) -> void:
 			_host()
 		elif event.keycode == KEY_J:
 			_join()
+	elif event.keycode == KEY_L:
+		# cycle the simulated one-way delay, synced to the other window
+		var i := LAG_STEPS.find(_lag_ms)
+		var nxt: int = LAG_STEPS[(i + 1) % LAG_STEPS.size()]
+		_set_lag(nxt)
+		if multiplayer.multiplayer_peer and not multiplayer.get_peers().is_empty():
+			_recv_set_lag.rpc(nxt)
 
 func _host() -> void:
 	_peer = ENetMultiplayerPeer.new()
@@ -176,9 +190,54 @@ func _make_fighter(host_side: bool, center: Vector2) -> Node2D:
 	_fighters.append(f)
 	return f
 
+# ---- slice 4: latency injector (receive-side delay queue) ----
+
+func _set_lag(v: int) -> void:
+	_lag_ms = v
+	print("[lag] one-way %d ms (round-trip %d)" % [v, v * 2])
+	_set_status()
+
+@rpc("any_peer", "call_remote", "reliable")
+func _recv_set_lag(v: int) -> void:
+	_set_lag(v)
+
+func _lag_or_apply(kind: String, args: Array) -> void:
+	if _lag_ms <= 0:
+		_apply_msg(kind, args)
+	else:
+		_lag_queue.append({"at": Time.get_ticks_msec() + _lag_ms, "kind": kind, "args": args})
+
+func _drain_lag_queue() -> void:
+	var now := Time.get_ticks_msec()
+	while not _lag_queue.is_empty() and _lag_queue[0]["at"] <= now:
+		var m: Dictionary = _lag_queue.pop_front()
+		_apply_msg(m["kind"], m["args"])
+
+func _apply_msg(kind: String, args: Array) -> void:
+	if _host_f == null:
+		return              # torn down while the message was in flight
+	match kind:
+		"state":
+			_apply_state(_host_f, args[0], _guest_f)
+			_apply_state(_guest_f, args[1], _host_f)
+			_projectiles = []
+			for p in args[2]:
+				_projectiles.append({"pos": p[0], "vel": p[1], "col": p[2]})
+		"held":
+			_guest_f.remote_intent["dir"] = args[0]
+			_guest_f.remote_intent["block"] = args[1]
+			_guest_f.remote_intent["booster"] = args[2]
+		"press":
+			_guest_f.remote_intent[args[0]] = true
+		"round_over":
+			_apply_round_over(args[0], args[1], args[2], args[3])
+		"round_start":
+			_apply_round_start(args[0], args[1])
+
 func _teardown(msg: String) -> void:
 	_role = "none"
 	_state = "waiting"
+	_lag_queue.clear()
 	multiplayer.multiplayer_peer = null
 	for f in _fighters:
 		f.queue_free()
@@ -192,6 +251,7 @@ func _teardown(msg: String) -> void:
 	_set_status(msg)
 
 func _process(delta: float) -> void:
+	_drain_lag_queue()
 	# screen shake (same as game.gd)
 	if _shake > 0.05:
 		position = Vector2(randf_range(-_shake, _shake), randf_range(-_shake, _shake))
@@ -288,11 +348,7 @@ func _pack_projectiles() -> Array:
 func _recv_state(hf: Array, gf: Array, projs: Array) -> void:
 	if _role != "client" or _host_f == null:
 		return
-	_apply_state(_host_f, hf, _guest_f)
-	_apply_state(_guest_f, gf, _host_f)
-	_projectiles = []
-	for p in projs:
-		_projectiles.append({"pos": p[0], "vel": p[1], "col": p[2]})
+	_lag_or_apply("state", [hf, gf, projs])
 
 func _apply_state(f: Node2D, arr: Array, other: Node2D) -> void:
 	f.position = arr[0]
@@ -341,15 +397,14 @@ func _apply_state(f: Node2D, arr: Array, other: Node2D) -> void:
 @rpc("any_peer", "call_remote", "unreliable")
 func _recv_held(dir: Vector2, block: bool, booster: bool) -> void:
 	if _role == "host" and _guest_f:
-		_guest_f.remote_intent["dir"] = dir.normalized() if dir.length() > 1.0 else dir
-		_guest_f.remote_intent["block"] = block
-		_guest_f.remote_intent["booster"] = booster
+		var d := dir.normalized() if dir.length() > 1.0 else dir
+		_lag_or_apply("held", [d, block, booster])
 
 # host <- guest: one-shot presses (reliable so none get lost)
 @rpc("any_peer", "call_remote", "reliable")
 func _recv_press(kind: String) -> void:
 	if _role == "host" and _guest_f and kind in ["attack", "skill", "ranged"]:
-		_guest_f.remote_intent[kind] = true
+		_lag_or_apply("press", [kind])
 
 # ---- round flow (host = referee; guest mirrors via reliable events) ----
 
@@ -389,6 +444,9 @@ func on_ko(loser) -> void:
 
 @rpc("authority", "call_remote", "reliable")
 func _recv_round_over(text: String, col: Color, sh: int, sg: int) -> void:
+	_lag_or_apply("round_over", [text, col, sh, sg])
+
+func _apply_round_over(text: String, col: Color, sh: int, sg: int) -> void:
 	_score_h = sh
 	_score_g = sg
 	_state = "round_over"
@@ -396,6 +454,9 @@ func _recv_round_over(text: String, col: Color, sh: int, sg: int) -> void:
 
 @rpc("authority", "call_remote", "reliable")
 func _recv_round_start(sh: int, sg: int) -> void:
+	_lag_or_apply("round_start", [sh, sg])
+
+func _apply_round_start(sh: int, sg: int) -> void:
 	_score_h = sh
 	_score_g = sg
 	_state = "fighting"
@@ -460,10 +521,10 @@ func _set_status(extra := "") -> void:
 	if not _status:
 		return
 	if _role == "none":
-		_status.text = "NET FIGHT - slice 3: host = referee (prototype)\n[H] Host    [J] Join localhost\nOpen TWO windows: one Host, one Join."
+		_status.text = "NET FIGHT - slice 4: latency test (host = referee)\n[H] Host    [J] Join localhost\nOpen TWO windows: one Host, one Join."
 	else:
 		var peers := multiplayer.get_peers().size() if multiplayer.multiplayer_peer else 0
-		_status.text = "role: %s   peers: %d\nArrows steer · A run · S melee · D ranged · R lunge · Space block\nSLICE 3: damage is REAL - the host window is the referee" % [_role, peers]
+		_status.text = "role: %s   peers: %d\nArrows steer · A run · S melee · D ranged · R lunge · Space block\nSLICE 4 - LAG: one-way %d ms (round-trip %d)   [L] cycles 0/30/60/100" % [_role, peers, _lag_ms, _lag_ms * 2]
 	if extra != "":
 		_status.text += "\n" + extra
 

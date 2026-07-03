@@ -121,7 +121,47 @@ Then press F5 (Play). Move with WASD or arrow keys.
 C:\Users\Aviv\dev\tools\godot\Godot_v4.7-stable_win64_console.exe --headless --path "C:\Users\Aviv\dev\survival-arena" --quit-after 5
 ```
 
+## Current state - THE UNIFIED 3D GAME (2026-07-03, session 7)
+
+**All three engineering walls are proven AND now unified into one game.** This session
+closed the last risky assumptions of the 3D pivot and the net stack, then merged everything:
+
+- ✅ **3D combat is FUN** (Aviv "כיף - ננעל"): `scenes/arena3d_fight.tscn` - real melee /
+  wind-up / parry / knockback / KO / best-of-3 on the 3D FANG model, iso view. Action reads
+  (wind-up=lean-back, attack=lean-in, hit=squash+flash, parry=pop+cyan, KO=tip-over) are
+  whole-Node3D transforms ONLY - no bones, no baked animation (the scope guard held). The
+  A-pose did NOT block the reads. Structure = the REAL fighter.gd sim in a hidden 2D layer +
+  a game-shim + a render-only 3D layer (this IS the integration pattern, not a fork).
+- ✅ **Net slice 4 = LATENCY, LOCKED** (Aviv "עובד נדיר" at ALL levels incl. guest @ 200ms
+  round-trip, ZERO mitigation): artificial one-way-delay injector in `net_fight.gd`, L cycles
+  0/30/60/100ms. **Server-authoritative CONFIRMED at the feel level -> rollback door closes,
+  no prediction/interpolation needed at prototype level (a whole layer fell off the plan).**
+  Honest caveat: localhost = constant delay only; the LAST net gate is a real two-machine
+  test (PC vs Mac) for jitter/loss. See NET.md.
+- ✅ **UNIFIED GAME BUILT** (`scripts/game3d.gd` + `scenes/game3d.tscn`, 3 Aviv-checked steps):
+  select screen (3 archetypes) -> 3D arena -> **vs bot (Space) OR online (H host / J join,
+  each picks own fighter)** -> best-of-3 -> Tab re-pick. Rusher = FANG GLB; balanced/tank =
+  colored 3D capsules until their models are locked. Skills (chill ring / shockwave / lunge)
+  render + sync. **`project.godot` main scene = game3d.tscn -> F5 opens THE game.** The 2D
+  game + throwaway slices stay as fallback/reference.
+
+**Where the parts live:** `game3d` = the product. `game.tscn` (2D) = fallback + feel
+reference. `arena3d_test` = movement-in-3D reference. `arena3d_fight` = the 3D-combat
+fun-proof. `net_fight` = the net slices 1-4 reference. All kept in git.
+
 ## Next steps
+
+**TOP OF THE STACK (session 8 candidates - run each through the principles, recommend ONE):**
+- **A-pose -> combat stance** (the open look gap): the GLB stands in a neutral A-pose. Fun is
+  proven without a stance, so this is a LOOK step, not a fun step. Decide the MINIMUM with Aviv
+  (a single static combat-stance pose? a couple of baked idle/attack clips?) - do NOT slide
+  into a full animation pipeline (the scope line DESIGN.md guards).
+- **ZERO as the 2nd 3D model**: concept lane owns the asymmetry check; when `ZERO_hero_3d_v1.glb`
+  is locked, it drops into the balanced archetype's `glb` slot in game3d (currently a capsule).
+- **Real two-machine net test** (PC vs Mac): the LAST net gate - localhost only proved constant
+  delay; real internet adds jitter/loss. Logistics, not engineering.
+- **F6 directional-view decision**: smooth vs 8 vs 4 is still deferred ("אפשר לשנות אחר כך") -
+  a quick lock whenever Aviv wants to judge it in the unified game.
 
 0. **(Session 3 done)** Movement feel overhauled + tuned by Aviv (envelope run, continuity,
    walk-sustain, whole-screen arena, F3/F4 debug, tuner tool). **Movement now feels right.**
