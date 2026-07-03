@@ -16,7 +16,7 @@ update the cell **and** the "last update" note.
 | Character | Archetype | Mechanics | Identity/concept | Assets (ref+pose) | Rigged (Godot) | In-game art |
 |---|---|---|---|---|---|---|
 | **FANG**   | **rusher** | ✅ | ✅ (bible LOCKED, `concept/characters/fang/FANG.md`) | ✅ **3D MODEL (rigged)** = `FANG_hero_3d_v1.glb` (hero redesign, bone/predator motif). Also: 2D cutout fallback `FANG_ingame_v1_cutout.png`; portrait `fang_v6_serious_1.png` | ⬜ (3D pivot - mechanics wiring) | 🔨 (3D fun-test) |
-| **ZERO**   | balanced (control / chill) | ✅ | ✅ (bible LOCKED, `concept/characters/zero/ZERO.md`) | 🔨 **3D: identity vs rig split (2026-07-03 audit).** `ZERO_hero_3d_v3_trellis.glb` = asymmetry CORRECT but UNRIGGED (visual truth, ⏳ Aviv approval); `ZERO_hero_3d_v1.glb` = rigged but arms SYMMETRIZED (identity FAIL - do not use as look-truth). Also: 2D cutout fallback `ZERO_ingame_v1_cutout.png`; portrait `zero_final_2.png` | ⬜ (3D pivot) | ⬜ |
+| **ZERO**   | balanced (control / chill) | ✅ | ✅ (bible LOCKED, `concept/characters/zero/ZERO.md`) | 🔨 **3D: identity vs rig split (2026-07-03 audit).** `ZERO_hero_3d_v3_trellis.glb` = asymmetry CORRECT but UNRIGGED + **❌ quality REJECTED by Aviv** (identity-proof only, not a look-truth); `ZERO_hero_3d_v1.glb` = rigged but arms SYMMETRIZED (identity FAIL - do not use as look-truth). Also: 2D cutout fallback `ZERO_ingame_v1_cutout.png`; portrait `zero_final_2.png` | ⬜ (3D pivot) | ⬜ |
 | _(unnamed)_ | tank      | ✅ | ⬜ (no fiction yet - future character) | ⬜ | ⬜ | ⬜ |
 
 _Archetype mapping CORRECTED by the concept chat 2026-06-30: **FANG = rusher** (orange tiger,
@@ -68,6 +68,20 @@ future-character slot, NOT FANG._
 
 ## Last update
 
+- 2026-07-03 (concept chat, night, LATER) - **🔄 DIRECTION DECISION (Aviv): FULL VISUAL-DESIGN
+  REWORK of the game.** Trigger: ZERO v3 passed identity but FAILED Aviv's quality bar ("לא
+  נראה טוב בכלל" - mushy face, melted crown, muddy back). Aviv's call, verbatim intent:
+  (1) we rework the game's whole visual design, (2) **HE brings references** for the target
+  look, (3) open option - if easier, use the 3D model only as a **direction-image exporter**
+  (consistent view renders feeding a 2D pipeline) rather than the in-game object.
+  - **Concept lane = WAITING on Aviv's references.** No more raw one-shot 3D generations -
+    that path gives identity OR crispness, not both (proven tonight, trail above).
+  - **⚠️ TO MECHANICS:** the "real 3D game" fork is NOT reversed - but the LOOK is back in
+    play, and "3D as view-exporter for sprites" is explicitly on the table again (asymmetry
+    now solvable via trellis-2 renders, so the old mirror-flaw argument is gone). Your rough
+    3D fun-test (arena3d_fight WIP spotted, untouched) is still the right next move - it
+    answers "is the 3D fight fun" regardless of which render path wins. Just don't invest
+    past the rough slice (which was already the agreement).
 - 2026-07-03 (concept chat, night) - **ZERO 3D ASYMMETRY AUDIT DONE: the ⚠️ was justified -
   `ZERO_hero_3d_v1.glb` (Tripo) LOST the core identity marker.** Audited by rendering the GLB
   from 12 angles in Godot (throwaway `concept/_tmp_asym_check.gd/.tscn`, outputs outside repo).

@@ -144,5 +144,16 @@ mesh (no skins/joints), and `models3d_rig` is not exposed in the Magnific MCP ye
 - Asymmetric identity (like ZERO, and most "human remnant" designs) → **trellis-2 for look-truth**,
   rig as a separate step (external auto-rig / Tripo rig API / Magnific when the rig tool ships).
 - Always audit a new GLB with the 12-angle render BEFORE calling it done - the front thumb lies.
-ZERO file state: `ZERO_hero_3d_v3_trellis.glb` = look-truth (unrigged, ⏳ Aviv approval);
-`ZERO_hero_3d_v1.glb` = rigged-but-identity-broken; `ZERO_hero_3d_v2.glb` = failed evidence only.
+ZERO file state: `ZERO_hero_3d_v3_trellis.glb` = identity-proof only (unrigged, **quality
+REJECTED by Aviv** - mushy face/melted detail); `ZERO_hero_3d_v1.glb` = rigged-but-identity-broken;
+`ZERO_hero_3d_v2.glb` = failed evidence only.
+
+#### 🔄 2026-07-03 (night, later) - VISUAL-DESIGN REWORK DECLARED (Aviv) - THIS SECTION FROZEN
+ZERO v3's quality fail triggered a bigger call: **Aviv is reworking the game's entire visual
+design and will supply REFERENCES for the target look.** Until those land: no new generations,
+no new 3D models, nothing "final" derived from this pipeline section. Open option raised by
+Aviv: keep 3D models only as **direction-image exporters** (consistent multi-angle renders
+feeding a 2D pipeline) - trellis-2 solves the asymmetry-mirror flaw that killed multi-view
+drawing before, so that path is viable again. Lesson locked: single-image 3D generation gives
+identity OR crispness, not both - quality was always going to come from a real game-ready pass,
+or from a different art direction. Waiting on Aviv's references.
