@@ -58,10 +58,9 @@ be occasional "I blocked and still got hit" moments - the host's ruling wins.
    - **Pass =** two windows, H/J connect, both fighters are the real thing: the remote one
      moves with the full momentum read + readable wind-up, smoothly, at localhost.
 3. **Authority-model decision (the real fork)** - ✅ DECIDED: server-authoritative (see above).
-   **🔨 BUILT (2026-07-02), ⏳ AWAITING Aviv's live judgment** - the two-window auto-test
-   passed clean (connect + spawn + state stream, zero errors) and the main game regression
-   is clean, but Aviv has NOT yet played a real networked match. Next session opens with
-   exactly that: two windows, fight a full best-of-3, judge.
+   **✅ LOCKED (2026-07-03, Aviv "מעולה" after a LIVE best-of-3 in two windows)** - the host
+   refereed a real networked match (damage/HP/KO/score), both windows agreed, the guest side
+   felt right. Slice 3 is done. Next net step: slice 4 (latency).
 
    **Slice 3 SPEC (2026-07-02, before build):**
    - `scripts/net_fight.gd` evolves IN PLACE from the slice-2 throwaway into the first REAL

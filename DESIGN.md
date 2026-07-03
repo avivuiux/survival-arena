@@ -92,6 +92,70 @@ tuned movement without committing to any art style.
 **Still deferred (not now):** the actual look (pixel / vector / hand-drawn) and the technical form
 (sprite-sheet vs skeletal rig). Those get decided when the game earns real art, not before.
 
+## In-arena view: REAL ISO (Aviv, 2026-07-03) - facing count decided by PLAY
+
+**Decision (Aviv, mechanics session 5.5, after a plain-language cost walkthrough):** the in-arena
+view = **real isometric** - characters have a separate drawing per facing direction (SP-faithful),
+NOT one 3/4 pose mirrored L/R. Costs were presented and accepted: 4-8 art sets per character,
+AI-consistency risk across angles, and body rotation becomes angle-SNAPPING (fights the smooth
+continuous-steer read we locked). Aviv chose SP-fidelity.
+
+**Open sub-decision: 4 vs 8 directions - NOT decided on paper.** Per find-the-fun: build a
+presentation-only greybox slice where the facing SNAP is toggleable live (off / 4 / 8), Aviv
+plays and locks the count by feel.
+
+**Iso slice 1 SPEC (presentation-only, sim untouched):**
+- The SIMULATION does not change: steering stays continuous, hitboxes/combat/net identical.
+  Only what is DRAWN changes. Fully reversible (snap off = today's look).
+- **Iso floor** (`game.gd _draw`): the dark floor gets an isometric diamond-grid so the eye
+  reads a tilted ground plane. Same bounds, same clamp.
+- **Facing snap, display-only** (`fighter.gd`): `facing_snap` = 0/4/8. Snaps the body pose
+  rotation, facing line, and block arc to the nearest of N directions. The attack telegraph
+  stays at the TRUE facing (the hitbox does not lie) - any visible mismatch between snapped
+  body and true telegraph is DATA for the 4-vs-8 call, not a bug.
+- **F6** cycles snap off -> 4 -> 8 in the main game (label shows the mode).
+- **Deferred, revisit after the facing test:** y-foreshortening of the play space (vertical
+  distances drawn shorter), depth draw-order, and whether the SIM facing itself should snap.
+- **Pass =** Aviv plays vs the bot, flips F6 live, and locks 4 or 8 (or flags that real-iso
+  snapping kills the movement read - that door stays open until he locks).
+
+**LIVE VERDICT (2026-07-03, same evening): crude snap REJECTED -> pro view-model -> then
+SUPERSEDED by a full 3D PIVOT.** The trail (kept because it explains WHY 3D won):
+1. Aviv rejected the raw snap ("the direction must not snap").
+2. We locked a pro 5-view sprite model (front/back/side/¾-front/¾-back, mirror 3 -> 8 headings).
+3. The concept lane then caught a FATAL flaw in mirroring: **it flips asymmetric identity** -
+   ZERO's half-ice face + single human arm would swap sides on mirrored headings. Mirroring
+   only works for near-symmetric characters. And AI can't hold pose/detail across 8 hand-drawn
+   angles anyway.
+4. Meanwhile image-to-3D got VALIDATED (Tripo via Magnific -> a real rigged GLB; the old
+   "Tripo flattens 2D" verdict is dead). Both lanes independently arrived at 3D.
+
+**DECISION (Aviv, 2026-07-03): the in-game character is a real 3D MODEL, rotated live by the
+engine.** This deletes the entire snap / mirror / asymmetry problem at once - a 3D model rotates
+continuously to any heading, from one asset, correct from every angle. **This REVERSES the
+locked "no 3D" bet** - accepted knowingly because it turns out to be SIMPLER than 8-view
+sprite-switching, not more complex, and it is the only thing that satisfies "no snap."
+
+- **PROVEN via a throwaway slice (2026-07-03, Aviv "נראה מעולה"):** `scenes/threed_test.tscn`
+  + `scripts/threed_test.gd` - the real FANG GLB rotates smoothly on a dark iso floor, reads
+  well at scale. NOT wired into the game; it proved the PRINCIPLE only.
+- **LOCKED model = `concept/characters/fang/FANG_hero_3d_v1.glb`** (the leveled-up hero design:
+  combat suit, harness, digitigrade tiger legs, mask). Aviv picked it over the tank-top v2.
+- **The 5-view sprite model above is DEAD** (kept as the record of why). No sprite-switching,
+  no mirroring, no per-direction art.
+
+**Still OPEN (the real integration work, not yet built - next session):**
+1. **3D-in-2D integration:** the arena renderer is 2D canvas (`fighter.gd _draw` + `game.gd`).
+   Render the rotating model into it (SubViewport->texture billboard, or move the fighter layer
+   to 3D). Model yaw follows `facing` continuously. First real slice.
+2. **The A-pose / stance gap:** the GLB is a neutral A/T-pose. A fighter needs a combat stance
+   (and ideally idle/attack motion). The GLB is auto-rigged (per concept lane) - so posing is
+   POSSIBLE, but authoring animation is the scope line to watch. Decide the minimum (static
+   combat-stance pose? a few baked clips?) WITH Aviv - do not slide into a full animation pipeline.
+3. **Procedural juice in 3D:** momentum stretch / squash&stretch / wind-up are 2D-canvas
+   transforms today. Re-express them on the 3D model (scale on the Node3D) or on the composited
+   sprite - decide during integration.
+
 ## Greybox polish principle (learned the hard way, twice)
 
 While in greybox, only polish things that are **asset-independent**:

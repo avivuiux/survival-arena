@@ -151,23 +151,30 @@ C:\Users\Aviv\dev\tools\godot\Godot_v4.7-stable_win64_console.exe --headless --p
      wind-up, parry color) appears on the remote fighter. `scripts/net_fight.gd` +
      `scenes/net_fight.tscn`, auto host/join via `++ host` / `++ join`. Damage deliberately
      OFF (hurtboxes disabled) - "who really hit" IS the slice-3 question.
-   - ✅ **Slice 3 DECIDED + BUILT (2026-07-02): SERVER-AUTHORITATIVE** - Aviv chose the model
-     after a plain-language feel walkthrough (reasons in NET.md: scope, generous 0.18s parry
-     window = latency tolerance, rollback door stays open). Built the same session:
+   - ✅ **Slice 3 LOCKED (built 2026-07-02, judged LIVE by Aviv 2026-07-03 "מעולה"): SERVER-
+     AUTHORITATIVE** - Aviv chose the model after a plain-language feel walkthrough (reasons in
+     NET.md: scope, generous 0.18s parry window = latency tolerance, rollback door stays open).
      `net_fight.gd` evolved in place - the HOST window is the referee (simulates BOTH fighters,
      real damage/HP/KO/best-of-3), the guest sends inputs (`fighter.gd` got a minimal
      `remote_driven` intent hook) and renders the host's state; guest juice derived from HP
-     drops. Auto-test passed (two windows, connect+spawn+stream, zero errors) + main-game
-     regression clean. **⏳ NOT yet judged by Aviv live - that is the opening move of the next
-     session: fight a real best-of-3 in two windows, then lock or tune.**
+     drops. Aviv fought a real best-of-3 across two windows and locked it.
    - **Then: slice 4 = latency handling** (prediction/interpolation - the hardest; a 0ms local
      slice CANNOT validate it. Only after slice 3 is locked).
-5. **⚠️ OPEN GATE the concept lane is BLOCKED on (from ROSTER, 2026-07-02): the ISO-RENDER
-   decision.** Aviv locked the in-game art style ("Overwatch-as-sprites" + an isometric camera,
-   SP-faithful) in the concept chat - but our renderer is flat straight-on, so ISO = a rendering
-   change HERE (projection/angle + how many body directions per character; iso costs 4-8
-   directions vs 2 flips). Decide WITH Aviv in a mechanics session; until then every concept
-   image is a probe, not an asset.
+5. **IN-ARENA RENDER - ✅ DECIDED (2026-07-03, WITH Aviv): FULL 3D PIVOT.** The night's path
+   (snap rejected -> 5-view sprite model -> mirroring flips ZERO's asymmetric identity, fatal ->
+   image-to-3D validated -> both lanes land on 3D). **The in-game character is a real 3D model
+   rotated live by the engine** - deletes snap/mirror/asymmetry at once, one asset correct from
+   every angle. **REVERSES the "no 3D" bet, knowingly** (turns out simpler than 8-view switching).
+   - ✅ **Principle PROVEN via throwaway slice (Aviv "נראה מעולה"):** `scenes/threed_test.tscn`
+     + `scripts/threed_test.gd` - real FANG GLB rotates smoothly on a dark iso floor. Not wired in.
+   - ✅ **LOCKED model = `concept/characters/fang/FANG_hero_3d_v1.glb`** (hero design w/ combat
+     suit; Aviv picked it over tank-top v2 via the slice's Tab toggle).
+   - **5-view sprite model is DEAD** (recorded in DESIGN.md §In-arena view as the why-3D-won trail).
+   - **NEXT (the real work, not built):** (a) 3D-in-2D integration - render the rotating model
+     into the 2D arena, yaw follows `facing`; (b) the A-pose->combat-stance gap (GLB is auto-rigged,
+     so posing is possible - decide the MINIMUM with Aviv, do NOT slide into a full anim pipeline);
+     (c) re-express the procedural juice (stretch/squash/wind-up) on the 3D model. See DESIGN.md.
+   - **F6 in the main game** still toggles the old greybox view-wedge - now vestigial; harmless.
 
 ## External tooling evaluated (session 4, 2026-07-02) - "adopt nothing, lift 2 docs"
 

@@ -135,6 +135,12 @@ var _pose_dir := Vector2.RIGHT  # hit squash axis (the knock direction)
 var _winding := false           # attack wind-up: committed, hit not active yet
 var _windup_time := 0.0
 var debug_draw := false         # F3: draw the live velocity vector on this fighter
+# ISO view model (DESIGN.md §In-arena view, Aviv 2026-07-03): the drawn BODY uses one
+# of N directional views (like pro directional sprites), sticky-switched. Everything
+# else - aim, steering, poses, hitboxes - stays CONTINUOUS ("the direction must not snap").
+# 0 = off, 8 = the pro model (8 headings from 5 drawings via mirroring).
+var facing_snap := 0
+var _view_idx := 0              # current sticky view sector
 var _hitbox: Area2D
 var _hurtbox: Area2D
 var _already_hit: Array = []
@@ -587,6 +593,17 @@ func reset_fighter(pos: Vector2) -> void:
 	_windup_time = 0.0
 	active = true
 
+# The body's drawn VIEW: nearest of N headings with a sticky margin (hysteresis), so
+# the view switches decisively and never flickers at a sector boundary. Display only.
+func _view_facing() -> Vector2:
+	var step := TAU / float(facing_snap)
+	var cur_center := float(_view_idx) * step
+	if absf(wrapf(facing.angle() - cur_center, -PI, PI)) > step * 0.5 + 0.14:
+		_view_idx = int(roundf(facing.angle() / step)) % facing_snap
+		if _view_idx < 0:
+			_view_idx += facing_snap
+	return Vector2.from_angle(float(_view_idx) * step)
+
 func _draw() -> void:
 	# momentum trail (behind everything): afterimages fade out, read = "I am moving fast"
 	for t in _trail:
@@ -595,8 +612,17 @@ func _draw() -> void:
 		var ts: float = SIZE * (0.55 + 0.35 * ta)          # older = smaller
 		draw_rect(Rect2(lp - Vector2(ts, ts) / 2.0, Vector2(ts, ts)),
 			Color(body_color.r, body_color.g, body_color.b, ta * 0.20))
-	# facing indicator
+	# facing indicator: the aim line is ALWAYS smooth (Aviv: the direction must not snap)
 	draw_line(Vector2.ZERO, facing * (SIZE * 0.9), Color(1, 1, 1, 0.5), 2.0)
+	# ISO view model: a wedge "nose" shows which directional VIEW the sprite would use
+	# right now (sticky-switched) - only the drawn body is discrete, nothing else.
+	if facing_snap > 0:
+		var vf := _view_facing()
+		var vtip := vf * (SIZE * 0.62)
+		var vside := Vector2(-vf.y, vf.x) * (SIZE * 0.26)
+		draw_colored_polygon(PackedVector2Array([
+			vtip, -vf * (SIZE * 0.08) + vside, -vf * (SIZE * 0.08) - vside]),
+			Color(1, 1, 1, 0.8))
 	# DEBUG (F3): live velocity vector (yellow) - shows when momentum diverges from facing
 	if debug_draw and _move_vel.length() > 1.0:
 		var vv := _move_vel * 0.12

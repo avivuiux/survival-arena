@@ -18,7 +18,7 @@ const P2_SPAWN := Vector2(210.0, 0.0)
 # spread narrowed so no matchup is wildly lopsided ("bot has more HP than me").
 const ARCHETYPES := {
 	"balanced": {"hp": 170, "speed": 320.0, "damage": 12, "atk_cd": 0.34, "skill": "chill"},
-	"rusher":   {"hp": 120, "speed": 325.0, "damage": 18, "atk_cd": 0.26, "skill": "lunge", "art": "res://concept/characters/fang/FANG_rigpose_FINAL.png"},
+	"rusher":   {"hp": 120, "speed": 325.0, "damage": 18, "atk_cd": 0.26, "skill": "lunge", "art": "res://concept/characters/fang/FANG_ingame_v1_cutout.png"},
 	"tank":     {"hp": 220, "speed": 240.0, "damage": 14, "atk_cd": 0.40, "skill": "shockwave"},
 }
 const WINS_NEEDED := 2           # best-of-3: first to 2 round wins takes the match
@@ -49,6 +49,7 @@ var _score_label: Label
 var _debug := false
 var _slowmo := false
 var _debug_label: Label
+var _facing_snap := 0             # ISO facing test (F6): 0 = off, 4, 8 - display-only
 
 func _ready() -> void:
 	arena_center = get_viewport_rect().size / 2.0
@@ -186,6 +187,17 @@ func _input(event: InputEvent) -> void:
 	elif event.keycode == KEY_F4:
 		_slowmo = not _slowmo
 		Engine.time_scale = 0.25 if _slowmo else 1.0
+	elif event.keycode == KEY_F6:
+		# ISO view model (DESIGN.md §In-arena view): toggle the 8-heading body view
+		# (5 drawings via mirroring). Aim/steering/poses stay continuous either way.
+		_facing_snap = 8 if _facing_snap == 0 else 0
+		for f in _fighters:
+			f.facing_snap = _facing_snap
+			f.queue_redraw()
+		var snap_txt := "OFF" if _facing_snap == 0 else "ON - 8 views, sticky switch (wedge = the sprite's view)"
+		_mode_label.text = "ISO body-view: %s   (F6 toggles)" % snap_txt
+		_mode_label.visible = true
+		queue_redraw()
 
 func _refresh_select() -> void:
 	var t := ""
@@ -221,6 +233,8 @@ func _begin_match() -> void:
 	_p2.is_bot = true            # opponent always a bot (single-client; stand-in for remote players)
 	_p1.debug_draw = _debug
 	_p2.debug_draw = _debug
+	_p1.facing_snap = _facing_snap
+	_p2.facing_snap = _facing_snap
 	_p1_score = 0
 	_p2_score = 0
 	_score_label.visible = true
@@ -385,11 +399,38 @@ func _debug_text() -> String:
 		("ON" if _slowmo else "off"), spd, int(top), (spd / maxf(top, 1.0) * 100.0),
 		phase, _p1._boost_t, face_ang, vel_ang, d_ang, ("HELD" if a_held else "-")]
 
+# ISO floor grid: two families of 2:1-slope lines (the classic iso diamond), clipped
+# to the floor rect. Visual only.
+func _draw_iso_grid(rect: Rect2) -> void:
+	var spacing := 56.0
+	var col := Color(0.21, 0.24, 0.31)
+	for sgn in [1.0, -1.0]:
+		var slope: float = 0.5 * sgn
+		# y-intercept range so every line crossing the rect is covered
+		var b1: float = rect.position.y - slope * rect.position.x
+		var b2: float = rect.position.y - slope * rect.end.x
+		var b3: float = rect.end.y - slope * rect.position.x
+		var b4: float = rect.end.y - slope * rect.end.x
+		var lo: float = minf(minf(b1, b2), minf(b3, b4))
+		var hi: float = maxf(maxf(b1, b2), maxf(b3, b4))
+		var b: float = floorf(lo / spacing) * spacing
+		while b <= hi:
+			# clip y = slope*x + b to the rect via the x-range where y stays inside
+			var xa: float = (rect.position.y - b) / slope
+			var xb: float = (rect.end.y - b) / slope
+			var xlo: float = maxf(rect.position.x, minf(xa, xb))
+			var xhi: float = minf(rect.end.x, maxf(xa, xb))
+			if xlo < xhi:
+				draw_line(Vector2(xlo, slope * xlo + b), Vector2(xhi, slope * xhi + b), col, 1.0)
+			b += spacing
+
 func _draw() -> void:
-	# Full-screen arena floor + border.
+	# Full-screen arena floor + border. ISO test: a 2:1 diamond grid tilts the ground
+	# plane for the eye (presentation only - bounds + clamp unchanged).
 	var vp := get_viewport_rect().size
 	var rect := Rect2(Vector2(ARENA_MARGIN, ARENA_MARGIN), vp - Vector2(ARENA_MARGIN, ARENA_MARGIN) * 2.0)
 	draw_rect(rect, Color(0.15, 0.17, 0.22), true)
+	_draw_iso_grid(rect)
 	draw_rect(rect, Color(0.35, 0.40, 0.48), false, 2.0)
 
 	for s in _sparks:
