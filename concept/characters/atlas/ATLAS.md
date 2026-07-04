@@ -130,9 +130,19 @@ guardian everyone trusts.
 3. **Orphan traits:** none yet - surface is intentionally unbuilt, so nothing unearned is drawn.
    (Re-run this gate once the look locks against refs.)
 
-## STATUS
-- Essence LOCKED (Aviv, 2026-07-03): being = giant guardian statue that walked; wish = restore
-  what he destroyed; name = ATLAS (bears the weight / the burden).
-- **NEXT: Aviv brings visual references → shape material/palette/signature-object against them →
-  re-run the Adversary Gate on the look → THEN generate (chibi-plus style, Tripo pipeline).**
-  No generation before the references.
+## DESIGN LOCKED 2026-07-03 (Aviv)
+**Anchor = `concept/rework/atlas_noble_1.jpg`** (the "warrior-king": jade colossus, gold crown,
+full ornate gold regalia, gold-glory in the cracks, resolute noble face, proud upright stance).
+Chosen over noble_2 (monument-god). The pass-1 "weeping/pitiable" probes (`atlas_design_1/2`) are
+dead. NEXT: clean A-pose from this anchor → Tripo (image_to_model face_limit + animate_rig) →
+game-ready chibi ATLAS, same pipeline as FANG/ZERO.
+
+## STATUS - ✅ COMPLETE (2026-07-03)
+- Essence LOCKED: noble guardian-king (tone-corrected from penitent); wish = restore order /
+  restore what he destroyed; name = ATLAS.
+- Look LOCKED from Aviv's 3 refs → design anchor `concept/rework/atlas_noble_1.jpg` (warrior-king).
+- **Game-ready 3D model: `concept/characters/atlas/ATLAS_chibi_3d_v1_rigged.glb`** (Tripo API:
+  image_to_model face_limit 18000 → animate_rig; rigged, ~1.15MB, 12-angle-audited clean).
+- **ROSTER COMPLETE: FANG + ZERO + ATLAS all chibi / on-style / rigged / light / game-ready.**
+- NEXT: mechanics swaps all three into game3d (tank slot = ATLAS). Animation still deferred until
+  the full-roster game is proven in play.
