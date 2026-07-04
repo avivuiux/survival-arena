@@ -11,7 +11,9 @@ extends Node3D
 # =============================================================
 
 const FighterScript := preload("res://entities/fighter/fighter.gd")
-const FANG_GLB := "res://concept/characters/fang/FANG_hero_3d_v1.glb"
+# chibi-plus (the locked look, concept lane 2026-07-03). *_hero_3d_v1 = old off-style fallbacks.
+const FANG_GLB := "res://concept/characters/fang/FANG_chibi_3d_v1.glb"
+const ZERO_GLB := "res://concept/characters/zero/ZERO_chibi_3d_v1.glb"
 
 # --- sim space (same units as the 2D game, so the locked feel is identical) ---
 const HALF := Vector2(560.0, 320.0)
@@ -26,9 +28,9 @@ const WINS_NEEDED := 2
 # archetypes = game.gd's data (numbers untouched). glb = 3D model when one is locked.
 const ARCHETYPES := {
 	"balanced": {"hp": 170, "speed": 320.0, "damage": 12, "atk_cd": 0.34, "skill": "chill",
-		"color": Color(0.35, 0.65, 0.95)},
+		"color": Color(0.35, 0.65, 0.95), "glb": ZERO_GLB, "yaw_off": PI * 1.5},
 	"rusher":   {"hp": 120, "speed": 325.0, "damage": 18, "atk_cd": 0.26, "skill": "lunge",
-		"color": Color(0.95, 0.55, 0.20), "glb": FANG_GLB},
+		"color": Color(0.95, 0.55, 0.20), "glb": FANG_GLB, "yaw_off": PI * 1.5},
 	"tank":     {"hp": 220, "speed": 240.0, "damage": 14, "atk_cd": 0.40, "skill": "shockwave",
 		"color": Color(0.45, 0.85, 0.45)},
 }
@@ -58,6 +60,9 @@ var _banner: Label
 var _score_label: Label
 var _title_label: Label
 var _select_label: Label
+var _ip_edit: LineEdit             # online: host IP the guest connects to (two-machine test)
+var _ip_label: Label
+var _join_ip := "127.0.0.1"        # cmdline `++ join 192.168.x.x` overrides the field
 var _hud: Control
 var _view_snap := 0                   # F6: 0 = smooth rotation, 8 / 4 = directional views
 var _arch_keys: Array = []
@@ -109,6 +114,10 @@ func _ready() -> void:
 			_sel_index = _arch_keys.find(a)
 		elif a.begins_with("lag"):
 			_set_lag(maxi(int(a.substr(3)), 0))
+		elif a.count(".") == 3:
+			_join_ip = a
+	if _ip_edit:
+		_ip_edit.text = _join_ip
 	if ua.has("play"):
 		_begin_match()
 	elif ua.has("host"):
@@ -229,7 +238,7 @@ func _build_ui() -> void:
 	ui.add_child(_banner)
 
 	_title_label = Label.new()
-	_title_label.text = "CHOOSE YOUR FIGHTER\n(A / D change  ·  SPACE vs bot  ·  H host online  ·  J join)"
+	_title_label.text = "CHOOSE YOUR FIGHTER\n(A / D change  ·  SPACE vs bot  ·  H host  ·  J join at the IP below)"
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_title_label.add_theme_font_size_override("font_size", 28)
 	_title_label.position = Vector2(vp.x / 2.0 - 240.0, 100.0)
@@ -239,8 +248,33 @@ func _build_ui() -> void:
 	_select_label = Label.new()
 	_select_label.add_theme_font_size_override("font_size", 20)
 	_select_label.position = Vector2(vp.x / 2.0 - 240.0, 210.0)
-	_select_label.size = Vector2(480.0, 220.0)
+	_select_label.size = Vector2(480.0, 200.0)
 	ui.add_child(_select_label)
+
+	# --- online host-IP entry (two-machine test): click to type, Enter or J joins ---
+	_ip_label = Label.new()
+	_ip_label.text = "Online host IP (127.0.0.1 = same machine · click box to type):"
+	_ip_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_ip_label.add_theme_font_size_override("font_size", 15)
+	_ip_label.position = Vector2(vp.x / 2.0 - 240.0, 430.0)
+	_ip_label.size = Vector2(480.0, 24.0)
+	ui.add_child(_ip_label)
+
+	_ip_edit = LineEdit.new()
+	_ip_edit.text = "127.0.0.1"
+	_ip_edit.placeholder_text = "host IP"
+	_ip_edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_ip_edit.focus_mode = Control.FOCUS_CLICK   # only a click focuses it (Tab stays re-pick)
+	_ip_edit.position = Vector2(vp.x / 2.0 - 110.0, 458.0)
+	_ip_edit.size = Vector2(220.0, 34.0)
+	_ip_edit.text_submitted.connect(func(_t): _net_join())
+	ui.add_child(_ip_edit)
+
+func _show_ip(v: bool) -> void:
+	if _ip_edit:
+		_ip_edit.visible = v
+	if _ip_label:
+		_ip_label.visible = v
 
 func _refresh_select() -> void:
 	var t := ""
@@ -248,7 +282,7 @@ func _refresh_select() -> void:
 		var k: String = _arch_keys[i]
 		var a: Dictionary = ARCHETYPES[k]
 		var marker := "> " if i == _sel_index else "    "
-		var model := "FANG 3D" if a.has("glb") else "greybox"
+		var model := "3D model" if a.has("glb") else "greybox capsule"
 		t += "%s%s   -   hp %d   spd %d   dmg %d   skill: %s   [%s]\n\n" % [
 			marker, k.to_upper(), int(a["hp"]), int(a["speed"]), int(a["damage"]), a["skill"], model]
 	if _select_label:
@@ -262,6 +296,7 @@ func _begin_match() -> void:
 
 	_title_label.visible = false
 	_select_label.visible = false
+	_show_ip(false)
 	_info.visible = true
 	_score_label.visible = true
 
@@ -300,8 +335,9 @@ func _return_to_select() -> void:
 	_info.visible = false
 	_score_label.visible = false
 	_title_label.visible = true
-	_title_label.text = "CHOOSE YOUR FIGHTER\n(A / D change  ·  SPACE vs bot  ·  H host online  ·  J join)"
+	_title_label.text = "CHOOSE YOUR FIGHTER\n(A / D change  ·  SPACE vs bot  ·  H host  ·  J join at the IP below)"
 	_select_label.visible = true
+	_show_ip(true)
 	_state = "select"
 	_refresh_select()
 
@@ -357,7 +393,7 @@ func _make_visual(arch: Dictionary) -> Dictionary:
 		model.scale = Vector3.ONE * s
 		var cc := aabb.position + aabb.size * 0.5
 		model.position = Vector3(-cc.x * s, -aabb.position.y * s, -cc.z * s)
-		fix.rotation.y = MODEL_YAW_OFF
+		fix.rotation.y = arch.get("yaw_off", MODEL_YAW_OFF)
 		meshes = _mesh_instances(model)
 	else:
 		# greybox 3D stand-in: a colored capsule at fighter scale
@@ -617,6 +653,13 @@ func _draw_hud(c: Control) -> void:
 	if _state == "select":
 		return
 	var font := ThemeDB.fallback_font
+	# online: real measured link quality (the two-machine test's actual data)
+	if _net_role != "none" and font:
+		var st := _net_stats()
+		if st["rtt"] >= 0:
+			var txt := "real RTT ~%d ms   ·   loss %.1f%%" % [st["rtt"], st["loss"]]
+			c.draw_string(font, Vector2(c.size.x - 260.0, 26.0), txt,
+				HORIZONTAL_ALIGNMENT_LEFT, 250.0, 15, Color(0.70, 0.90, 1.0, 0.92))
 	for f in _fighters:
 		if not _vis.has(f):
 			continue
@@ -659,6 +702,11 @@ func _input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo):
 		return
 	if _state == "select":
+		if _ip_edit and _ip_edit.has_focus():
+			# typing an IP - let the field own the keys; Esc just defocuses it
+			if event.keycode == KEY_ESCAPE:
+				_ip_edit.release_focus()
+			return
 		if event.keycode == KEY_A or event.keycode == KEY_LEFT:
 			_sel_index = (_sel_index - 1 + _arch_keys.size()) % _arch_keys.size()
 			_refresh_select()
@@ -715,19 +763,28 @@ func _net_host() -> void:
 	_net_role = "host"
 	_state = "waiting"
 	_select_label.visible = false
-	_title_label.text = "HOSTING as %s - waiting for the guest...\n(other window: pick a fighter, press J)      Tab cancels" % _my_arch.to_upper()
+	_show_ip(false)
+	var ip := _local_lan_ip()
+	_title_label.text = "HOSTING as %s  ·  guest connects to  %s\n(other machine: pick a fighter, type this IP, press J)      Tab cancels" % [_my_arch.to_upper(), ip]
 
 func _net_join() -> void:
 	_my_arch = _arch_keys[_sel_index]
+	var ip := "127.0.0.1"
+	if _ip_edit:
+		var t := _ip_edit.text.strip_edges()
+		if t != "":
+			ip = t
+		_ip_edit.release_focus()
 	_peer = ENetMultiplayerPeer.new()
-	if _peer.create_client("127.0.0.1", PORT) != OK:
-		_title_label.text = "JOIN FAILED"
+	if _peer.create_client(ip, PORT) != OK:
+		_title_label.text = "JOIN FAILED (%s)" % ip
 		return
 	multiplayer.multiplayer_peer = _peer
 	_net_role = "client"
 	_state = "waiting"
 	_select_label.visible = false
-	_title_label.text = "connecting as %s..." % _my_arch.to_upper()
+	_show_ip(false)
+	_title_label.text = "connecting as %s to %s ..." % [_my_arch.to_upper(), ip]
 
 func _on_peer_connected(_id: int) -> void:
 	pass    # host waits for the guest's join_info (sent below)
@@ -752,6 +809,7 @@ func _recv_match_start(host_arch: String, guest_arch: String) -> void:
 func _start_net_match(host_arch: String, guest_arch: String) -> void:
 	_title_label.visible = false
 	_select_label.visible = false
+	_show_ip(false)
 	_info.visible = true
 	_score_label.visible = true
 	_p1 = _make_fighter(host_arch, "HOST", false, P1_SPAWN)
@@ -1100,6 +1158,39 @@ func _update_score() -> void:
 		_score_label.text = "%s   %d  -  %d   %s      (first to %d)" % [left, _p1_score, _p2_score, right, WINS_NEEDED]
 
 # ---------- helpers ----------
+
+# ENet-measured link quality to the other peer (RTT ms + packet-loss %). -1 = no peer.
+# Only meaningful over a real two-machine link; on localhost it reads ~0.
+func _net_stats() -> Dictionary:
+	if _peer == null or multiplayer.multiplayer_peer == null:
+		return {"rtt": -1, "loss": 0.0}
+	var peers := multiplayer.get_peers()
+	if peers.is_empty():
+		return {"rtt": -1, "loss": 0.0}
+	var pp := _peer.get_peer(peers[0])
+	if pp == null:
+		return {"rtt": -1, "loss": 0.0}
+	var rtt := int(pp.get_statistic(ENetPacketPeer.PEER_ROUND_TRIP_TIME))
+	# PEER_PACKET_LOSS is a ratio scaled to 65536 (ENET_PEER_PACKET_LOSS_SCALE)
+	var loss := pp.get_statistic(ENetPacketPeer.PEER_PACKET_LOSS) / 65536.0 * 100.0
+	return {"rtt": rtt, "loss": loss}
+
+# best-guess LAN IPv4 for the guest to type on the other machine (skips loopback,
+# link-local and IPv6; prefers the common private ranges over a VPN/virtual adapter).
+func _local_lan_ip() -> String:
+	var fallback := ""
+	for a in IP.get_local_addresses():
+		if a.count(".") != 3 or a.begins_with("127.") or a.begins_with("169.254."):
+			continue
+		if a.begins_with("192.168.") or a.begins_with("10."):
+			return a
+		if a.begins_with("172."):
+			var second := int(a.split(".")[1])
+			if second >= 16 and second <= 31:
+				return a
+		if fallback == "":
+			fallback = a
+	return fallback if fallback != "" else "127.0.0.1"
 
 func _combined_aabb(node: Node) -> AABB:
 	var acc := AABB()

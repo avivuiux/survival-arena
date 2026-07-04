@@ -149,17 +149,46 @@ closed the last risky assumptions of the 3D pivot and the net stack, then merged
 reference. `arena3d_test` = movement-in-3D reference. `arena3d_fight` = the 3D-combat
 fun-proof. `net_fight` = the net slices 1-4 reference. All kept in git.
 
+## Current state - SESSION 8 (2026-07-04): chibi-plus look wired + net two-machine prep
+
+The concept lane's REWORK converged (see ROSTER): the game look is now **"chibi-plus 3D-toon"**
+(locked by Aviv, anchors `concept/rework/fang_styledial_A_attack.jpg` + `zero_chibiplus_cold_2.jpg`).
+Both chibi models were generated AND are wired into `game3d`:
+
+- ✅ **FANG-chibi in the game (Aviv-approved live).** Concept committed the handoff (`199c574`):
+  Aviv judged `FANG_chibi_3d_v1.glb` live ("נראה מעולה"). `game3d`'s rusher `glb` now points at
+  it (was the off-style 6-head `FANG_hero_3d_v1.glb`). Approved live in `game3d` this session.
+- 🔨 **ZERO-chibi dropped into the balanced slot (pending Aviv's live facing check).**
+  `ZERO_chibi_3d_v1.glb` (on-style, asymmetry intact, but UNRIGGED + ~57MB) now fills balanced.
+  game3d renders via whole-model transforms (no bones), so unrigged is fine to SHIP - the rig is
+  only needed for the deferred animation. `yaw_off` is now **per-archetype** (both = PI*1.5, a
+  Tripo-orientation guess for ZERO) so ZERO can be re-aimed without touching FANG. Loads clean
+  headless; a small load-hitch is possible from the 57MB. **Aviv still to judge ZERO's facing/scale live.**
+- **⚠️ SCOPE DECISION (Aviv + concept, in `199c574`): skeletal ANIMATION is the LAST polish, not
+  next.** Agreed order: (1) FANG-chibi in game [done] → (2) ZERO + a 3rd character = roster complete
+  → (3) ONLY THEN minimal animation (breathing/walk/attack), never a full anim pipeline. So the old
+  "A-pose → combat stance" candidate is formally re-ordered to LAST.
+- ✅ **Net two-machine prep (built + headless-verified, NOT yet live two-machine).** `game3d`'s
+  online path was localhost-only; the LAST net gate (NET.md) is a real PC↔Mac test. Built for it:
+  (a) **LAN connect** - host prints its LAN IP; the guest gets an on-screen IP field (click to type,
+  default localhost so the single-machine test is unbroken) + cmdline `++ join <ip>`; (b) **measured
+  link quality** - the HUD shows real ENet-measured **RTT + packet-loss %** when online, so Aviv's
+  two-machine verdict is data-backed, not a vibe. Both verified via two-process localhost connect
+  (match starts, stats read clean); **Aviv has a Mac but not available now** - he runs the real test later.
+
 ## Next steps
 
-**TOP OF THE STACK (session 8 candidates - run each through the principles, recommend ONE):**
-- **A-pose -> combat stance** (the open look gap): the GLB stands in a neutral A-pose. Fun is
-  proven without a stance, so this is a LOOK step, not a fun step. Decide the MINIMUM with Aviv
-  (a single static combat-stance pose? a couple of baked idle/attack clips?) - do NOT slide
-  into a full animation pipeline (the scope line DESIGN.md guards).
-- **ZERO as the 2nd 3D model**: concept lane owns the asymmetry check; when `ZERO_hero_3d_v1.glb`
-  is locked, it drops into the balanced archetype's `glb` slot in game3d (currently a capsule).
-- **Real two-machine net test** (PC vs Mac): the LAST net gate - localhost only proved constant
-  delay; real internet adds jitter/loss. Logistics, not engineering.
+**TOP OF THE STACK (session 9 candidates - run each through the principles, recommend ONE):**
+- **Aviv live-judges ZERO-chibi's facing/scale in game3d** (pick BALANCED, vs bot). If it faces
+  wrong, one-line fix `balanced.yaw_off`. This closes the roster's 2nd model. START HERE.
+- **Real two-machine net test** (PC vs Mac): the LAST net gate - the pipe + LAN connect + RTT/loss
+  readout are BUILT; this is now pure logistics (same Wi-Fi/subnet, allow Godot through the PC
+  firewall). Localhost only proved constant delay; real internet adds jitter/loss.
+- **3rd character (tank)**: concept-lane deliverable - no fiction/model yet, stays a capsule until
+  concept designs it in chibi-plus. Completes the roster (step 2 of the agreed order).
+- ~~**A-pose -> combat stance**~~ **RE-ORDERED TO LAST** (concept scope decision `199c574`):
+  skeletal animation is the FINAL polish, only after the game is proven + roster is full, and even
+  then minimal (breathing/walk/attack). Do NOT pick this next - it is the scope-death line.
 - **F6 directional-view decision**: smooth vs 8 vs 4 is still deferred ("אפשר לשנות אחר כך") -
   a quick lock whenever Aviv wants to judge it in the unified game.
 

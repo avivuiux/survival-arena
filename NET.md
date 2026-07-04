@@ -119,6 +119,29 @@ be occasional "I blocked and still got hit" moments - the host's ruling wins.
      door reopens (the known cost accepted in the authority decision).
    - **Pass =** a real best-of-3 at each delay level + a written verdict per level.
 
+## Two-machine prep (session 8, 2026-07-04) - BUILT, awaiting the real test
+
+The pipe + server-auth + lag injector all live in `game3d` now. The LAST gate is a real
+PC↔Mac run. Two build steps landed so that test actually works and produces DATA:
+
+- **LAN connect** - the online path was hardcoded to `127.0.0.1`. Now: the HOST prints its
+  LAN IPv4 on the waiting screen (`_local_lan_ip()` skips loopback/link-local/IPv6, prefers
+  192.168/10/172-private); the GUEST gets an on-screen IP field on the select screen (click to
+  type, `focus_mode = CLICK` so Tab/arrows stay game keys; default `127.0.0.1` so the
+  single-machine test is unbroken; Enter or J connects) + a cmdline `++ join <ip>` path.
+- **Measured link quality** - the HUD shows real ENet-measured **RTT (ms) + packet-loss %**
+  to the other peer when online (`_net_stats()` reads `ENetPacketPeer.get_statistic`,
+  `PEER_ROUND_TRIP_TIME` + `PEER_PACKET_LOSS`/65536). On localhost it reads ~0; the number is
+  meaningful only on the two-machine run - it turns Aviv's verdict from "feels ok" into "at
+  X ms real + Y% loss it feels ___", covering the exact jitter/loss unknowns above.
+- **Verified:** two-process localhost connect (host + guest start a match, stats read clean,
+  no errors). **NOT yet run on two machines** - Aviv has a Mac but not available at build time.
+- **How to run it (both machines on the same Wi-Fi/subnet):** PC -> run game3d, pick a fighter,
+  H -> read the IP. Mac -> `git pull`, run Godot on the repo, click the IP field, type the PC's
+  IP, pick a fighter, J. Fight best-of-3, read RTT/loss in the HUD corner, verdict per feel.
+  Caveat: Windows Firewall will prompt on first host - allow Godot on private networks (ENet =
+  UDP 8910). Different subnets (PC on Ethernet, Mac on Wi-Fi routed elsewhere) won't connect.
+
 ## How to test slice 1
 
 Launch the net-test scene in TWO windows on this machine. In one press **H** (host), in the
