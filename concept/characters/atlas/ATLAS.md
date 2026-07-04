@@ -43,7 +43,22 @@ stance is a wall, not a weapon.
   his vow; knockback-shove = "get back, I will not hurt you, but you shall not pass." The kit
   IS the character.
 
-## 4. THE BODY  ⏳ OPEN - awaiting Aviv's references
+## LOOK LOCKED 2026-07-03 (Aviv, from 3 references)
+Refs Aviv brought: (1) ornate Egyptian-pharaoh gold armor = the LUXURY/COMPLEXITY bar;
+(2) handsome knight in ornate plate = complexity signal; (3) a living jade idol-golem with
+roots + gold gems growing through it = the SOUL match. Synthesis Aviv locked:
+- **FORM = a living ornate IDOL-STATUE that walked** (the body IS the material - NOT a being
+  wearing armor). Carved stone / jade, luxurious carved complexity at ref-1 level.
+- **The cracks bear GOLD + GEMSTONES + life bursting through them** (ref 3) = his wish
+  ("restore what he destroyed") made literal on his body. `gold-in-cracks <- because the value
+  and life he destroyed, returning through him.` THIS is the signature story-object.
+- **PALETTE = jade-green + gold** (distinct from FANG orange + ZERO blue; luxurious, monumental).
+- **FACE = a carved monumental guardian/idol visage** - noble, austere, sorrowful; NOT an animal
+  (feline is FANG's turf), NOT a human pretty-face. A weeping colossus.
+- **Chibi note:** as the TANK he is the widest/heaviest silhouette, not the tallest - chibi ATLAS
+  = squat, massive, wide, big-headed, dense with carved ornament + gold-gem cracks.
+
+## 4. THE BODY  (was open - now locked above)
 Locked shape-facts (derive from essence, safe now):
 - **Colossal - the biggest silhouette in the roster**, heaviest read, low centre of gravity,
   planted stance. `huge <- because built as a guardian/weapon of scale.`
