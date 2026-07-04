@@ -17,7 +17,7 @@ update the cell **and** the "last update" note.
 |---|---|---|---|---|---|---|
 | **FANG**   | **rusher** | ✅ | ✅ (bible LOCKED, `concept/characters/fang/FANG.md`) | ✅ **CHIBI 3D MODEL (rigged, on-style)** = `FANG_chibi_3d_v1.glb` (matches locked chibi-plus look; 12-angle-audited clean; ⏳ Aviv approval). Supersedes off-style `FANG_hero_3d_v1.glb` (6-heads, fun-test only). 2D fallback `FANG_ingame_v1_cutout.png`; portrait `fang_v6_serious_1.png` | ⬜ (mechanics: swap into game3d) | ✅ (3D fun-test PASSED per mechanics S7) |
 | **ZERO**   | balanced (control / chill) | ✅ | ✅ (bible LOCKED, `concept/characters/zero/ZERO.md`) | 🔨 **CHIBI 3D MODEL (on-style, asymmetry INTACT)** = `ZERO_chibi_3d_v1.glb` - clean chibi convert, half-ice face + ice-arm vs human-arm/chest survived Tripo (bold chibi cues held where the detailed portrait failed); ⏳ Aviv approval. **Downstream TODO: UNRIGGED + heavy (~57MB) → needs auto-rig + decimation before game-ready.** Older: `ZERO_hero_3d_v1.glb`=rigged-but-symmetrized (dead), `_v3_trellis`=asym-but-mush (dead). 2D fallback `ZERO_ingame_v1_cutout.png` | ⬜ (rig+decimate, then mechanics) | ⬜ |
-| _(unnamed)_ | tank      | ✅ | ⬜ (no fiction yet - future character) | ⬜ | ⬜ | ⬜ |
+| **ATLAS**   | tank      | ✅ | 🔨 **ESSENCE LOCKED** (`concept/characters/atlas/ATLAS.md`): penitent giant guardian-statue, wish = restore what he destroyed. SURFACE open - Aviv bringing refs | ⬜ (awaiting refs → chibi-plus gen) | ⬜ |
 
 _Archetype mapping CORRECTED by the concept chat 2026-06-30: **FANG = rusher** (orange tiger,
 lunge = pounce - matches greybox + the whole FANG bible), **ZERO = balanced** (the chill/AoE
