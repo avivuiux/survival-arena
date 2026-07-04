@@ -68,6 +68,25 @@ future-character slot, NOT FANG._
 
 ## Last update
 
+- 2026-07-03 (concept chat, night, HANDOFF TO MECHANICS) - **✅ FANG_chibi_3d_v1.glb APPROVED
+  LIVE BY AVIV ("נראה מעולה") - READY TO SWAP INTO game3d.**
+  - **Action for mechanics:** in `game3d` / `arena3d_fight`, replace the off-style
+    `concept/characters/fang/FANG_hero_3d_v1.glb` (6-heads) with
+    **`concept/characters/fang/FANG_chibi_3d_v1.glb`** (on-style locked look, rigged, ~1.4MB).
+    Same drop-in slot as the old GLB. Verified live at game scale + game camera on the dark
+    arena floor (concept throwaway `concept/_tmp_arena_view.gd/.tscn` - delete-anytime, concept-
+    owned). Reads clean from all angles; identity + chibi finish hold in-context.
+  - Model is in a T/A-pose. Per your session-7 finding (action states = whole-model tilt+scale,
+    A-pose did not block readability) it drops in as-is. No rig animation needed to ship it.
+  - **⚠️ SCOPE DECISION (Aviv + concept, this session): SKELETAL ANIMATION IS DEFERRED - it is the
+    LAST polish, not the next step.** Order agreed: (1) FANG-chibi in the game with existing
+    tilt/scale juice; (2) ZERO + a 3rd character so the roster is complete (identity-full);
+    (3) ONLY once the game is proven + roster-full does animation come up, and even then minimal
+    (breathing idle + walk + attack), NOT a full anim pipeline. Jumping to animation now = the
+    exact scope-death HANDOFF warns of. Recorded so neither lane slides into it early.
+  - **ZERO status:** `ZERO_chibi_3d_v1.glb` = on-style + asymmetry intact, but UNRIGGED + heavy
+    (~57MB). Needs external auto-rig + decimation before game-ready - a technical step better
+    suited to the mechanics/Godot side than concept generation. Not blocking FANG.
 - 2026-07-03 (concept chat, night, FINAL) - **✅✅ NEW GAME LOOK LOCKED BY AVIV: "CHIBI-PLUS
   3D-TOON". Anchor = `concept/rework/fang_styledial_A_attack.jpg`.** The rework declared
   earlier tonight converged fast: Aviv brought two references (Survival Project = anime+simple
