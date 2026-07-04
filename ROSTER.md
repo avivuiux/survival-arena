@@ -84,9 +84,11 @@ future-character slot, NOT FANG._
     (3) ONLY once the game is proven + roster-full does animation come up, and even then minimal
     (breathing idle + walk + attack), NOT a full anim pipeline. Jumping to animation now = the
     exact scope-death HANDOFF warns of. Recorded so neither lane slides into it early.
-  - **ZERO status:** `ZERO_chibi_3d_v1.glb` = on-style + asymmetry intact, but UNRIGGED + heavy
-    (~57MB). Needs external auto-rig + decimation before game-ready - a technical step better
-    suited to the mechanics/Godot side than concept generation. Not blocking FANG.
+  - **ZERO status: ✅ NOW GAME-READY** = `ZERO_chibi_3d_v2_rigged.glb` (rigged, skins+joints,
+    ~1MB, asymmetry intact, on-style). Solved via the **Tripo API directly** (Aviv supplied a key):
+    image_to_model with `face_limit:18000` → `animate_rig` → rigged + decimated in one flow (57MB
+    v1 superseded + removed). Both FANG + ZERO are now chibi, on-style, rigged, light. **Mechanics:
+    balanced slot in game3d can take `ZERO_chibi_3d_v2_rigged.glb` (currently a coloured capsule).**
 - 2026-07-03 (concept chat, night, FINAL) - **✅✅ NEW GAME LOOK LOCKED BY AVIV: "CHIBI-PLUS
   3D-TOON". Anchor = `concept/rework/fang_styledial_A_attack.jpg`.** The rework declared
   earlier tonight converged fast: Aviv brought two references (Survival Project = anime+simple

@@ -10,3 +10,6 @@ build/
 # OS junk
 Thumbs.db
 .DS_Store
+
+# Local secrets (API keys) - never commit
+.env.local

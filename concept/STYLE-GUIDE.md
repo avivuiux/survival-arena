@@ -224,6 +224,15 @@ anchor. Characteristics to hold in every future render:
   Tripo can work - audit to confirm. **Known downstream gaps (not blockers): this GLB is UNRIGGED
   (Tripo returned model.glb, no auto-rig) and HEAVY (~57MB) - needs external auto-rig + decimation
   before game-ready.** FANG's chibi GLB is rigged + light (1.4MB); ZERO needs those two steps.
+- **✅ ZERO rig+decimate SOLVED via the Tripo API directly (2026-07-03, Aviv supplied a key,
+  stored in `.env.local` = gitignored).** The Magnific MCP wrapper hid Tripo's rig/decimate; the
+  raw API exposes them. Flow that gives a game-ready asset in one pass:
+  `POST /task image_to_model` with `face_limit` (e.g. 18000) → `animate_prerigcheck` →
+  `animate_rig` (out_format glb) → download. Result `ZERO_chibi_3d_v2_rigged.glb`: **rigged
+  (skins+joints), ~1MB (was 57MB), asymmetry INTACT.** The heavy unrigged v1 was removed.
+  **ENGINE RULE UPDATE: for a game-ready chibi model, use the Tripo API (face_limit + animate_rig),
+  not the Magnific wrapper** - same quality, controllable poly budget, real rig. Magnific still
+  fine for quick look-probes. (Animations NOT applied - see the deferred-animation scope note.)
 - **NEXT (Aviv, "clean the look first"):** before touching the render-path/3D question, produce
   CLEAN CANONICAL anchors of FANG + ZERO in this locked style - full-body readable stance,
   minimal ground, background-removable - as the definitive style reference set. Generated per
