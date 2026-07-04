@@ -17,11 +17,21 @@ everything that hits you breaks first. The immovable protector: the enemy cannot
 and the longer the fight goes, the more it's yours. For the player who wants to outlast, absorb,
 and win by refusing to fall.
 
+## ⚠️ TONE CORRECTION (Aviv, 2026-07-03) - NOBLE, NOT PITIABLE
+First design pass read too "wretched / pitiful" (weeping, apologetic, slumped). **Aviv's
+correction: ATLAS is NOBLE, PROUD, and TRUSTED** - a dignified guardian everyone relies on with
+confidence, who returns to **restore order.** The guilt/wound stays as backstory ENGINE, but his
+PRESENCE is regal and reassuring - he carries his burden like a king, not a victim. The grief is
+inner RESOLVE, never tears-on-the-face or "I'm sorry." Think proud paladin-king / majestic
+protector. This reframes Layers 1, 6, 9 below.
+
 ## 1. THE SEED + THE CONTRADICTION (the heart)
 A colossal **guardian statue** that woke with a conscience. **The most destructive body in the
-arena, driven by a heart that refuses to destroy.** He was raised to PROTECT - and he was made
-to level the very thing he guarded. Everything downstream hangs on this single tension:
-destruction incarnate, wielded by someone who now only wants to shield.
+arena, wielded as a proud PROTECTOR - power turned to guardianship, not aggression.** He was
+raised to protect, and was made to level the very thing he guarded; now he stands, immovable and
+dignified, as the guardian everyone trusts to hold the line. The tension: destruction incarnate,
+bearing itself with a king's nobility and refusing to be a weapon again. He returns to **restore
+order** - and carries that mission with pride, not shame.
 
 ## 2. THE WOUND & THE WANT
 - **Wound:** he destroyed what he was built to protect. (Turned/used as a weapon against his own
@@ -53,10 +63,14 @@ roots + gold gems growing through it = the SOUL match. Synthesis Aviv locked:
   ("restore what he destroyed") made literal on his body. `gold-in-cracks <- because the value
   and life he destroyed, returning through him.` THIS is the signature story-object.
 - **PALETTE = jade-green + gold** (distinct from FANG orange + ZERO blue; luxurious, monumental).
-- **FACE = a carved monumental guardian/idol visage** - noble, austere, sorrowful; NOT an animal
-  (feline is FANG's turf), NOT a human pretty-face. A weeping colossus.
+- **FACE = a carved monumental guardian/idol visage** - noble, RESOLUTE, majestic, calm-strong,
+  TRUSTWORTHY; a king's/protector's face people rally behind. NOT an animal (feline is FANG's
+  turf), NOT a pretty human, and NOT weeping/pitiable (tone correction). A **regal crown / kingly
+  adornment** so the nobility reads instantly.
+- **BEARING = proud and upright** (tone correction): commanding, immovable, reassuring - a
+  guardian-king, not a slumped penitent. Gold-in-cracks reads as veins of power/glory, not wounds.
 - **Chibi note:** as the TANK he is the widest/heaviest silhouette, not the tallest - chibi ATLAS
-  = squat, massive, wide, big-headed, dense with carved ornament + gold-gem cracks.
+  = squat, massive, wide, big-headed, dense with carved ornament + gold-gem cracks, standing PROUD.
 
 ## 4. THE BODY  (was open - now locked above)
 Locked shape-facts (derive from essence, safe now):
@@ -78,10 +92,12 @@ Locked shape-facts (derive from essence, safe now):
   tired eyes. `expression <- because the contradiction (a weapon that grieves).`
 
 ## 6. THE VIBE IN MOTION  (feeds animation later - animation itself is DEFERRED)
-- **Idle:** slow, heavy; slightly bowed / penitent, not a proud fighter's stance.
-- **Signature gesture (his alone):** raises his arms to **shield**, not to strike.
-- **Win:** does not celebrate - lowers his guard, relieved it's over.
-- **Lose:** kneels / crumbles - a monument coming down.
+- **Idle:** slow, heavy, but **proud and upright** - a planted guardian-king, calm and immovable
+  (tone correction: NOT bowed/penitent).
+- **Signature gesture (his alone):** plants himself and raises a hand/forearm as an unbreakable
+  **shield** for those behind him - a protector's stance, dignified not desperate.
+- **Win:** does not gloat - a single solemn, satisfied nod: order held.
+- **Lose:** kneels slowly - a monument bowing, still dignified, never shattered-pathetic.
 
 ## 7. ROSTER FIT + THE AXIS HE OWNS (LOCKED)
 - **Owns the "immovable protector / penance" axis** - no other fighter is defensive-by-vow.
@@ -93,12 +109,14 @@ Locked shape-facts (derive from essence, safe now):
 Every tank stat expresses him: high HP = endurance/penance; slow = mass + reluctance; defensive
 stance = his vow; knockback-not-strike = "shove, don't kill." No stat contradicts the fiction.
 
-## 9. VOICE
-Slow, deep, few words, weary and gentle. His "taunts" are warnings or apologies, never threats.
-- Warning: *"Turn back."* / *"I don't want to do this."*
-- Win (quiet, sad): *"...Still standing. I'm sorry."*
-- Lose: *"...Good. Let me rest."*
-- Catchphrase / core line: *"You shall not pass - and neither will I strike."*
+## 9. VOICE  (tone-corrected: noble & confident, NOT apologetic)
+Slow, deep, few words - measured, calm AUTHORITY. Reassuring, never groveling. He speaks like a
+guardian everyone trusts.
+- Warning: *"Stand down. You will not pass me."*
+- Reassurance (to allies / the crowd): *"Stand behind me."*
+- Win (solemn, dignified): *"Order holds."*
+- Lose (never pathetic): *"...Then I stand again."*
+- Catchphrase / core line: *"I was made to break the world. I choose to hold it."*
 
 ---
 
