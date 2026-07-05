@@ -259,6 +259,18 @@
     background: radial-gradient(120% 80% at 50% 0%, color-mix(in srgb,var(--ch) 26%, transparent), transparent 60%), var(--bg-2);
   }
   .detail .hero-portrait img { width: 100%; display: block; }
+  /* --- gallery (art & explorations) --- */
+  .gallery-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; margin:10px 0 24px; }
+  .g-item { margin:0; background:var(--bg-2); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .g-item a { display:block; }
+  .g-item img { width:100%; aspect-ratio:3/4; object-fit:cover; object-position:top center; display:block; }
+  .g-item .noimg { aspect-ratio:3/4; display:grid; place-items:center; color:var(--txt-3); font-size:28px; }
+  .g-item figcaption { padding:8px 10px 10px; font-size:11.5px; line-height:1.45; color:var(--txt-2); }
+  .g-kind { display:inline-block; font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; border-radius:4px; padding:1px 6px; margin-bottom:4px; border:1px solid var(--line-2); }
+  .g-item.canon .g-kind { color:#35c692; border-color:#35c69255; }
+  .g-item.exploration .g-kind { color:#eab308; border-color:#eab30855; }
+  .g-item.archived .g-kind { color:#8b93a8; border-color:#8b93a855; }
+  .g-item.archived img { filter:grayscale(.45) brightness(.85); }
   .detail .hero-portrait .noimg { aspect-ratio: 3/4; display:grid; place-items:center; color:var(--txt-3); font-size:60px; }
   .detail-body .d-name { font-size: 34px; font-weight: 800; letter-spacing: -.6px; margin: 0; display:flex; align-items:center; gap:12px; }
   .detail-body .d-name .swatch { width:16px;height:16px;border-radius:4px;background:var(--ch); box-shadow:0 0 12px var(--ch); }
@@ -403,11 +415,23 @@
       "tagline": "The hot-blooded tiger beast-kin rookie - built like a monster, with the warmest heart in the Circuit.",
       "archetypeSummary": "A fast heavyweight - a glass-cannon bruiser who trades durability for speed; the lunge is a literal pounce.",
       "colorIdentity": "#E8722A",
-      "portrait": "../../concept/characters/fang/fang_v6_serious_1.png",
+      "portrait": "../../concept/characters/fang/explorations/fang_soulprompt_r2_v4.jpg",
       "status": { "bible": true, "art": true, "rig": false },
       "tags": { "nature":"beast-kin","powerSource":"physical/martial","archetype":"rusher","range":"close/melee","movement":"grounded","tempo":"aggressive","temperament":"hot/loud/warm","size":"large-agile","storyRole":"rookie","era":"present","element":"fire","vibe":"heroic" },
       "seed": "Built as a monster, heart of gold - and PROUD of the beast. His answer to being feared isn't 'see I'm not a beast' - it's 'I AM a beast, I'm proud of it, and I'll make you cheer for one.' NOT a clown - serious determination and a leashed, brutal power under warm, principled optimism. The fire on his fists is what that leashed ferocity looks like when he chooses to let a little out.",
-      "want": "Not validation, but self-acceptance, pride, and lifting his kind - to make the world celebrate beast-kin instead of fear them, by being unapologetically himself."
+      "want": "Not validation, but self-acceptance, pride, and lifting his kind - to make the world celebrate beast-kin instead of fear them, by being unapologetically himself.",
+      "gallery": [
+        { "src": "../../concept/characters/fang/explorations/fang_soulprompt_r2_v4.jpg", "label": "CHOSEN DIRECTION (Aviv 2026-07-05): round-2 #4 'the wild one' - menace push on r1 #1. 'This is what a hero looks like.'", "kind": "canon" },
+        { "src": "../../concept/rework/fang_styledial_A_attack.jpg", "label": "ARCHIVED old-face design (2026-07-05). Stays as the chibi-plus STYLE anchor only - proportions/register, not FANG's look.", "kind": "archived" },
+        { "src": "../../concept/rework/fang_chibi_apose_1.jpg", "label": "ARCHIVED old-face A-pose - source of the current in-game GLB (stays wired until the r2_v4 model lands).", "kind": "archived" },
+        { "src": "../../concept/characters/fang/explorations/fang_soulprompt_v1.jpg", "label": "Soul-prompt #1 - patched denim street (full tiger face)", "kind": "exploration" },
+        { "src": "../../concept/characters/fang/explorations/fang_soulprompt_v2.jpg", "label": "Soul-prompt #2 - banner as fringed scarf", "kind": "exploration" },
+        { "src": "../../concept/characters/fang/explorations/fang_soulprompt_v3.jpg", "label": "Soul-prompt #3 - CHAMPION fist-wraps (best banner take; off-style 2D)", "kind": "exploration" },
+        { "src": "../../concept/characters/fang/explorations/fang_soulprompt_v4.jpg", "label": "Soul-prompt #4 - white-hair surprise, rope belt", "kind": "exploration" },
+        { "src": "../../concept/characters/fang/explorations/fang_soulprompt_r2_v1.jpg", "label": "Round-2 #1 - closed-mouth scowl, quiet-dangerous", "kind": "exploration" },
+        { "src": "../../concept/characters/fang/explorations/fang_soulprompt_r2_v2.jpg", "label": "Round-2 #2 - the warning-smile", "kind": "exploration" },
+        { "src": "../../concept/characters/fang/explorations/fang_soulprompt_r2_v3.jpg", "label": "Round-2 #3 - middle take", "kind": "exploration" }
+      ]
     },
     {
       "id": "zero",
@@ -747,6 +771,23 @@ function viewDetail(id) {
   // lore
   if (c.seed) body.append(el(`<div class="panel lore"><h3>The Seed / Contradiction</h3><p>${esc(c.seed)}</p></div>`));
   if (c.want) body.append(el(`<div class="panel lore"><h3>The Want</h3><p>${esc(c.want)}</p></div>`));
+
+  // gallery: canon art + design explorations (added 2026-07-05)
+  if (Array.isArray(c.gallery) && c.gallery.length) {
+    body.append(el(`<div class="section-title"><h2>Gallery - art & explorations</h2>
+      <span class="hint">canon = locked look · exploration = off-canon idea probe</span></div>`));
+    const gg = el(`<div class="gallery-grid"></div>`);
+    c.gallery.forEach(it => {
+      const fig = el(`<figure class="g-item ${esc(it.kind||'')}"></figure>`);
+      const link = el(`<a href="${esc(it.src)}" target="_blank" title="open full size"></a>`);
+      const img = el(`<img loading="lazy" src="${esc(it.src)}" alt="${esc(it.label||c.name)}">`);
+      img.onerror = () => img.replaceWith(el(`<div class="noimg">✕</div>`));
+      link.append(img); fig.append(link);
+      fig.append(el(`<figcaption><span class="g-kind">${esc(it.kind||'img')}</span><br>${esc(it.label||'')}</figcaption>`));
+      gg.append(fig);
+    });
+    body.append(gg);
+  }
 
   // tags (editable)
   body.append(el(`<div class="section-title"><h2>Classification — 12 axes</h2>

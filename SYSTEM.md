@@ -23,7 +23,17 @@ to outgrow this one game.
   uniqueness / consistency / variety / gap-spotting.
 - `concept/ART-DEPTH.md` - art-mining pass (10 buckets) to extract rich, detailed visual ideas.
 - `concept/RIGPOSE-STANDARD.md` - rig-ready pose checklist + the reusable rig-pose PROMPT TEMPLATE.
+- `concept/CHARACTER-FOUNDRY.md` - THE character-to-animation pipeline (6 stations: soul->design
+  -> model -> rig-doctor -> pose-cast -> forge-v2 -> gate/handoff). Accuracy doctrine: bible
+  Layer-6b = the animation spec, engine combat constants = the timings, Aviv picks from images.
+  Locked 2026-07-05; stations 3-5 get built against ZERO's rework.
+- `concept/SOUL-PROMPT.md` - design-exploration prompts from the character's SOUL only (zero
+  visual language, style-register locked, emotion written as render-able physical cues, iterate
+  via liked-image reference). Aviv-validated on FANG 2026-07-05.
 - `ROSTER.md` - cross-chat character status bridge (who owns what, what stage each char is at).
+- `tools/anim-forge/` - animation blocking pipeline: Aviv briefs a motion in words -> JSON spec ->
+  forge builds the clip in Blender headless -> preview gif auto-opens -> dial in words -> Blender
+  only for taste-polish. Proven on FANG's crouch idle 2026-07-05. (brief template in its README)
 - **Generation pipeline** - Magnific MCP: Nano Banana Pro + the character's anchor as an image
   reference = consistency; `images_remove_background` -> transparent cutout. Fallback: gpt-image-1.
 - `CONCEPT.md` / `DESIGN.md` / `VISION.md` - world+identity / combat-feel / systems (pre-existing).

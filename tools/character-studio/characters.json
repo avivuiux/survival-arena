@@ -2,22 +2,147 @@
   "_comment": "GameOS Character Studio - canonical data model for OVERTHRONE roster. Two blocks: `axes` (the 12 classification axes + their enumerated value-sets, used for tag pickers and gap analysis) and `characters` (the roster). Source of truth: concept/CHARACTER-ATTRIBUTES.md + each character's bible. When you add a character, mirror this shape exactly.",
   "game": "OVERTHRONE",
   "tagline": "The Circuit's fighting league.",
-
   "axes": {
-    "nature":      { "label": "Nature / kind",        "values": ["human", "beast-kin", "creature", "alien", "construct/golem", "spirit/yokai", "elemental", "undead", "divine/demon", "transformed"] },
-    "powerSource": { "label": "Power source",          "values": ["physical/martial", "elemental", "magic (mage)", "tech/gadget", "psychic/mind", "divine/cursed", "innate mutation", "none (pure skill)"] },
-    "archetype":   { "label": "Combat archetype",      "values": ["rusher", "control/zoner", "tank/bruiser", "grappler", "glass-cannon", "trapper/setup", "all-rounder"] },
-    "range":       { "label": "Range",                 "values": ["close/melee", "mid", "long/ranged", "mixed"] },
-    "movement":    { "label": "Movement mode",         "values": ["grounded", "floating/hover", "flying", "teleport/blink", "dash-heavy"] },
-    "tempo":       { "label": "Tempo / playstyle",     "values": ["aggressive", "defensive", "patient-control", "hit-and-run", "setup"] },
-    "temperament": { "label": "Temperament",           "values": ["hot/loud/warm", "cold/quiet/composed", "wild", "arrogant", "stoic", "playful"] },
-    "size":        { "label": "Size / silhouette",     "values": ["small-nimble", "average", "tall-lean", "large-heavy", "large-agile"] },
-    "storyRole":   { "label": "Story role",            "values": ["rookie", "veteran", "rival", "gatekeeper", "champion/boss", "wildcard", "comic"] },
-    "era":         { "label": "Origin / era",          "values": ["present", "past (displaced)", "future", "otherworld", "unknown"] },
-    "element":     { "label": "Element / theme",       "values": ["fire", "ice", "lightning", "earth", "wind", "void", "light", "nature", "cosmic", "ice/cosmic", "none"] },
-    "vibe":        { "label": "Moral vibe",            "values": ["heroic", "anti-hero", "anti-hero -> villain lean", "cold-neutral", "villain", "chaotic"] }
+    "nature": {
+      "label": "Nature / kind",
+      "values": [
+        "human",
+        "beast-kin",
+        "creature",
+        "alien",
+        "construct/golem",
+        "spirit/yokai",
+        "elemental",
+        "undead",
+        "divine/demon",
+        "transformed"
+      ]
+    },
+    "powerSource": {
+      "label": "Power source",
+      "values": [
+        "physical/martial",
+        "elemental",
+        "magic (mage)",
+        "tech/gadget",
+        "psychic/mind",
+        "divine/cursed",
+        "innate mutation",
+        "none (pure skill)"
+      ]
+    },
+    "archetype": {
+      "label": "Combat archetype",
+      "values": [
+        "rusher",
+        "control/zoner",
+        "tank/bruiser",
+        "grappler",
+        "glass-cannon",
+        "trapper/setup",
+        "all-rounder"
+      ]
+    },
+    "range": {
+      "label": "Range",
+      "values": [
+        "close/melee",
+        "mid",
+        "long/ranged",
+        "mixed"
+      ]
+    },
+    "movement": {
+      "label": "Movement mode",
+      "values": [
+        "grounded",
+        "floating/hover",
+        "flying",
+        "teleport/blink",
+        "dash-heavy"
+      ]
+    },
+    "tempo": {
+      "label": "Tempo / playstyle",
+      "values": [
+        "aggressive",
+        "defensive",
+        "patient-control",
+        "hit-and-run",
+        "setup"
+      ]
+    },
+    "temperament": {
+      "label": "Temperament",
+      "values": [
+        "hot/loud/warm",
+        "cold/quiet/composed",
+        "wild",
+        "arrogant",
+        "stoic",
+        "playful"
+      ]
+    },
+    "size": {
+      "label": "Size / silhouette",
+      "values": [
+        "small-nimble",
+        "average",
+        "tall-lean",
+        "large-heavy",
+        "large-agile"
+      ]
+    },
+    "storyRole": {
+      "label": "Story role",
+      "values": [
+        "rookie",
+        "veteran",
+        "rival",
+        "gatekeeper",
+        "champion/boss",
+        "wildcard",
+        "comic"
+      ]
+    },
+    "era": {
+      "label": "Origin / era",
+      "values": [
+        "present",
+        "past (displaced)",
+        "future",
+        "otherworld",
+        "unknown"
+      ]
+    },
+    "element": {
+      "label": "Element / theme",
+      "values": [
+        "fire",
+        "ice",
+        "lightning",
+        "earth",
+        "wind",
+        "void",
+        "light",
+        "nature",
+        "cosmic",
+        "ice/cosmic",
+        "none"
+      ]
+    },
+    "vibe": {
+      "label": "Moral vibe",
+      "values": [
+        "heroic",
+        "anti-hero",
+        "anti-hero -> villain lean",
+        "cold-neutral",
+        "villain",
+        "chaotic"
+      ]
+    }
   },
-
   "characters": [
     {
       "id": "fang",
@@ -25,8 +150,12 @@
       "tagline": "The hot-blooded tiger beast-kin rookie - built like a monster, with the warmest heart in the Circuit.",
       "archetypeSummary": "A fast heavyweight - a glass-cannon bruiser who trades durability for speed; the lunge is a literal pounce.",
       "colorIdentity": "#E8722A",
-      "portrait": "../../concept/characters/fang/fang_v6_serious_1.png",
-      "status": { "bible": true, "art": true, "rig": false },
+      "portrait": "../../concept/characters/fang/explorations/fang_soulprompt_r2_v4.jpg",
+      "status": {
+        "bible": true,
+        "art": true,
+        "rig": false
+      },
       "tags": {
         "nature": "beast-kin",
         "powerSource": "physical/martial",
@@ -42,7 +171,59 @@
         "vibe": "heroic"
       },
       "seed": "Built as a monster, heart of gold - and PROUD of the beast. His answer to being feared isn't 'see I'm not a beast' - it's 'I AM a beast, I'm proud of it, and I'll make you cheer for one.' NOT a clown - serious determination and a leashed, brutal power under warm, principled optimism. The fire on his fists is what that leashed ferocity looks like when he chooses to let a little out.",
-      "want": "Not validation, but self-acceptance, pride, and lifting his kind - to make the world celebrate beast-kin instead of fear them, by being unapologetically himself."
+      "want": "Not validation, but self-acceptance, pride, and lifting his kind - to make the world celebrate beast-kin instead of fear them, by being unapologetically himself.",
+      "gallery": [
+        {
+          "src": "../../concept/characters/fang/explorations/fang_soulprompt_r2_v4.jpg",
+          "label": "CHOSEN DIRECTION (Aviv 2026-07-05): round-2 #4 'the wild one' - menace push on r1 #1. 'This is what a hero looks like.'",
+          "kind": "canon"
+        },
+        {
+          "src": "../../concept/rework/fang_styledial_A_attack.jpg",
+          "label": "ARCHIVED old-face design (2026-07-05). Stays as the chibi-plus STYLE anchor only - proportions/register, not FANG's look.",
+          "kind": "archived"
+        },
+        {
+          "src": "../../concept/rework/fang_chibi_apose_1.jpg",
+          "label": "ARCHIVED old-face A-pose - source of the current in-game GLB (stays wired until the r2_v4 model lands).",
+          "kind": "archived"
+        },
+        {
+          "src": "../../concept/characters/fang/explorations/fang_soulprompt_v1.jpg",
+          "label": "Soul-prompt #1 - patched denim street (full tiger face)",
+          "kind": "exploration"
+        },
+        {
+          "src": "../../concept/characters/fang/explorations/fang_soulprompt_v2.jpg",
+          "label": "Soul-prompt #2 - banner as fringed scarf",
+          "kind": "exploration"
+        },
+        {
+          "src": "../../concept/characters/fang/explorations/fang_soulprompt_v3.jpg",
+          "label": "Soul-prompt #3 - CHAMPION fist-wraps (best banner take; off-style 2D)",
+          "kind": "exploration"
+        },
+        {
+          "src": "../../concept/characters/fang/explorations/fang_soulprompt_v4.jpg",
+          "label": "Soul-prompt #4 - white-hair surprise, rope belt",
+          "kind": "exploration"
+        },
+        {
+          "src": "../../concept/characters/fang/explorations/fang_soulprompt_r2_v1.jpg",
+          "label": "Round-2 #1 - closed-mouth scowl, quiet-dangerous",
+          "kind": "exploration"
+        },
+        {
+          "src": "../../concept/characters/fang/explorations/fang_soulprompt_r2_v2.jpg",
+          "label": "Round-2 #2 - the warning-smile",
+          "kind": "exploration"
+        },
+        {
+          "src": "../../concept/characters/fang/explorations/fang_soulprompt_r2_v3.jpg",
+          "label": "Round-2 #3 - middle take",
+          "kind": "exploration"
+        }
+      ]
     },
     {
       "id": "zero",
@@ -51,7 +232,11 @@
       "archetypeSummary": "Control / zone: freezes the stage, slows the enemy, dictates tempo. Patient, calculating, defensive - the exact opposite of FANG.",
       "colorIdentity": "#3B82F6",
       "portrait": "../../concept/characters/zero/zero_final_2.png",
-      "status": { "bible": true, "art": true, "rig": false },
+      "status": {
+        "bible": true,
+        "art": true,
+        "rig": false
+      },
       "tags": {
         "nature": "transformed",
         "powerSource": "elemental",

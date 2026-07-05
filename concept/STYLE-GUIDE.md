@@ -82,6 +82,24 @@ color. Cohesion must come from TEXT, not from a shared image.
 - This SUPERSEDES the "In-game style anchor = fang_ingame_owprobe_2" + "IDENTITY-BLEED
   GUARD / palette-guard-in-prompt" bullets above - no anchor image = no bleed to guard.
 
+## Selection-screen portraits (2026-07-04, concept lane)
+The character-select art is produced by **RENDERING the three game-ready GLBs** (concept-owned
+throwaway `concept/_tmp_select_render.gd/.tscn`) - NOT by generating new 2D art. Rationale: the
+select portrait IS the exact in-game object, so it can never drift from the locked look, and it
+costs zero generation credits. Locked by Aviv: **hero angle = 3/4-front (yaw 300°)**, same angle
+for all three so the cards match; transparent cutout, MSAA-8x + FXAA, auto-cropped to the figure.
+Finals: `concept/characters/{fang,zero,atlas}/{FANG,ZERO,ATLAS}_select_v1.png`.
+
+### ⚠️ KNOWN DRIFT (logged 2026-07-04, Aviv-approved to defer): ATLAS proportions off-style
+Seen clearly side-by-side at the same scale: **FANG + ZERO sit at the locked ~3.5-head chibi
+("heads tall" = how many times the head fits into total height; ~3.5 = big-head cute-but-fierce
+toy). ATLAS came out ~4.5-5 heads = smaller head on a realistic-muscular body**, reading like a
+more-serious/realistic game than the toy-box FANG + ZERO share. This is real roster drift, not
+just "tank = big" (a tank can be huge AND big-head-chibi). **Aviv's call: register as drift, do
+NOT rebuild now** - he intends to change more things in ATLAS later anyway, and rebuilding mid-
+flight = the stack-more-art trap while the mechanics full-roster-proof gate is still open. Revisit
+ATLAS proportions when he reworks him, AFTER the roster is proven live in game3d.
+
 ## Status
 - 2026-07-01: guide written. **ZERO re-rendered to this finish + adopted = `zero_final_2.png`**
   (matched to FANG's cel look; fixed the painterly drift). FANG's styleB anchor
@@ -178,6 +196,30 @@ Two references, one axis between them:
   style anchor (supersedes `fang_ingame_owprobe_2` and the whole §second-art-layer anchor).
   Probes = look-target images only, NOT assets - the render path (real 3D model vs 3D-as-
   view-exporter vs 2D) is decided AFTER the look is locked, with mechanics.
+
+### ✅✅ 2026-07-05 - IN-GAME LOOK RE-LOCKED (Aviv): "COLLECTIBLE-TOY 3D" (supersedes chibi-plus)
+
+**Aviv's ruling: "אני אחליף את כל הדמויות מעכשיו והלאה לסגנון הזה. התואם את פאנג החדש - לא צ'יבי יותר."**
+
+- **THE STYLE ANCHOR (roster-wide) = `concept/characters/fang/explorations/fang_soulprompt_r2_v4.jpg`**
+  (= FANG's new chosen design, "ככה נראה גיבור"). The image is the truth, not a style name.
+- What actually moved vs chibi-plus (read off the anchor): still big-head toy proportions
+  (~4-4.5 heads, slightly taller than the 3.5 chibi), but the FINISH jumped from flat-cute toon
+  to **collectible-figure realism of materials**: real fabric weave/patches/stitching, worn
+  leather, rope, metal grommets, fur with actual strands, PBR-like studio lighting on a neutral
+  backdrop. Detail-density is the point - "savable as a real toy you could buy."
+- **Face rule follows the FANG bible amendment:** full beast/character faces are allowed
+  (FANG = full tiger face); menace/warmth carried by EXPRESSION, not by human features.
+- **SUPERSEDED:** the chibi-plus anchors `fang_styledial_A_attack.jpg` + `zero_chibiplus_cold_2.jpg`
+  (2026-07-03 lock below) = archived as design. `fang_styledial_A_attack` keeps NO style role
+  anymore (it was already archived as FANG design same day).
+- **⚠️ DOWNSTREAM COST (acknowledged):** `ZERO_chibi_3d_*` + `ATLAS_chibi_3d_*` models are now
+  OFF-STYLE (stay wired in-game until replacements land - same rule as FANG's old GLB).
+- **⚠️ GATE BEFORE MASS-PRODUCTION (GameOS lesson, unchanged):** ROSTER TEST - prove the new
+  style carries a cold/menacing character (ZERO probe in the r2_v4 finish) before generating
+  the full roster. A hero-warm style that can't do villain-cold fails the lock.
+- Generation recipe: soul-prompt (concept/SOUL-PROMPT.md) + this anchor as `image` reference
+  for finish/proportions. 12-angle audit + Tripo path per §3D rules still apply.
 
 ### ✅ 2026-07-03 (night) - NEW IN-GAME LOOK LOCKED (Aviv): "CHIBI-PLUS 3D-TOON"
 **THE TWO STYLE ANCHORS (Aviv-confirmed, final):**

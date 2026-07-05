@@ -31,6 +31,26 @@ determined stare + a leashed-brutal aura shown as warm fire on the fists (same d
 
 ---
 
+## DESIGN REFRESH (LOCKED, Aviv 2026-07-05 - via the animation/Blender lane)
+
+**New chosen design direction: `explorations/fang_soulprompt_r2_v4.jpg`** ("ככה נראה גיבור") -
+picked from a soul-prompt exploration round (see `concept/SOUL-PROMPT.md`; round 1 = idea-only
+prompt, round 2 = menace push on round-1 #1 via image reference).
+
+**BIBLE AMENDMENT - THE FACE (supersedes Layer 4's "human face"):** FANG now has a **FULL TIGER
+FACE** (beast head, real muzzle, fangs) - Aviv ruled this explicitly when the conflict with the
+old "human face + tiger ears/fangs/markings" line was flagged. The imposing-body-vs-warm-soul
+tension now lives in EXPRESSION (predator stare + the warning-grin: "the smile of something that
+chooses, every second, not to bite") instead of human features. Amber predator eyes stay.
+Everything else in r2_v4 rides along: scrappy patched street gear, banner fist-wraps, rope/patch
+materials, chibi-plus toy-3D register.
+
+**Downstream (concept lane):** generate the new canonical anchor + A-pose from r2_v4 -> 12-angle
+audit -> Tripo (per STYLE-GUIDE §3D engine rules) -> swap the in-game GLB. The current
+`FANG_chibi_3d_v1*` assets = the OLD face, still live in-game until the refresh lands.
+
+---
+
 ## Layer 1 - THE SEED (LOCKED)
 
 **Built as a monster, heart of gold - and PROUD of the beast.** FANG is a muscular tiger
@@ -118,14 +138,65 @@ street did. <- because the runt-of-nobody / self-made underdog and the beast-kin
 
 ## Layer 6 - THE VIBE IN MOTION (LOCKED - derived, accepted)
 
-- **Idle:** can't stand still - bounces, cracks knuckles, tail flicking, ears tracking the
-  crowd. <- because restless predator + showman heart.
+### 6a. Original vibe beats (kept)
 - **Plays to the crowd:** grins, points, salutes. <- because he wants to be *seen* (Layer 1/2).
 - **On a big hit / win:** roars, fist to chest. <- because beast joy unleashed.
 - **On a loss / hurt:** ears pin flat, tail drops - then gets up grinning anyway. <- because
   this is the tell that subverts the monster; vulnerability + heart (Layer 1, the fear).
-- **Signature gesture (pick later):** a crowd-salute, or the specific pounce-crouch wind-up
-  before a lunge that telegraphs the move. <- because ties stance -> mechanic readably.
+
+### 6b. MOTION CHARACTERIZATION - per real engine action (deepened 2026-07-04)
+Mapped to the action vocabulary the engine ALREADY runs (`entities/fighter/fighter.gd`), so this
+is an animation/VFX brief, not fiction. Each character inherits the same PROVEN generic procedural
+juice (momentum stretch ~16%, overshoot pop, speed-trail, attack wind-up 0.08s, hit-squash ~20%);
+this layer is FANG's **flavor on top**. Tag key: **[VFX]** = runtime layer, mechanics-owned, can
+ship now, no rig. **[ANIM]** = needs per-character animation, DEFERRED per the scope gate. **[RIG]**
+= needs the ears/tail/paw rig specifically.
+
+**Locomotion**
+- **Idle:** can't stand still - weight shifts foot to foot, a low restless bounce, cracks
+  knuckles, tail flicking, ears swivel-tracking the crowd. Never fully settles. **[ANIM][RIG]**
+  <- because restless predator + showman heart.
+- **Move / run:** low forward-leaning lope, digitigrade paws eat ground, tail streams as a
+  counterweight. The generic velocity-stretch reads as a predator *surging*. **[VFX]** trail =
+  warm dust kick, no fire (fire is lunge-only). <- because Layer 3 pounce-readiness + orange-glow-
+  in-motion rule (Layer 5).
+
+**Offense**
+- **Attack wind-up (0.08s):** the pounce-crouch - drops low, weight coils onto the back leg,
+  tail lashes up, ears flatten forward (predator lock-on). **[ANIM]** **[VFX]** faint heat-shimmer
+  + ember flecks pool at the wrapped fists. <- because ties stance -> mechanic readably; this is
+  his SIGNATURE tell.
+- **Attack active / swing (0.12s):** a raking claw-strike, whole body thrown forward behind it
+  (the generic 20% forward-lean reads as commitment). **[VFX]** short orange claw-arc streak.
+  <- because scrappy street combos + heavy clawed hands (Layer 3/4).
+- **Skill = LUNGE / the pounce (0.20s travel):** the money move - a literal predator pounce, full
+  extension, claws leading. **[ANIM][VFX]** THIS is where the warm-orange impact-glow fires: a
+  comet-trail of fire off the fists, ember burst on connect. <- because "the lunge IS a literal
+  pounce" (Layer 3) + glow-on-lunges-only (Layer 5). The one moment his leashed ferocity shows.
+- **Ranged (aimed, shared kit):** scrappy, not clean - a hurled improvised strike / short thrown
+  claw-slash, thrown with a grunt. **[VFX]** small orange slash, weaker than the lunge glow.
+  <- because street-improvised, never a trained projectile; ranged is his weakest expression.
+
+**Defense / reaction**
+- **Block:** reluctant - crosses forearms and hunches, ears back, clearly *wants* to be attacking
+  instead. Impatient shield, not a comfortable wall (that read belongs to ATLAS). **[ANIM]**
+  <- because a rusher who chooses restraint hates it; contrast to ATLAS's vow-to-guard.
+- **Take a hit (0.14s squash):** the generic 20% flatten along the hit direction; FANG's flavor =
+  ears snap flat + a bared-fang wince, absorbs it and stays up. **[VFX][RIG]** <- because
+  heavyweight who trades durability but refuses to fold.
+- **Knockback / stagger:** planted, skids back on his heels rather than flying - digs claws in to
+  arrest it, growl. **[ANIM]** <- because muscular heavyweight frame (Layer 4).
+
+**Round beats**
+- **Win:** roars, fist to chest, then a crowd-salute - beast joy, unleashed and shared.
+  **[ANIM][RIG]** <- because he wants the beast *cheered* (Layer 1/2).
+- **Lose / KO:** ears pin flat, tail drops, goes down hard - then plants a fist and gets up
+  grinning anyway (even in defeat). **[ANIM][RIG]** <- because the get-up-grinning beat is THE
+  tell that subverts the monster (Layer 2, the fear).
+
+**Signature gesture (LOCKED):** the pounce-crouch wind-up. It doubles as his readable attack tell
+AND his identity silhouette - low, coiled, tail up, ears forward. <- because one pose carries
+stance + mechanic + identity at once.
 
 ---
 

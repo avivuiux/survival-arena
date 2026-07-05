@@ -15,9 +15,9 @@ update the cell **and** the "last update" note.
 
 | Character | Archetype | Mechanics | Identity/concept | Assets (ref+pose) | Rigged (Godot) | In-game art |
 |---|---|---|---|---|---|---|
-| **FANG**   | **rusher** | ✅ | ✅ (bible LOCKED, `concept/characters/fang/FANG.md`) | ✅ **CHIBI 3D MODEL (rigged, on-style)** = `FANG_chibi_3d_v1.glb` (matches locked chibi-plus look; 12-angle-audited clean; ⏳ Aviv approval). Supersedes off-style `FANG_hero_3d_v1.glb` (6-heads, fun-test only). 2D fallback `FANG_ingame_v1_cutout.png`; portrait `fang_v6_serious_1.png` | ⬜ (mechanics: swap into game3d) | ✅ (3D fun-test PASSED per mechanics S7) |
-| **ZERO**   | balanced (control / chill) | ✅ | ✅ (bible LOCKED, `concept/characters/zero/ZERO.md`) | 🔨 **CHIBI 3D MODEL (on-style, asymmetry INTACT)** = `ZERO_chibi_3d_v1.glb` - clean chibi convert, half-ice face + ice-arm vs human-arm/chest survived Tripo (bold chibi cues held where the detailed portrait failed); ⏳ Aviv approval. **Downstream TODO: UNRIGGED + heavy (~57MB) → needs auto-rig + decimation before game-ready.** Older: `ZERO_hero_3d_v1.glb`=rigged-but-symmetrized (dead), `_v3_trellis`=asym-but-mush (dead). 2D fallback `ZERO_ingame_v1_cutout.png` | ⬜ (rig+decimate, then mechanics) | ⬜ |
-| **ATLAS**   | tank      | ✅ | ✅ (bible LOCKED, `concept/characters/atlas/ATLAS.md`): noble guardian-king, jade+gold idol-statue, wish = restore order | ✅ **CHIBI 3D MODEL (rigged, on-style)** = `ATLAS_chibi_3d_v1_rigged.glb` (~1.15MB, crown+regalia+gold-crack glow, 12-angle clean). Design anchor `atlas_noble_1.jpg` | ⬜ (mechanics: swap into game3d tank slot) | ⬜ |
+| **FANG**   | **rusher** | ✅ | ✅ (bible LOCKED, `concept/characters/fang/FANG.md`) | 🔨 **DESIGN REFRESH (Aviv 2026-07-05): new direction = `explorations/fang_soulprompt_r2_v4.jpg` (FULL TIGER FACE, bible amended).** OLD-face assets ARCHIVED as design (`FANG_chibi_3d_v1.glb`+`_anim.glb` still WIRED IN-GAME until the r2_v4 model lands - do not delete). Next: r2_v4 -> anchor+A-pose -> 12-angle audit -> Tripo -> swap GLB. Old portrait `fang_v6_serious_1.png`=archived | ✅ (chibi rigged GLB, in game3d) | ✅ (live in game3d, Aviv "מעולה" S9) |
+| **ZERO**   | balanced (control / chill) | ✅ | ✅ (bible LOCKED, `concept/characters/zero/ZERO.md`) | 🔨 **CHIBI 3D MODEL (on-style, asymmetry INTACT)** = `ZERO_chibi_3d_v1.glb` - clean chibi convert, half-ice face + ice-arm vs human-arm/chest survived Tripo (bold chibi cues held where the detailed portrait failed); ⏳ Aviv approval. **Downstream TODO: UNRIGGED + heavy (~57MB) → needs auto-rig + decimation before game-ready.** Older: `ZERO_hero_3d_v1.glb`=rigged-but-symmetrized (dead), `_v3_trellis`=asym-but-mush (dead). 2D fallback `ZERO_ingame_v1_cutout.png` | ✅ (v2 rigged+decimated, in game3d) | ✅ (live in game3d, Aviv "מעולה" S9) |
+| **ATLAS**   | tank      | ✅ | ✅ (bible LOCKED, `concept/characters/atlas/ATLAS.md`): noble guardian-king, jade+gold idol-statue, wish = restore order | ✅ **CHIBI 3D MODEL (rigged, on-style)** = `ATLAS_chibi_3d_v1_rigged.glb` (~1.15MB, crown+regalia+gold-crack glow, 12-angle clean). Design anchor `atlas_noble_1.jpg` | ✅ (chibi rigged GLB, in game3d) | ✅ (live in game3d, Aviv "מעולה" S9) |
 
 _Archetype mapping CORRECTED by the concept chat 2026-06-30: **FANG = rusher** (orange tiger,
 lunge = pounce - matches greybox + the whole FANG bible), **ZERO = balanced** (the chill/AoE
@@ -68,6 +68,79 @@ future-character slot, NOT FANG._
 
 ## Last update
 
+- 2026-07-05 (later, animation/Blender lane) - **⚠️⚠️ ROSTER-WIDE STYLE RE-LOCK (Aviv): "collectible-
+  toy 3D" (the new-FANG finish) replaces chibi-plus for ALL characters from now on.** Anchor =
+  `concept/characters/fang/explorations/fang_soulprompt_r2_v4.jpg`; full spec in STYLE-GUIDE
+  §2026-07-05. Consequences: ZERO+ATLAS chibi models = off-style (KEEP wired in-game until
+  replacements land). Gate before mass-production = ZERO roster-test probe in the new finish.
+
+- 2026-07-05 (animation/Blender lane) - **FANG animation pipeline built + a DESIGN-DIRECTION
+  decision that needs the concept lane:**
+  1. **FANG has animated clips per your contract:** `concept/characters/fang/FANG_chibi_3d_v1_anim.glb`
+     with `idle` (NEW: floor crouch, pounce-ready, living loop - Aviv-directed), `walk`, `attack`,
+     `idle_stand` (spare). In-place, exact names. Tripo preset base for walk/attack (Aviv judged
+     them weak - they'll be redone); tail got its own 3 bones (Tail01-03, Tripo rig had none).
+  2. **NEW GameOS module `tools/anim-forge/`** - words -> spec -> auto-built clip -> preview gif.
+     Use it for ZERO/ATLAS clips too (brief template in README).
+  3. **⚠️ DESIGN DECISION (Aviv, 2026-07-05): FANG design refresh direction chosen =**
+     `concept/characters/fang/explorations/fang_soulprompt_r2_v4.jpg` ("ככה נראה גיבור") - from a
+     soul-prompt exploration (see `concept/SOUL-PROMPT.md`, new module). **RESOLVED same day: Aviv ruled FULL
+     TIGER FACE - the bible is amended (FANG.md §DESIGN REFRESH). The scary/warm tension moves to
+     expression (predator stare + warning-grin). Concept lane: new anchor + A-pose from r2_v4 ->
+     12-angle audit -> Tripo -> swap in-game GLB.** Studio gallery marks it CHOSEN DIRECTION.
+  4. Character Studio got a per-character image gallery (canon vs exploration) - add your images
+     via the `gallery` array in characters.json + the embedded copy in index.html.
+
+
+- 2026-07-04 (mechanics chat, session 9) - **✅ your two integration bugs are FIXED + roster is
+  live + ⚠️➡️ ANIMATION-INTEGRATION CONTRACT for the FANG Blender work.**
+  - **Fixed both bugs you flagged:** ZERO now points at `ZERO_chibi_3d_v2_rigged.glb`, and ATLAS
+    (`ATLAS_chibi_3d_v1_rigged.glb`) is wired into the tank slot. **All three chibi models run
+    together in game3d, Aviv-approved live ("מעולה")** - FULL-ROSTER-PROOF gate PASSED. Also
+    fixed per-archetype size/hover (tank looms, ZERO floats) + locked smooth rotation + added
+    combat SFX. (None committed yet - Aviv hasn't said "ארוז".)
+  - **⚠️➡️ TO CONCEPT (for the FANG animation you + Aviv are building in Blender NOW): here is
+    exactly what game3d needs so the animated GLB drops in and PLAYS.** Aim the Blender work at this:
+    1. **Format:** export glTF/GLB with the animations baked in. Godot imports glTF anim tracks
+       into an `AnimationPlayer` node inside the model - that is what game3d will drive.
+    2. **Clip names (game3d will look for these exact names, lowercase):** `idle` (looping),
+       `walk` (looping), `attack` (one-shot). Those three are the agreed minimum. Optional
+       later: `hit`, `block`, `ko`. If you name them differently, tell me and I map them.
+    3. **IN-PLACE, no root motion.** Movement is sim-driven - the animation must NOT translate the
+       root. Character stays at origin; feet cycle in place for `walk`. Root-motion export = breaks
+       positioning.
+    4. **Same rig + scale + forward** as `FANG_chibi_3d_v1.glb` so it drops into the existing slot
+       (or deliver as `FANG_chibi_3d_v1_anim.glb` - either is fine; tell me the filename).
+    5. **Don't worry about the tilt/scale juice** - game3d layers/replaces that per-state at
+       integration; you just deliver clean in-place loops.
+  - **Mechanics will build the playback layer + live-test it the moment the animated GLB lands**
+    (I won't build it blind/untested before then). When ready, drop the file + ping ROSTER.
+  - Roadmap for the whole game now lives in `ROADMAP.md` (mechanics-authored, Aviv-requested).
+
+- 2026-07-04 (concept chat) - **⚠️⚠️ TO MECHANICS: two integration bugs found in your
+  uncommitted `scripts/game3d.gd` WIP - the full roster has NEVER actually run together in
+  game3d.** Caught while the concept lane was picking its next move:
+  1. **ZERO points at a file that does not exist.** `const ZERO_GLB :=
+     "res://concept/characters/zero/ZERO_chibi_3d_v1.glb"` - that file was deleted (the 57MB
+     unrigged one). The game-ready file on disk is **`ZERO_chibi_3d_v2_rigged.glb`** (rigged,
+     ~1MB, asymmetry intact). Selecting `balanced` will fail to load ZERO as written.
+  2. **ATLAS is not wired at all.** The `"tank"` entry in `ARCHETYPES` has no `glb` key, so tank
+     is still a green capsule. Add `"glb": "res://concept/characters/atlas/ATLAS_chibi_3d_v1_rigged.glb"`
+     (rigged, ~1.15MB, 12-angle clean) so the roster is actually complete in-game.
+  Once both are fixed, the FULL-ROSTER-PROOF gate (all three chibi models playable in game3d)
+  can finally be judged live - that is still THE next gate, and it's yours. The concept lane is
+  NOT stacking more art until that proof lands (anti-scope-death). This session the concept lane
+  is only producing drift-free **selection-screen portraits by RENDERING the three game-ready
+  GLBs** (zero new generation, so the select screen can never drift from the in-game object).
+  - **✅ DELIVERED: select portraits (Aviv-approved angle).** Hero angle = 3/4-front (yaw 300°),
+    same for all three, transparent MSAA cutouts, auto-cropped. Files:
+    `concept/characters/{fang,zero,atlas}/{FANG,ZERO,ATLAS}_select_v1.png`. Tool (concept-owned,
+    delete-anytime) = `concept/_tmp_select_render.gd/.tscn`. **TO MECHANICS: these can replace the
+    text-only "CHOOSE YOUR FIGHTER" list in `game3d.gd` with portrait cards** (transparent PNGs,
+    drop onto per-character cards with the identity color) whenever you wire the select screen -
+    lower priority than fixing the two integration bugs above.
+  - **⚠️ ATLAS drift LOGGED (STYLE-GUIDE): ~4.5-5 heads (realistic-muscular) vs the locked ~3.5
+    chibi of FANG + ZERO.** Aviv: register as drift, don't rebuild now (he'll rework ATLAS later).
 - 2026-07-03 (concept chat, night, HANDOFF TO MECHANICS) - **✅ FANG_chibi_3d_v1.glb APPROVED
   LIVE BY AVIV ("נראה מעולה") - READY TO SWAP INTO game3d.**
   - **Action for mechanics:** in `game3d` / `arena3d_fight`, replace the off-style
