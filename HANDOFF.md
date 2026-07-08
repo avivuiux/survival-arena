@@ -212,6 +212,10 @@ lighting/atmosphere/post sliders + PRINT VALUES), and the **skeletal-animation p
 **Files (mechanics-owned, committed this session):** `scripts/game3d.gd`, `entities/fighter/
 fighter.gd`, `HANDOFF.md`, `ROADMAP.md`, `audio/`. **NOT touched (design-lane-owned, their WIP in
 the shared tree):** `GDD.md`, `DESIGN.md`, `ROSTER.md`, `concept/`, `tools/character-studio/`.
+**Note:** the DESIGN lane wired one line into `game3d.gd` - the tank `glb` const now points at
+`LIGHTKNIGHT_3d_v2_magnific.glb` (**light-knight replaced ATLAS as the tank**, Aviv 2026-07-07).
+That one-line swap rides along in this commit; the light-knight GLB asset itself is committed by
+the design lane in their own pack.
 
 ## Next steps
 
