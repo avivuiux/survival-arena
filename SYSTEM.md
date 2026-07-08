@@ -27,16 +27,21 @@ to outgrow this one game.
   -> model -> rig-doctor -> pose-cast -> forge-v2 -> gate/handoff). Accuracy doctrine: bible
   Layer-6b = the animation spec, engine combat constants = the timings, Aviv picks from images.
   Locked 2026-07-05; stations 3-5 get built against ZERO's rework.
-- `concept/SOUL-PROMPT.md` - design-exploration prompts from the character's SOUL only (zero
-  visual language, style-register locked, emotion written as render-able physical cues, iterate
-  via liked-image reference). Aviv-validated on FANG 2026-07-05.
-- `ROSTER.md` - cross-chat character status bridge (who owns what, what stage each char is at).
-- `tools/anim-forge/` - animation blocking pipeline: Aviv briefs a motion in words -> JSON spec ->
-  forge builds the clip in Blender headless -> preview gif auto-opens -> dial in words -> Blender
-  only for taste-polish. Proven on FANG's crouch idle 2026-07-05. (brief template in its README)
-- **Generation pipeline** - Magnific MCP: Nano Banana Pro + the character's anchor as an image
-  reference = consistency; `images_remove_background` -> transparent cutout. Fallback: gpt-image-1.
-- `CONCEPT.md` / `DESIGN.md` / `VISION.md` - world+identity / combat-feel / systems (pre-existing).
+- `concept/SOUL-PROMPT.md` - THE prompt method (matured 2026-07-06/07): **style locked via a
+  FANG/ZERO image reference, NOT words** · **dry tag catalog, not prose** (Superpower-Wiki terms) ·
+  **concept-first pipeline** (free concept image -> restyle to our look -> 3D) · **IRON RULE: show
+  the prompt + get Aviv's explicit go before ANY generation.**
+- `GDD.md` - the full game design (action-MOBA, Stages 0-6). Design-lane owned; mechanics reads it.
+- `ROSTER.md` - cross-chat character status bridge. `GLOSSARY.md` - two-chat rules + vocabulary.
+- `tools/character-studio/` - the roster/design workspace (tabbed dossier / live prompt-builder /
+  story; powers/composition/aesthetic fields; Prompt Lab word-swap tool; create wizard).
+- `tools/tripo/tripo_pipeline.py` - direct Tripo API: A-pose image -> rigged GLB (v3.0 + detailed
+  texture). For ORNATE characters, Magnific `models3d_generate` **tripo-v31 + detailed** beats it
+  (rigged + light in one pass).
+- `tools/anim-forge/` - animation blocking (words -> spec -> Blender clip -> gif). ANIMATION NEXT:
+  mocap pipeline = unified skeleton (Mixamo) -> base clips (Mixamo) -> signature moves (AI
+  video-mocap) -> Blender = polish only.
+- `CONCEPT.md` / `DESIGN.md` / `VISION.md` - world+identity / combat-feel one-pager / systems.
 
 ## Modules to build (as they become needed - not before)
 - Arena / environment pipeline (maps). · VFX + juice standard (skill effects, impact). ·
@@ -56,13 +61,18 @@ to outgrow this one game.
   to pictures** (that's how the Guilty-Gear direction got chosen).
 - **Always keep a backup generator wired** - OpenAI hit its billing cap mid-session; Magnific
   saved it. Don't depend on one vendor.
-- **AI-3D (Tripo via Magnific `models3d_generate`) tested on FANG (2026-06-30):** it produces a
-  recognizable, auto-RIGGED 3D model fast and keeps the character's identity well - BUT it
-  **flattens the locked 2D Guilty-Gear style** into a generic smooth AI-3D look. Verdict: NOT a
-  fit for our 2D cutout pipeline (it would only make sense under a 3D-rendered art direction).
-  Tripo IS available now (it's the `models3d_generate` backend) - park it for possible pose/prop
-  reference or a future 3D pivot, not for the current look. Test files:
-  `concept/characters/fang/FANG_3d_test.glb` + `FANG_3d_preview.png`.
+- **⚠️ SUPERSEDED (the 2D->3D pivot happened):** the old lesson "Tripo flattens our 2D
+  Guilty-Gear style, not a fit" is DEAD. **The game is now full 3D** (real-3D-game pivot, Aviv
+  2026-07-03). Tripo / Magnific-tripo-v31 image-to-3D is THE core asset pipeline, not a parked
+  option. The 2D-cutout / Skeleton2D pipeline no longer exists.
+- **3D conversion lessons:** detailed characters need `texture_quality: detailed` + a recent engine
+  (direct API v3.0, or better: Magnific tripo-v31) or the identity mushes. Translucent/thin geometry
+  (ice, wings) is the hard case - avoid it in the design or expect cleanup. Style stays coherent by
+  restyling the concept to FANG/ZERO's look BEFORE the 3D step, and locking style via image reference.
+- **Concept-first beats style-anchored generation for creativity:** generate the concept FREELY
+  (any style), THEN restyle into our look. Anchoring style in the first pass flattens the idea.
+- **Reference the source honestly:** Survival Project itself was a proto-MOBA (validated our
+  action-MOBA vision); its pay-to-win + slippy controls are anti-lessons (see `GDD.md`).
 
 ## How it grows
 End of any work: if a pattern repeated, a fix worked, or a mistake taught something -> fold it into

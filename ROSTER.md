@@ -78,6 +78,11 @@ future-character slot, NOT FANG._
   tank slot in game3d.** ATLAS = retired (jade-king design superseded). ⏳ Aviv F5 live-judge +
   Studio card/bible pending. (3) Prompt method + Character Studio matured (see memory /
   SOUL-PROMPT.md). Next: animation via mocap (Aviv films himself).
+  - ⚠️ **STOPGAP for the mechanics chat:** the concept lane edited `scripts/game3d.gd` to wire the
+    3 GLBs (FANG_r2v4_3d_v4 / ZERO_r2_3d_v1 / LIGHTKNIGHT_3d_v2_magnific) into the archetype slots -
+    a cross-lane edit to test the roster live. **Mechanics: please verify + adopt ownership.** Going
+    forward the concept lane hands GLBs over via ROSTER, not by editing `scripts/` (GLOSSARY revised
+    2026-07-07, two-chat mode confirmed). ATLAS_chibi GLBs no longer referenced in game3d.
 
 
 - 2026-07-05 (later, animation/Blender lane) - **⚠️⚠️ ROSTER-WIDE STYLE RE-LOCK (Aviv): "collectible-
