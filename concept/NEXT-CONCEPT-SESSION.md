@@ -1,38 +1,31 @@
-# Next session - continuation prompt (CONCEPT / art lane)
+# Next concept/design session - continuation prompt
 
-Paste this to start warm:
+Continue the concept/design lane of survival-arena (repo: `dev\survival-arena`).
+Read first: `GDD.md` (the full game deep-spec + §WORK SPLIT) · `ROSTER.md` (Last update) ·
+`concept/SOUL-PROMPT.md` (the finalized prompt method) · `concept/STYLE-GUIDE.md §engine-rule` ·
+`concept/characters/lightknight/` (the new tank).
 
----
+## State (2026-07-07 "ארוז")
+- **Vision = action-MOBA** (Battlerite x Survival Project). Full GDD complete (Stages 0-6). The
+  mechanics chat is implementing the 3v3 match loop from GDD Stage 2 (they own `scripts/`; we do
+  NOT touch it). Contract = `GDD.md`.
+- **Roster (all wired in game3d, live-approved):** FANG (rusher, `FANG_r2v4_3d_v4_rigged.glb`),
+  ZERO (control, `ZERO_r2_3d_v1_rigged.glb`), **light-knight (tank, replaced ATLAS,
+  `LIGHTKNIGHT_3d_v2_magnific.glb`)**.
+- **Prompt method locked** (SOUL-PROMPT.md): FANG/ZERO image = style anchor (not words); dry tag
+  catalog; concept-first (free prompt -> restyle to our look -> 3D); **IRON RULE: always show the
+  prompt and get Aviv's explicit go before ANY generation.**
+- **3D recipe:** ornate characters -> Magnific `models3d_generate` tripo-v31 + detailed (beats the
+  direct-API pipeline; returns rigged + light). Simple ones -> `tools/tripo/tripo_pipeline.py`.
 
-בוא נמשיך את Survival Arena / OVERTHRONE (מסלול-הקונספט/אמנות). קרא קודם `ROSTER.md` +
-`concept/STYLE-GUIDE.md` (§chibi-plus look + §3D pipeline) + `concept/CHARACTER-METHOD.md` +
-`CONCEPT.md`. הרפו = מקור-האמת.
+## Open threads (pick per Aviv, prioritize don't enumerate)
+1. **Animation (Aviv films himself for mocap ~2026-07-08):** pipeline = unified skeleton (Mixamo)
+   -> base clips (Mixamo) -> signature moves (AI video-mocap: Rokoko/Move.ai/DeepMotion) ->
+   Blender = polish only. game3d still plays transform-juice; needs a clip-playback layer (that's
+   mechanics-lane when clips land).
+2. **Arena lighting upgrade** - reflection probe + rim + bloom so materials pop (whole roster).
+   Proven in a throwaway render; not yet in game3d's environment.
+3. **Light-knight Studio card + bible** - she replaced ATLAS but has no card/bible yet.
+4. GDD is complete; extend only if a new design question opens.
 
-**איפה עצרנו (2026-07-03, "ארוז", נדחף HEAD=d661a9b):** הרוסטר הבסיסי הושלם בתלת.
-- **לוק נעול = "צ'יבי-פלוס טוי-תלת"** (~3.5 ראשים, ברק-צעצוע, זירה ציורית). עוגנים:
-  FANG=`concept/rework/fang_styledial_A_attack.jpg`, ZERO=`concept/rework/zero_chibiplus_cold_2.jpg`,
-  ATLAS=`concept/rework/atlas_noble_1.jpg`.
-- **שלוש דמויות game-ready (צ'יבי / on-style / רוגדות / קלות):**
-  - FANG (rusher) = `concept/characters/fang/FANG_chibi_3d_v1.glb` (רוגד, ~1.4MB, אושר-חי בזירה).
-  - ZERO (balanced) = `concept/characters/zero/ZERO_chibi_3d_v2_rigged.glb` (רוגד, ~1MB, א-סימטריה שלמה).
-  - ATLAS (tank) = `concept/characters/atlas/ATLAS_chibi_3d_v1_rigged.glb` (רוגד, ~1.15MB, מלך-ירקן).
-- **צינור-המודלים המנצח (STYLE-GUIDE §3D):** Magnific = look-probes; **Tripo API הישיר** =
-  game-ready (`image_to_model` face_limit ~18000 → `animate_prerigcheck` → `animate_rig`).
-  מפתח Tripo ב-`.env.local` (gitignored; אביב אמר להחליף אחרי).
-  כלל: סימטרי→tripo; א-סימטרי→רמזים-בולטים-בצ'יבי מחזיקים גם ב-tripo (אודיט-12-זוויות תמיד).
-- **כלי-אודיט זרוק (concept-owned, שמור):** `concept/_tmp_asym_check.gd/.tscn` (רנדר 12 זוויות),
-  `concept/_tmp_arena_view.gd/.tscn` (מודל על רצפת-זירה + מצלמת-משחק, חלון-חי).
-
-**הכדור אצל המכניקה:** להטמיע את שלוש הדמויות ב-`game3d` (tank slot = ATLAS, כרגע קפסולות) →
-להוכיח משחק-רוסטר-מלא בפועל. זה השער הבא, והוא בליין שלהם.
-
-**שער נעול - אנימציה נדחית:** אנימציית-שלד = ליטוש-אחרון, לא הצעד-הבא. רק אחרי שהמשחק
-רוסטר-מלא ומוכח-בפועל. Tripo כן יודע ליישם אנימציות-מוכנות על מודל-רוגד (`animate_retarget`),
-מה שמוזיל את זה מאוד - אבל עדיין מחכה לפסק-דין רוסטר-מלא. אל תקפוץ לשם בלי אישור.
-
-**מועמדים לליין-קונספט (לתעדף אחד, לא לפני שהמכניקה מטמיעה):** נכסי-בחירה/פורטרטים בסגנון
-הנעול · דמות #4 (deep-dive זהות חדש) · ליטוש-פוזות/מצבי-פעולה למודלים · או להמתין למכניקה.
-
-**שיטה:** show-before-spend, פתח בביקורת, המלצה-אחת לא תפריט, SPEC לפני מימוש, אל תשנה-כיוון
-בלי אישור, כל צ'אט מקמט רק את קבציו (concept/ + assets; לא `scripts/`/game3d). "ארוז" =
-עדכון state+זיכרון + פרומפט-המשך + git push.
+Source of truth = the repo (GDD.md / SOUL-PROMPT.md / ROSTER.md / STYLE-GUIDE.md). Cut from there.

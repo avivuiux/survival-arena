@@ -7,8 +7,8 @@ extends Node3D
 #  (scratchpad) - nothing here is a game asset. Delete freely.
 # =============================================================
 
-const GLB := "res://concept/characters/atlas/ATLAS_chibi_3d_v1_rigged.glb"
-const OUT_DIR := "C:/Users/Aviv/AppData/Local/Temp/claude/c--Users-Aviv-OneDrive-Desktop-AvivUIUX/92f9f530-def2-4537-bda8-e081b3fc53ed/scratchpad/atlas_rigged"
+const GLB := "res://concept/characters/fang/FANG_r2v4_3d_v1_rigged.glb"
+const OUT_DIR := "C:/Users/Aviv/AppData/Local/Temp/claude/c--Users-Aviv-OneDrive-Desktop-AvivUIUX/fe5a9b63-80dd-48dc-94d2-4f534b642214/scratchpad/fang_r2v4_audit"
 
 var _model: Node3D
 var _cam: Camera3D

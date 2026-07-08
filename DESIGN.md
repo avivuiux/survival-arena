@@ -3,6 +3,24 @@
 A lightweight design contract for the prototype. Inspired by **Survival Project**
 (2001): real-time, isometric arena skirmishes with friends - readable, punchy, social.
 
+## ⚠️⚠️ VISION LOCKED (Aviv, 2026-07-07) - ACTION-MOBA, NOT A 1v1 FIGHTER
+
+**The game is a fast, punchy, team-based arena brawler at the crossroads of Survival Project
+(fast / punchy / lots happening) and DOTA 2 (tactical / team / hero roles). Closest existing
+reference: BATTLERITE** (MOBA hero-combat depth, no farming, fast and team-based).
+- **Two layers, not opposites:** MICRO = SP's twitch, punchy, readable moment-to-moment feel.
+  MACRO = DOTA's team roles, positioning, skill-combos, coordination.
+- **Take / drop:** TAKE from SP = punch, pace, accessibility, readable chaos. TAKE from DOTA =
+  hero identity/kits, team roles, tactical positioning. DROP from DOTA = farming, itemization,
+  40-min matches, lane creeps (the slow macro that fights the pace).
+- **The roster IS the tactical layer:** the archetypes are MOBA team roles - FANG=rusher
+  (carry/assassin), ZERO=control (support/mage), ATLAS=tank (initiator). A team comp already.
+- **⚠️ Correction of a drift:** the built 1v1 best-of-3 prototype was a SCAFFOLD to prove the
+  hit-feel first (per "the one fun moment" below), NOT the destination. The mechanics lane's
+  target is the multi-player SP-like arena, not a 1v1 duel. Do not re-narrow to 1v1.
+- Pillar #1 "readable chaos" is exactly the discipline this genre needs. All character/art/style
+  work carries over 100% regardless of mode.
+
 Thinking frame: **MDA** (Mechanics -> Dynamics -> Aesthetics). We design the
 *feeling* (aesthetics) first, then the rules that produce it. This doc is a hypothesis,
 not a build-spec - the combat feel is **proven by playing, not by writing**.

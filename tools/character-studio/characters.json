@@ -1,5 +1,5 @@
 {
-  "_comment": "GameOS Character Studio - canonical data model for OVERTHRONE roster. Two blocks: `axes` (the 12 classification axes + their enumerated value-sets, used for tag pickers and gap analysis) and `characters` (the roster). Source of truth: concept/CHARACTER-ATTRIBUTES.md + each character's bible. When you add a character, mirror this shape exactly.",
+  "_comment": "GameOS Character Studio - canonical data model for OVERTHRONE roster. Two blocks: `axes` (the 12 classification axes + their enumerated value-sets, used for tag pickers and gap analysis) and `characters` (the roster). Source of truth: concept/CHARACTER-ATTRIBUTES.md + each character's bible. When you add a character, mirror this shape exactly. RULES (locked with Aviv 2026-07-06): `seed`/`want`/`signatureObject` are SOUL-ONLY - no body/material/palette/pose language (design decisions live in the bible + gallery, never here). Soul-prompt generation (SOUL-PROMPT.md) reads ONLY the whitelist: nature, powerSource, element, archetype, tempo, temperament, era, storyRole, vibe, seed, want, signatureObject. movement/size/colorIdentity/portrait/gallery = design fields, NEVER fed to design exploration.",
   "game": "OVERTHRONE",
   "tagline": "The Circuit's fighting league.",
   "axes": {
@@ -80,7 +80,17 @@
         "wild",
         "arrogant",
         "stoic",
-        "playful"
+        "playful",
+        "calculating",
+        "menacing",
+        "melancholic",
+        "honorable",
+        "serene",
+        "vengeful",
+        "weary",
+        "unhinged",
+        "gentle",
+        "brooding"
       ]
     },
     "size": {
@@ -116,7 +126,8 @@
       ]
     },
     "element": {
-      "label": "Element / theme",
+      "label": "Element / theme (PRIMARY)",
+      "_note": "Primary element only. Extra elements for variety live per-character in `extraElements` (array). Never combine two into one value (no 'ice/cosmic').",
       "values": [
         "fire",
         "ice",
@@ -127,7 +138,15 @@
         "light",
         "nature",
         "cosmic",
-        "ice/cosmic",
+        "shadow",
+        "crystal",
+        "blood",
+        "time",
+        "gravity",
+        "sound",
+        "metal",
+        "storm",
+        "poison",
         "none"
       ]
     },
@@ -140,6 +159,39 @@
         "cold-neutral",
         "villain",
         "chaotic"
+      ]
+    },
+    "aesthetic": {
+      "label": "Aesthetic / aura (multi)",
+      "_note": "Multi-value aura descriptors. Stored per-character in `aesthetics` (array). Dry adjectives the AI reads for tone, e.g. noble/sexy/elegant.",
+      "multi": true,
+      "values": [
+        "noble",
+        "elegant",
+        "sexy",
+        "regal",
+        "imposing",
+        "menacing",
+        "cold-beautiful",
+        "frozen",
+        "prince",
+        "cunning",
+        "seductive",
+        "otherworldly",
+        "ethereal",
+        "scrappy",
+        "rugged",
+        "fierce",
+        "warm",
+        "charismatic",
+        "stoic",
+        "brutal",
+        "refined",
+        "feral",
+        "mysterious",
+        "tragic",
+        "serene",
+        "sinister"
       ]
     }
   },
@@ -170,8 +222,22 @@
         "element": "fire",
         "vibe": "heroic"
       },
+      "extraElements": [],
+      "powers": ["Enhanced Strength", "Pyrokinesis (leashed, channels through the fists)", "Predator Instinct", "Pouncing Lunge / Enhanced Leap", "Beast-kin Physiology"],
+      "aesthetics": ["scrappy", "fierce", "warm", "charismatic", "rugged"],
+      "composition": [{"tag": "tiger beast", "pct": 65}, {"tag": "human heart", "pct": 35}],
+      "natureNote": "Beast-kin by birth - born a tiger beast-kin, not made. The fire is an expression of his leashed inner ferocity, not a separate power.",
+      "epithet": "The Proud Beast",
+      "species": "Tiger Beast-kin",
+      "faction": "Street-born beast-kin - no dojo, no clan, self-made",
+      "realm": "The Circuit's underlevels - raised in hundreds of street fights",
+      "age": "Young (a rookie in his first real league)",
+      "height": "Large and agile - a fast heavyweight",
+      "weapon": "Banner-wrapped fists and a predator pounce; fire when he lets the leash slip",
+      "weakness": "The leash itself - holding the brutal power back; and being seen as 'just a monster'",
       "seed": "Built as a monster, heart of gold - and PROUD of the beast. His answer to being feared isn't 'see I'm not a beast' - it's 'I AM a beast, I'm proud of it, and I'll make you cheer for one.' NOT a clown - serious determination and a leashed, brutal power under warm, principled optimism. The fire on his fists is what that leashed ferocity looks like when he chooses to let a little out.",
       "want": "Not validation, but self-acceptance, pride, and lifting his kind - to make the world celebrate beast-kin instead of fear them, by being unapologetically himself.",
+      "signatureObject": "The banner fist-wraps - he literally wraps his fists in the dream ahead of him (a champion's banner).",
       "gallery": [
         {
           "src": "../../concept/characters/fang/explorations/fang_soulprompt_r2_v4.jpg",
@@ -231,12 +297,16 @@
       "tagline": "The cold, calculating veteran - a man who got ice powers, was trapped in ice for years, and woke into the Circuit era to find his whole world gone.",
       "archetypeSummary": "Control / zone: freezes the stage, slows the enemy, dictates tempo. Patient, calculating, defensive - the exact opposite of FANG.",
       "colorIdentity": "#3B82F6",
-      "portrait": "../../concept/characters/zero/zero_final_2.png",
+      "portrait": "../../concept/characters/zero/explorations/zero_soulprompt_CHOSEN_aviv.png",
       "status": {
         "bible": true,
         "art": true,
         "rig": false
       },
+      "gallery": [
+        { "src": "../../concept/characters/zero/explorations/zero_soulprompt_CHOSEN_aviv.png", "label": "CHOSEN DIRECTION (Aviv 2026-07-06, self-generated + liked): cosmic-ice prince. FANG-style-ref + dry catalog + richer aura (prince/sexy/cunning).", "kind": "canon" },
+        { "src": "../../concept/characters/zero/zero_final_2.png", "label": "ARCHIVED earlier design (2026-07-01) - cosmic ice being, superseded.", "kind": "archived" }
+      ],
       "tags": {
         "nature": "transformed",
         "powerSource": "elemental",
@@ -248,11 +318,54 @@
         "size": "tall-lean",
         "storyRole": "gatekeeper",
         "era": "past (displaced)",
-        "element": "ice/cosmic",
+        "element": "ice",
         "vibe": "anti-hero -> villain lean"
       },
-      "seed": "He went cold to survive. Master AND prisoner of the same power: a cosmic/supernatural merge fused him WITH the ice and left him a little cruel - a sliver of the man replaced by something colder, edging him toward antagonist. Almost entirely living cosmic ice now; the human flesh is the small remnant.",
-      "want": "To restore what the ice took - turn back the loss, his time, world, and people. His wish to the champion is to undo it."
+      "extraElements": ["cosmic"],
+      "powers": ["Cryokinesis", "Cold Manipulation", "Cosmo-Cryokinesis (cosmic ice)", "Absolute Zero Inducement", "Cryostasis Survivor (frozen for a lost age)", "Deceleration / Stasis Inducement (zoning debuffs)", "Levitation"],
+      "aesthetics": ["noble", "elegant", "cold-beautiful", "frozen", "prince", "sexy", "cunning", "seductive"],
+      "composition": [{"tag": "cosmic-ice entity", "pct": 65}, {"tag": "human remnant", "pct": 35}],
+      "natureNote": "Transformed: born an ordinary man, then his ice power fused with something cosmic from between the stars. The merge did not leave him neutral - it took most of his body and a sliver of his humanity, leaving him colder and a little cruel. He is master AND prisoner of the same power.",
+      "epithet": "Warden of the Vanished Age",
+      "species": "Cosmic Ice Revenant (once human)",
+      "faction": "The Vanished Age - loyal only to a century that no longer exists",
+      "realm": "A frozen world lost to time - he woke from the ice into an era where everyone he knew is gone",
+      "age": "Displaced - lived, was frozen for years, and woke lifetimes later",
+      "height": "Tall and lean - a control fighter, not a bruiser",
+      "weapon": "The cold itself - freezes the stage, slows the enemy, dictates tempo from mid-range",
+      "weakness": "Frozen inside - he cannot let go of what he lost; the pendant is the crack in his composure",
+      "seed": "He went cold to survive. Master AND prisoner of the same power: the merge left him a little cruel - a sliver of the man replaced by something colder, edging him toward antagonist.",
+      "want": "To restore what the ice took - turn back the loss, his time, world, and people. His wish to the champion is to undo it.",
+      "signatureObject": "A small frozen pendant/medallion holding the memory of someone he lost - the last warm thing he owns."
+    },
+    {
+      "id": "atlas",
+      "name": "ATLAS",
+      "tagline": "The unbreakable wall - a colossal guardian idol-statue that woke with a conscience, fighting only to atone.",
+      "archetypeSummary": "Tank: immense, slow, defensive-by-vow. Absorbs, endures, shoves you back ('you shall not pass') but never strikes to kill.",
+      "colorIdentity": "#2FA86E",
+      "portrait": "../../concept/rework/atlas_noble_1.jpg",
+      "status": { "bible": true, "art": true, "rig": false },
+      "gallery": [
+        { "src": "../../concept/rework/atlas_noble_1.jpg", "label": "Design anchor (2026-07-03) - warrior-king jade colossus. The chibi model was built from this; now off-style, refreshing to collectible-toy via FANG style-ref.", "kind": "archived" }
+      ],
+      "tags": { "nature": "construct/golem", "powerSource": "innate mutation", "archetype": "tank/bruiser", "range": "close/melee", "movement": "grounded", "tempo": "defensive", "temperament": "honorable", "size": "large-heavy", "storyRole": "veteran", "era": "unknown", "element": "earth", "vibe": "heroic" },
+      "extraElements": ["nature"],
+      "powers": ["Enhanced Durability / Invulnerability", "Immovability", "Shockwave Generation (radial ground-slam)", "Kinetic Repulsion / Knockback-Shove", "Damage Absorption", "Terrakinesis (stone / jade)", "Force-Field / Forearm-Shield"],
+      "aesthetics": ["noble", "regal", "imposing", "monumental", "majestic", "trustworthy", "luxurious"],
+      "composition": [{"tag": "carved jade idol-statue body", "pct": 80}, {"tag": "gold + gemstone life bursting through the cracks", "pct": 20}],
+      "natureNote": "A made thing: a colossal guardian idol-statue, built as a weapon of scale to protect, that woke with a conscience. Not a being wearing armor - the body IS the material (carved jade-stone). He was made to level the very thing he guarded, and now chooses to only guard.",
+      "epithet": "The Guardian-King",
+      "species": "Living Idol-Statue (awoken guardian construct)",
+      "faction": "Sworn protector - loyal to the charge he destroyed and vowed to restore",
+      "realm": "An ancient realm he was built to guard and was made to level",
+      "age": "Ancient - a made guardian of a lost age",
+      "height": "Colossal - the widest and heaviest silhouette in the roster, low centre of gravity",
+      "weapon": "His own mass - a raised forearm-shield, a knockback shove, and a radial ground-slam shockwave; he never strikes to kill",
+      "weakness": "Slow and telegraphed; fears losing control and destroying again; refuses to attack, only defends",
+      "seed": "The most destructive body in the arena, wielded as a proud PROTECTOR. Raised to protect, then made to level what he guarded; now stands immovable and dignified, a weapon that chooses to only guard. He enters a fighting league he hates because the champion's wish is the one door back to restoring what he destroyed.",
+      "want": "To restore what he destroyed - the wish is the only thing big enough to undo it.",
+      "signatureObject": "The gold and gemstones and new life bursting through the cracks in his stone body - his wish (restore what he destroyed) made literal on him; plus the raised forearm-shield stance."
     }
   ]
 }

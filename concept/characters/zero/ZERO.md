@@ -8,8 +8,17 @@ One-liner: **the cold, calculating veteran - a man who got ice powers, was trapp
 years, and woke into the Circuit era to find his whole world gone.** Signature color: blue.
 Archetype: **balanced / control** (chill AoE, zoning, tempo). FANG's gatekeeper.
 
-**VISUAL ANCHOR (LOCKED 2026-07-01): `concept/characters/zero/zero_cosmic_1.png`** - Aviv's pick.
-**FINAL ANCHOR (adopted 2026-07-01): `zero_final_2.png`** - the unified, refined look:
+**🆕 NEW CANONICAL ANCHOR (Aviv 2026-07-06, self-generated + LIKED): `concept/characters/zero/explorations/zero_soulprompt_CHOSEN_aviv.png`.**
+Cosmic-ice PRINCE: deep galaxy-nebula cape, ice-crystal crown, half cosmic-ice / half human face,
+cold blue eyes (one glowing ice eye), glowing cyan circuit-lines across the body, floating with a
+cosmic serpentine tail, cunning princely expression. Produced via the locked method (FANG as style
+reference + dry keyword catalog) with Aviv's richer aura: noble, elegant, cold-beautiful, frozen,
+PRINCE, sexy, cunning, seductive. This SUPERSEDES all earlier ZERO designs. ⚠️ mild finish-drift
+noted (slightly more anime-cel than FANG's collectible material-realism) - Aviv accepted. Pipeline:
+A-pose -> Tripo (detailed recipe) -> game3d, same path FANG took. Earlier anchors below = ARCHIVED.
+
+**~~VISUAL ANCHOR (2026-07-01): `zero_cosmic_1.png`~~** (ARCHIVED). Aviv's earlier pick.
+**~~FINAL ANCHOR (2026-07-01): `zero_final_2.png`~~** (ARCHIVED) - the earlier unified look:
 - Rendered in the **locked STYLE-GUIDE finish** (FANG's bold Guilty-Gear cel), so the roster reads
   as one game (fixed the earlier painterly drift).
 - Cosmic ice being, ice crown, galaxy-in-crystal body, unified etched-crystal garment, floating.
@@ -29,10 +38,13 @@ Layer 4). Same locked art style (Guilty Gear / arcade-fighter 2D).
 
 ---
 
-## Layer 0 - THE PITCH / PLAYER FANTASY (DRAFT)
-The untouchable **control master**: freeze the chaos, dictate every exchange, never be rattled.
-You pick ZERO to out-think and out-last, not out-rush - ice-cold dominance. (Opposite of FANG's
-reckless-aggression fantasy.)
+## Layer 0 - THE PITCH / PLAYER FANTASY (LOCKED 2026-07-04)
+The untouchable **control master**: freeze the chaos, dictate every exchange, **never be rattled.**
+You pick ZERO to out-think and out-last, not out-rush - ice-cold dominance. The deeper fantasy =
+**being the one who cannot be shaken** - and the reason he can't be shaken is that he already lost
+everything once, so nothing in the arena can reach him. Playing ZERO feels like inevitability:
+you don't scramble, you make the opponent come to you and freeze when they do. (The deliberate
+opposite of FANG's reckless-aggression fantasy.)
 
 ## Layer 1 - THE SEED (LOCKED)
 **He went cold to survive.** A man who gained ice powers and was trapped in ice for years; he woke
@@ -102,26 +114,103 @@ defensive. The exact opposite of FANG's reckless pounce. <- balanced/chill arche
 - **Costume:** unified cosmic-alien etched-crystal garment + ice crown.
 - **Style:** SAME locked Guilty Gear / arcade-fighter 2D, bold outlines + rich detail. Blue.
 
-## Layer 6 - THE VIBE IN MOTION (DRAFT - derived)
-- Idle: still, arms crossed, breath fogging; does NOT play to the crowd. <- detached, displaced.
-- On a win: quiet, turns away - no celebration. <- nothing to celebrate; he's still alone here.
-- On a loss / hurt: one crack in the composure - the grief shows for a frame. <- Layer 1 fear.
-- Signature gesture: a slow exhale of frost, or forming a single ice shard between two fingers.
+## Layer 6 - THE VIBE IN MOTION (LOCKED - deepened 2026-07-04)
 
-## Layer 7 - RELATIONSHIPS & ROSTER FIT (DRAFT)
-- **The gatekeeper FANG must pass:** fire vs ice, warm vs cold, reckless vs calculating, scrappy-
-  and-present vs polished-and-displaced. A perfect eye-level rivalry.
+### 6a. Original vibe beats (kept)
+- Does NOT play to the crowd - detached, displaced, above it. <- Layer 1.
+- Signature gesture: a slow exhale of frost, or forming a single ice shard between two fingers -
+  a calm show of total control. <- master of the thing that mastered him.
+
+### 6b. MOTION CHARACTERIZATION - per real engine action (the FANG bar)
+Same engine actions (`fighter.gd`), same PROVEN generic juice (stretch/overshoot/trail/wind-up/
+hit-squash). ZERO's flavor is the deliberate OPPOSITE of FANG's on every axis: **FANG is all
+motion and telegraph; ZERO is stillness, economy and control.** His "alive" read comes not from
+body movement but from the FLOAT + orbiting ice-shards + drifting frost around a still figure.
+Tag key: **[VFX]** runtime, ships now. **[ANIM]** per-character animation, deferred. **[RIG]** needs
+the float / two-arms (human vs ice) / robe / orbiting-shard rig.
+Palette for all his FX: icy blue + white + silver + a cosmic violet/cyan star-glimmer.
+
+**Locomotion**
+- **Idle:** utterly still - floats in place, arms crossed, breath fogging, unreadable. The body
+  does NOT fidget (the anti-FANG). **[VFX][RIG]** what moves = ornamental ice-shards + cold vapor
+  slowly ORBITING him, a faint hover-bob. <- a man with nothing left to prove; ambient cosmic-ice
+  carries the life, not the body.
+- **Move / glide:** does not run - GLIDES, feet never plant, drifts like ice on still water, the
+  crystalline robe trails behind. The generic velocity-stretch reads as a smooth slide, not a
+  lunge-surge. **[VFX][RIG]** trail = frost vapor + shed ice-crystals, cool blue. <- he FLOATS
+  (Layer 4); control fighters glide into position, they don't charge.
+- **Note the asymmetry in all motion:** the ONE human arm reads a touch more alive/organic; the
+  all-ice side is rigid, precise. **[RIG]** <- the human remnant vs the ice that nearly won (Layer 4).
+
+**Offense**
+- **Attack wind-up (0.08s):** minimal, precise - barely shifts, a small controlled gesture as ice
+  crystallizes at the hand. Deliberately UNDER-telegraphed (a controller doesn't broadcast).
+  **[ANIM][VFX]** sharp ice forms fast at the fingertips. <- calculating economy; the opposite of
+  FANG's whole-body coil.
+- **Attack active / swing (0.12s):** a clean sweep of a formed ice-blade / shard, economical - the
+  body barely commits, the cold does the work (the generic 20% lean sits far softer on him).
+  **[VFX]** a crisp pale-blue shard-arc, no heat, hard edges. <- precision over brawn (Layer 4).
+- **Skill = CHILL / the frost-ring (0.4s cast):** HIS money-moment (ZERO's answer to FANG's
+  lunge) - raises a hand, calm, and an expanding frost-ring blooms outward, the floor crystallizes,
+  everything caught in it slows. **[ANIM][VFX]** the galaxy-in-crystal body glows brighter as he
+  casts; cosmic violet/cyan light in the ring. Unhurried, inevitable. <- "You'll burn out. I only
+  have to wait." His control fantasy, made literal (Layer 0/3/9).
+- **Ranged (aimed, shared kit):** unlike FANG's scrappy hurl - a single precise aimed icicle /
+  frost-bolt, clean and controlled. **[VFX]** a sharp straight shard, cold-blue. <- a zoner's
+  ranged is disciplined, not improvised; ranged is a real tool for him, not a weak afterthought.
+
+**Defense / reaction**
+- **Block:** comfortable, expected - raises an elegant crystalline ice-guard / thin wall, unbothered,
+  patient. NOT reluctant like FANG, and NOT the immovable fortress of ATLAS - a graceful, temporary
+  crystal shield he's happy to hold. **[ANIM][VFX]** <- patience is his whole game (Layer 3).
+- **Take a hit (0.14s squash):** composure holds - the body barely reacts; instead a literal CRACK
+  runs across his ice-surface and re-freezes over. **[VFX]** hairline fracture + frost re-seal.
+  <- a man who endures; the ice takes the damage, not the man (Layer 8).
+- **Knockback / stagger:** being a floater, he DRIFTS back like ice pushed across water - no skid,
+  no stumble - then halts and re-settles in the air with a small re-freeze. **[ANIM][VFX][RIG]**
+  <- he floats (Layer 4); even knockback stays composed.
+
+**Round beats**
+- **Win:** quiet - turns away, no celebration, a slow frost exhale. Nothing to celebrate; he is
+  still alone in the wrong era. **[ANIM]** <- Layer 1/2 (the loss underneath).
+- **Lose / KO:** THE tell, and the inverse of FANG's get-up-grinning - for a SINGLE frame the
+  composure cracks and the grief of the human remnant surfaces (the human half-face falters), then
+  the ice reclaims it as he sinks down, still. The mask breaks exactly once. **[ANIM][RIG]**
+  <- Layer 1 fear (frozen inside forever); the one moment the man behind the ice shows.
+
+**Signature gesture (LOCKED):** forming a single ice-shard between two fingers, calm - a quiet
+display of absolute control. Doubles as his idle-flourish + reads his whole character (mastery of
+the power that imprisons him). <- master AND prisoner of the same ice.
+
+## Layer 7 - RELATIONSHIPS & ROSTER FIT (LOCKED 2026-07-04)
+- **vs FANG - the gatekeeper FANG must pass:** fire vs ice, warm vs cold, reckless vs calculating,
+  scrappy-and-present vs polished-and-displaced. A perfect eye-level rivalry - the roster's core
+  rivalry. <- opposite on every axis (Layer 1).
+- **vs ATLAS - the shared wound, opposite temperature:** both want to **RESTORE** (ZERO = undo the
+  loss of his world/time; ATLAS = undo what he destroyed) - the same restoration-hunger from
+  opposite crimes: ZERO had his world taken from him, ATLAS took a world himself. Cold displaced
+  grief vs warm penitent duty. They would understand each other, which makes ZERO's colder,
+  villain-leaning path the sharper contrast. <- the OVERTHRONE wish (undo/restore) is the roster's
+  shared spine; ZERO and ATLAS sit on it from opposite sides.
 - **Roster axis ZERO owns:** the control/zone identity AND the only fighter literally out of his
-  own time (displacement). No other fighter overlaps this. <- differentiation.
+  own time (displacement) AND the roster's villain-lean (the merge made him a little cruel).
+  No other fighter overlaps this. <- differentiation (Layer 1 merge).
 
 ## Layer 8 - MECHANICS <-> FICTION COHERENCE (check: PASS)
 Chill/freeze/zone = literally his ice. Patience and tempo-control = his calculating veteran mind.
 Defensive durability = a man who endures. Kit and fiction reinforce, never contradict.
 
-## Layer 9 - VOICE (DRAFT)
-Sparse, measured, quiet authority - few words, never raises his voice. Taunt is calm and cutting
-("You'll burn out. I only have to wait."). Win line short and cold. Catchphrase around cold /
-waiting / time.
+## Layer 9 - VOICE (LOCKED 2026-07-04)
+Sparse, measured, quiet authority - few words, never raises his voice. Every line is cold, patient,
+and a little cruel (the merge). He speaks like a man for whom time already ran out, so he is never
+in a hurry. (Contrast: FANG is loud and warm; ATLAS is deep and reassuring; ZERO is quiet and
+cutting.)
+- **Warning / taunt:** *"You'll burn out. I only have to wait."*
+- **Mid-fight (cold):** *"You're already slower."*
+- **Win (short, cold):** *"Winter always wins."*
+- **Lose (the one crack):** *"...cold. Still cold."* <- the composure breaks exactly once (Layer 6 KO).
+- **Catchphrase / core line:** *"I lost my whole world to the cold. Now the cold answers to me."*
+  <- master AND prisoner of the same ice (Layer 1).
 
 ---
 

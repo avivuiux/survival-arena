@@ -15,8 +15,8 @@ update the cell **and** the "last update" note.
 
 | Character | Archetype | Mechanics | Identity/concept | Assets (ref+pose) | Rigged (Godot) | In-game art |
 |---|---|---|---|---|---|---|
-| **FANG**   | **rusher** | ✅ | ✅ (bible LOCKED, `concept/characters/fang/FANG.md`) | 🔨 **DESIGN REFRESH (Aviv 2026-07-05): new direction = `explorations/fang_soulprompt_r2_v4.jpg` (FULL TIGER FACE, bible amended).** OLD-face assets ARCHIVED as design (`FANG_chibi_3d_v1.glb`+`_anim.glb` still WIRED IN-GAME until the r2_v4 model lands - do not delete). Next: r2_v4 -> anchor+A-pose -> 12-angle audit -> Tripo -> swap GLB. Old portrait `fang_v6_serious_1.png`=archived | ✅ (chibi rigged GLB, in game3d) | ✅ (live in game3d, Aviv "מעולה" S9) |
-| **ZERO**   | balanced (control / chill) | ✅ | ✅ (bible LOCKED, `concept/characters/zero/ZERO.md`) | 🔨 **CHIBI 3D MODEL (on-style, asymmetry INTACT)** = `ZERO_chibi_3d_v1.glb` - clean chibi convert, half-ice face + ice-arm vs human-arm/chest survived Tripo (bold chibi cues held where the detailed portrait failed); ⏳ Aviv approval. **Downstream TODO: UNRIGGED + heavy (~57MB) → needs auto-rig + decimation before game-ready.** Older: `ZERO_hero_3d_v1.glb`=rigged-but-symmetrized (dead), `_v3_trellis`=asym-but-mush (dead). 2D fallback `ZERO_ingame_v1_cutout.png` | ✅ (v2 rigged+decimated, in game3d) | ✅ (live in game3d, Aviv "מעולה" S9) |
+| **FANG**   | **rusher** | ✅ | ✅ (bible LOCKED, `concept/characters/fang/FANG.md`) | ✅ **r2_v4 DESIGN COMPLETE (2026-07-06): canonical anchor = `explorations/fang_soulprompt_r2_v4.jpg` AS-IS (full-tiger-face ruling RESCINDED - Aviv kept r2_v4's face; tiger-face round archived as `explorations/fang_tigerface_r3_v1-4.png`). A-pose = `fang_r2v4_apose_1.png` (Aviv-LIKED). 3D = `FANG_r2v4_3d_v4_rigged.glb`** (3.3MB rigged, detailed-texture recipe per STYLE-GUIDE §engine-rule; amber eyes/fangs/patches SURVIVED). Old chibi GLBs = archived on disk. | ✅ (v4 rigged, WIRED in game3d) | ✅ **v4 LIVE-APPROVED (Aviv F5 2026-07-06: "נראה מעולה").** ⚠️ anim clips (idle crouch etc.) were built on the OLD chibi rig - re-forge on v4's rig via ANIM-FORGE = open task; procedural fallback plays meanwhile |
+| **ZERO**   | balanced (control / chill) | ✅ | ✅ (bible LOCKED, `concept/characters/zero/ZERO.md`) | 🔨 **NEW DESIGN CHOSEN (Aviv 2026-07-06, self-generated + LIKED): `explorations/zero_soulprompt_CHOSEN_aviv.png`** - cosmic-ice PRINCE (galaxy-nebula cape, ice crown, half-ice face, glowing circuit-lines, floating cosmic tail); style = FANG-ref + dry-catalog + Aviv's richer aura (prince/sexy/cunning/seductive). ⚠️ mild finish-drift (a touch more anime-cel than FANG's material-realism). Pipeline restarted: A-pose -> Tripo(detailed) -> game, same as FANG. OLD chibi below = superseded design. ~~CHIBI 3D MODEL~~ `ZERO_chibi_3d_v1.glb` - clean chibi convert, half-ice face + ice-arm vs human-arm/chest survived Tripo (bold chibi cues held where the detailed portrait failed); ⏳ Aviv approval. **Downstream TODO: UNRIGGED + heavy (~57MB) → needs auto-rig + decimation before game-ready.** Older: `ZERO_hero_3d_v1.glb`=rigged-but-symmetrized (dead), `_v3_trellis`=asym-but-mush (dead). 2D fallback `ZERO_ingame_v1_cutout.png` | ✅ (v2 rigged+decimated, in game3d) | ✅ (live in game3d, Aviv "מעולה" S9) |
 | **ATLAS**   | tank      | ✅ | ✅ (bible LOCKED, `concept/characters/atlas/ATLAS.md`): noble guardian-king, jade+gold idol-statue, wish = restore order | ✅ **CHIBI 3D MODEL (rigged, on-style)** = `ATLAS_chibi_3d_v1_rigged.glb` (~1.15MB, crown+regalia+gold-crack glow, 12-angle clean). Design anchor `atlas_noble_1.jpg` | ✅ (chibi rigged GLB, in game3d) | ✅ (live in game3d, Aviv "מעולה" S9) |
 
 _Archetype mapping CORRECTED by the concept chat 2026-06-30: **FANG = rusher** (orange tiger,
@@ -67,6 +67,18 @@ future-character slot, NOT FANG._
   OR resolve ownership. (Movement/booster tuning notes are the mechanics chat's, not here.)
 
 ## Last update
+
+- 2026-07-07 (concept/design lane, "ארוז") - **VISION PIVOT to action-MOBA + full GDD + 4th
+  character.** (1) Game re-visioned to a 3v3 action-MOBA (Battlerite x Survival Project); full
+  `GDD.md` deep-spec written (Stages 0-6). Mechanics lane now implements 3v3 (see `GDD.md
+  §WORK SPLIT`). (2) **Light-knight REPLACES ATLAS as the tank** - an ascended knight of light
+  (gold+white, glowing sword + light-orb, crystal crown, star-cape, tree-of-life; NO wings for
+  readability). Made via the concept-first pipeline (free concept -> restyle to our look ->
+  Magnific tripo-v31 detailed = rigged 1.5MB). **`LIGHTKNIGHT_3d_v2_magnific.glb` wired into the
+  tank slot in game3d.** ATLAS = retired (jade-king design superseded). ⏳ Aviv F5 live-judge +
+  Studio card/bible pending. (3) Prompt method + Character Studio matured (see memory /
+  SOUL-PROMPT.md). Next: animation via mocap (Aviv films himself).
+
 
 - 2026-07-05 (later, animation/Blender lane) - **⚠️⚠️ ROSTER-WIDE STYLE RE-LOCK (Aviv): "collectible-
   toy 3D" (the new-FANG finish) replaces chibi-plus for ALL characters from now on.** Anchor =

@@ -11,28 +11,71 @@ extends Node3D
 # =============================================================
 
 const FighterScript := preload("res://entities/fighter/fighter.gd")
-# chibi-plus (the locked look, concept lane 2026-07-03). *_hero_3d_v1 = old off-style fallbacks.
-const FANG_GLB := "res://concept/characters/fang/FANG_chibi_3d_v1.glb"
-const ZERO_GLB := "res://concept/characters/zero/ZERO_chibi_3d_v1.glb"
+# FANG = collectible-toy r2_v4 (the roster-wide style re-lock, 2026-07-05/06). No anim clips on
+# this rig yet -> procedural-juice fallback plays; clips get re-forged on it (ANIM-FORGE).
+# ZERO/ATLAS = chibi-plus, off-style until their r2_v4-finish replacements land.
+const FANG_GLB := "res://concept/characters/fang/FANG_r2v4_3d_v4_rigged.glb"
+const ZERO_GLB := "res://concept/characters/zero/ZERO_r2_3d_v1_rigged.glb"  # new cosmic-ice prince (Aviv 2026-07-06)
+const ATLAS_GLB := "res://concept/characters/lightknight/LIGHTKNIGHT_3d_v2_magnific.glb"  # light-knight REPLACES ATLAS as the tank (Aviv 2026-07-07)
+
+# --- SFX (slice 1: synthesized in-engine combat sounds, no external assets) ---
+const SFX_SWING := preload("res://audio/swing.wav")
+const SFX_HIT := preload("res://audio/hit.wav")
+const SFX_PARRY := preload("res://audio/parry.wav")
+const SFX_KO := preload("res://audio/ko.wav")
+const SFX_SHOT := preload("res://audio/shot.wav")
+const SFX_CAST := preload("res://audio/cast.wav")
+const SFX_BLOCK := preload("res://audio/block.wav")
 
 # --- sim space (same units as the 2D game, so the locked feel is identical) ---
 const HALF := Vector2(560.0, 320.0)
 const WORLD_SCALE := 0.01
-const MODEL_H := 1.05
+const MODEL_H := 1.25                  # character world-height (bigger = more DOTA/SP presence)
 const MODEL_YAW_OFF := PI * 1.5       # FANG_hero_3d_v1 front correction (locked)
+
+# dynamic camera (DOTA/SP feel): frames the MIDPOINT of both fighters, zooms IN when they're
+# close (big characters), OUT when they separate. All LIVE-TUNABLE via the F8 panel.
+var _cam_dist_min := 7.5               # fighters close -> zoomed in
+var _cam_dist_max := 16.0              # fighters spread out -> pulled back to fit the whole 3v3
+var _cam_pitch_deg := 38.9            # camera angle above horizon (bigger = more top-down)
+var _cam_fov := 58.0
+var _cam_smooth := 7.0                 # follow smoothing (bigger = snappier)
+var _cam_look_y := 0.7
+var _char_scale := 1.0                 # global live character-size multiplier (F8 panel)
 
 const P1_SPAWN := Vector2(-210.0, 0.0)
 const P2_SPAWN := Vector2(210.0, 0.0)
 const WINS_NEEDED := 2
 
+# --- 3v3 action-MOBA match (GDD Stage 2; all numbers = [PROVE]-by-play starting values) ---
+const TEAM_SIZE := 3
+const ROUND_TIME := 180.0              # 3 min per round
+const RESPAWN_TIME := 10.0             # dead -> back after 10s
+const ROUNDS_TO_WIN := 2               # best-of-3
+const ORB_INTERVAL := 20.0             # seconds between center-orb spawns
+const ORB_BONUS := 2                   # team points for grabbing the orb
+const ORB_BUFF_TIME := 6.0             # team power-spike duration after a grab
+const ORB_GRAB_DIST := 60.0            # how close (sim units) you must be to grab center
+const TEAM0_SPAWNS := [Vector2(-380, -130), Vector2(-380, 0), Vector2(-380, 130)]
+const TEAM1_SPAWNS := [Vector2(380, -130), Vector2(380, 0), Vector2(380, 130)]
+const TEAM_COL := [Color(0.35, 0.75, 1.0), Color(1.0, 0.5, 0.35)]  # blue (yours) vs orange
+
 # archetypes = game.gd's data (numbers untouched). glb = 3D model when one is locked.
 const ARCHETYPES := {
+	# scale_mul = visual size vs base (identity read: tank looms). float_h = hover above floor
+	# (ZERO floats). Both are RENDER-ONLY - hitboxes/spacing are sim-driven, untouched.
 	"balanced": {"hp": 170, "speed": 320.0, "damage": 12, "atk_cd": 0.34, "skill": "chill",
-		"color": Color(0.35, 0.65, 0.95), "glb": ZERO_GLB, "yaw_off": PI * 1.5},
+		"ultimate": "chill_nova",
+		"color": Color(0.35, 0.65, 0.95), "glb": ZERO_GLB, "yaw_off": PI * 1.5,
+		"scale_mul": 1.0, "float_h": 0.18},
 	"rusher":   {"hp": 120, "speed": 325.0, "damage": 18, "atk_cd": 0.26, "skill": "lunge",
-		"color": Color(0.95, 0.55, 0.20), "glb": FANG_GLB, "yaw_off": PI * 1.5},
+		"ultimate": "frenzy",
+		"color": Color(0.95, 0.55, 0.20), "glb": FANG_GLB, "yaw_off": PI * 1.5,
+		"scale_mul": 1.0, "float_h": 0.0},
 	"tank":     {"hp": 220, "speed": 240.0, "damage": 14, "atk_cd": 0.40, "skill": "shockwave",
-		"color": Color(0.45, 0.85, 0.45)},
+		"ultimate": "quake",
+		"color": Color(0.45, 0.85, 0.45), "glb": ATLAS_GLB, "yaw_off": PI * 1.5,
+		"scale_mul": 1.35, "float_h": 0.0},
 }
 
 # projectiles (sim logic copied from game.gd - same numbers, same rules)
@@ -47,11 +90,26 @@ var _p1: Node2D
 var _p2: Node2D
 var _sim: Node2D
 var _cam: Camera3D
+var _cam_look := Vector3(0.0, 0.7, 0.0)   # smoothed look target (fighters' midpoint)
+var _key_light: DirectionalLight3D        # tuner refs
+var _fill_light: DirectionalLight3D
+var _env: Environment
+var _sky_mat: ProceduralSkyMaterial
+var _tuner: Control                        # F8 live-tuning panel
 var _shake := 0.0
 var _slowmo := false
 var _state := "select"                # "select" | "fighting" | "round_over"
-var _p1_score := 0
+var _p1_score := 0                     # (dormant: old 1v1 online path)
 var _p2_score := 0
+# 3v3 match state
+var _team_score := [0, 0]              # round score = kills + orb bonus
+var _round_wins := [0, 0]              # rounds won (best-of-3)
+var _round_time_left := ROUND_TIME
+var _dead := {}                        # fighter -> respawn seconds left
+var _team_buff := [0.0, 0.0]           # center-orb power-spike time left per team
+var _orb: MeshInstance3D               # center power-orb node
+var _orb_active := false
+var _orb_timer := ORB_INTERVAL
 var _sparks: Array = []               # {node, mat, base_col, vel: Vector3, life, max}
 var _projectiles: Array = []          # sim px: {pos, vel, owner, life, node}
 var _vis := {}                        # fighter -> visual dict
@@ -64,7 +122,8 @@ var _ip_edit: LineEdit             # online: host IP the guest connects to (two-
 var _ip_label: Label
 var _join_ip := "127.0.0.1"        # cmdline `++ join 192.168.x.x` overrides the field
 var _hud: Control
-var _view_snap := 0                   # F6: 0 = smooth rotation, 8 / 4 = directional views
+const _view_snap := 0                 # LOCKED SMOOTH (Aviv 2026-07-04): the game must feel
+                                      # smooth - no directional stepping. F6 toggle removed.
 var _arch_keys: Array = []
 var _sel_index := 1                   # start on rusher (FANG has the locked model)
 
@@ -87,6 +146,10 @@ var _prev_attack := false             # guest-side press edge detection
 var _prev_skill := false
 var _prev_ranged := false
 
+var _sfx_pool: Array = []             # round-robin AudioStreamPlayer pool
+var _sfx_i := 0
+var _sfx_prev := {}                   # fighter -> {attacking, pose, active} for edge detection
+
 class Hud extends Control:
 	var game_ref
 	func _draw() -> void:
@@ -100,6 +163,10 @@ func _ready() -> void:
 	_sim = Node2D.new()
 	_sim.visible = false
 	add_child(_sim)
+	for i in range(10):
+		var p := AudioStreamPlayer.new()
+		add_child(p)
+		_sfx_pool.append(p)
 	multiplayer.peer_connected.connect(_on_peer_connected)
 	multiplayer.peer_disconnected.connect(func(_id): _net_teardown("PEER LEFT"))
 	multiplayer.connected_to_server.connect(_on_connected_to_server)
@@ -129,30 +196,56 @@ func _ready() -> void:
 
 func _build_stage() -> void:
 	var we := WorldEnvironment.new()
-	var env := Environment.new()
-	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color(0.10, 0.11, 0.15)
-	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(0.55, 0.6, 0.72)
-	env.ambient_light_energy = 0.65
-	we.environment = env
+	_env = Environment.new()
+	# gradient sky (horizon = depth) instead of a flat void colour
+	_sky_mat = ProceduralSkyMaterial.new()
+	_sky_mat.sky_top_color = Color(0.07, 0.08, 0.13)
+	_sky_mat.sky_horizon_color = Color(0.22, 0.26, 0.34)
+	_sky_mat.ground_horizon_color = Color(0.16, 0.19, 0.25)
+	_sky_mat.ground_bottom_color = Color(0.05, 0.06, 0.09)
+	_sky_mat.sun_angle_max = 30.0
+	var sky := Sky.new()
+	sky.sky_material = _sky_mat
+	_env.background_mode = Environment.BG_SKY
+	_env.sky = sky
+	_env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
+	_env.ambient_light_energy = 0.55
+	# adjustments enabled so the post sliders (saturation/contrast/brightness) work live
+	_env.adjustment_enabled = true
+	we.environment = _env
 	add_child(we)
 
-	var key := DirectionalLight3D.new()
-	key.rotation_degrees = Vector3(-55.0, -35.0, 0.0)
-	key.light_energy = 1.3
-	add_child(key)
-	var fill := DirectionalLight3D.new()
-	fill.rotation_degrees = Vector3(-18.0, 130.0, 0.0)
-	fill.light_energy = 0.35
-	add_child(fill)
+	_key_light = DirectionalLight3D.new()
+	_key_light.rotation_degrees = Vector3(-55.0, -35.0, 0.0)
+	_key_light.light_energy = 1.3
+	_key_light.shadow_enabled = true   # fighters + walls cast shadows = planted, real space
+	add_child(_key_light)
+	_fill_light = DirectionalLight3D.new()
+	_fill_light.rotation_degrees = Vector3(-18.0, 130.0, 0.0)
+	_fill_light.light_energy = 0.35
+	add_child(_fill_light)
 
 	_build_floor()
 
+	# center power-orb (3v3 anti-stall objective) - hidden until it spawns
+	_orb = MeshInstance3D.new()
+	var om := SphereMesh.new()
+	om.radius = 0.30; om.height = 0.60
+	_orb.mesh = om
+	var omat := StandardMaterial3D.new()
+	omat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	omat.albedo_color = Color(1.0, 0.88, 0.35)
+	_orb.material_override = omat
+	_orb.position = Vector3(0.0, 0.7, 0.0)
+	_orb.visible = false
+	add_child(_orb)
+
 	_cam = Camera3D.new()
-	_cam.fov = 52.0
+	_cam.fov = _cam_fov
 	add_child(_cam)
-	_cam.look_at_from_position(Vector3(0.0, 10.5, 8.5), Vector3(0.0, 0.4, 0.0), Vector3.UP)
+	_cam_look = Vector3(0.0, _cam_look_y, 0.0)
+	_cam.position = _cam_look + _cam_dir() * _cam_dist_max
+	_cam.look_at(_cam_look, Vector3.UP)
 
 func _build_floor() -> void:
 	var mesh := MeshInstance3D.new()
@@ -162,7 +255,6 @@ func _build_floor() -> void:
 	var sh := Shader.new()
 	sh.code = """
 shader_type spatial;
-render_mode unshaded;
 uniform vec3 base_col : source_color = vec3(0.13, 0.15, 0.19);
 uniform vec3 line_col : source_color = vec3(0.26, 0.31, 0.40);
 uniform float cells = 14.0;
@@ -189,6 +281,37 @@ void fragment() {
 		[Vector3(w, 0.02, -d), Vector3(w, 0.02, d)],
 	]:
 		_add_line(edge[0], edge[1], border)
+
+	# --- arena as a place: surrounding ground plane so it sits IN a world, not a void ---
+	var surround := MeshInstance3D.new()
+	var spm := PlaneMesh.new()
+	spm.size = Vector2(w * 8.0, d * 8.0)
+	surround.mesh = spm
+	var smat := StandardMaterial3D.new()
+	smat.albedo_color = Color(0.085, 0.10, 0.14)
+	surround.material_override = smat
+	surround.position = Vector3(0.0, -0.03, 0.0)
+	add_child(surround)
+
+	# --- low walls (greybox, neutral) - enclosure + height + shadow-casters ---
+	var wmat := StandardMaterial3D.new()
+	wmat.albedo_color = Color(0.17, 0.20, 0.27)
+	var hi := 0.55
+	var lo := 0.15                          # near (camera-side) wall stays low so it never occludes
+	var t := 0.10
+	_add_wall(Vector3(0.0, hi * 0.5, -d), Vector3(w * 2.0 + t, hi, t), wmat)   # far
+	_add_wall(Vector3(-w, hi * 0.5, 0.0), Vector3(t, hi, d * 2.0 + t), wmat)   # left
+	_add_wall(Vector3(w, hi * 0.5, 0.0), Vector3(t, hi, d * 2.0 + t), wmat)    # right
+	_add_wall(Vector3(0.0, lo * 0.5, d), Vector3(w * 2.0 + t, lo, t), wmat)    # near (low rim)
+
+func _add_wall(center: Vector3, size: Vector3, mat: Material) -> void:
+	var mi := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = size
+	mi.mesh = bm
+	mi.material_override = mat
+	mi.position = center
+	add_child(mi)
 
 func _add_line(a: Vector3, b: Vector3, col: Color) -> void:
 	var im := ImmediateMesh.new()
@@ -238,7 +361,7 @@ func _build_ui() -> void:
 	ui.add_child(_banner)
 
 	_title_label = Label.new()
-	_title_label.text = "CHOOSE YOUR FIGHTER\n(A / D change  ·  SPACE vs bot  ·  H host  ·  J join at the IP below)"
+	_title_label.text = "CHOOSE YOUR FIGHTER\n(A / D change  ·  SPACE start 3v3 vs bots)"
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_title_label.add_theme_font_size_override("font_size", 28)
 	_title_label.position = Vector2(vp.x / 2.0 - 240.0, 100.0)
@@ -291,8 +414,7 @@ func _refresh_select() -> void:
 # ---------- match flow ----------
 
 func _begin_match() -> void:
-	var p1_arch: String = _arch_keys[_sel_index]
-	var p2_arch: String = _arch_keys[randi() % _arch_keys.size()]
+	var my_arch: String = _arch_keys[_sel_index]
 
 	_title_label.visible = false
 	_select_label.visible = false
@@ -300,18 +422,49 @@ func _begin_match() -> void:
 	_info.visible = true
 	_score_label.visible = true
 
-	_p1 = _make_fighter(p1_arch, "YOU", false, P1_SPAWN)
-	_p2 = _make_fighter(p2_arch, "BOT", true, P2_SPAWN)
-	_p2.facing = Vector2.LEFT
-	_fighters = [_p1, _p2]
-	_vis[_p1] = _make_visual(ARCHETYPES[p1_arch])
-	_vis[_p2] = _make_visual(ARCHETYPES[p2_arch])
+	_fighters = []
+	_sfx_prev.clear()
+	# TEAM 0 (yours): you + 2 bot allies
+	for i in range(TEAM_SIZE):
+		var arch: String = my_arch if i == 0 else _arch_keys[randi() % _arch_keys.size()]
+		var nm := "YOU" if i == 0 else "ALLY %d" % i
+		var f := _make_fighter(arch, nm, i != 0, TEAM0_SPAWNS[i])
+		f.team = 0
+		f.spawn_pos = TEAM0_SPAWNS[i]
+		if i == 0:
+			_p1 = f
+		_fighters.append(f)
+		_vis[f] = _make_visual(ARCHETYPES[arch])
+	# TEAM 1 (enemy): 3 bots
+	for i in range(TEAM_SIZE):
+		var arch: String = _arch_keys[randi() % _arch_keys.size()]
+		var f := _make_fighter(arch, "ENEMY %d" % (i + 1), true, TEAM1_SPAWNS[i])
+		f.team = 1
+		f.spawn_pos = TEAM1_SPAWNS[i]
+		f.facing = Vector2.LEFT
+		_fighters.append(f)
+		_vis[f] = _make_visual(ARCHETYPES[arch])
 
-	_p1_score = 0
-	_p2_score = 0
-	_update_score()
+	_team_score = [0, 0]
+	_round_wins = [0, 0]
+	_start_round()
 	_state = "fighting"
 	_refresh_info()
+
+func _start_round() -> void:
+	_round_time_left = ROUND_TIME
+	_team_score = [0, 0]
+	_dead.clear()
+	_team_buff = [0.0, 0.0]
+	_orb_active = false
+	_orb_timer = ORB_INTERVAL
+	if _orb:
+		_orb.visible = false
+	for f in _fighters:
+		f.reset_fighter(f.spawn_pos)
+		f.facing = Vector2.RIGHT if f.team == 0 else Vector2.LEFT
+		f._ult_charge = 0.0
+	_refresh_scoreboard()
 
 func _return_to_select() -> void:
 	for f in _fighters:
@@ -325,6 +478,10 @@ func _return_to_select() -> void:
 	_fighters = []
 	_p1 = null
 	_p2 = null
+	_dead.clear()
+	_orb_active = false
+	if _orb:
+		_orb.visible = false
 	for p in _projectiles:
 		p["node"].queue_free()
 	_projectiles = []
@@ -335,7 +492,7 @@ func _return_to_select() -> void:
 	_info.visible = false
 	_score_label.visible = false
 	_title_label.visible = true
-	_title_label.text = "CHOOSE YOUR FIGHTER\n(A / D change  ·  SPACE vs bot  ·  H host  ·  J join at the IP below)"
+	_title_label.text = "CHOOSE YOUR FIGHTER\n(A / D change  ·  SPACE start 3v3 vs bots)"
 	_select_label.visible = true
 	_show_ip(true)
 	_state = "select"
@@ -353,6 +510,8 @@ func _make_fighter(arch: String, fname: String, bot: bool, pos: Vector2) -> Node
 	f.damage = a["damage"]
 	f.attack_cooldown = a["atk_cd"]
 	f.skill_type = a["skill"]
+	f.ultimate_type = a.get("ultimate", "")
+	f.key_ultimate = KEY_Q
 	f.art_path = ""
 	f.key_up = KEY_UP
 	f.key_down = KEY_DOWN
@@ -375,10 +534,12 @@ func _make_fighter(arch: String, fname: String, bot: bool, pos: Vector2) -> Node
 func _make_visual(arch: Dictionary) -> Dictionary:
 	var pivot := Node3D.new()      # yaw-aligned to facing: local +Z = forward
 	add_child(pivot)
-	var fix := Node3D.new()        # constant model-front correction
+	var fix := Node3D.new()        # constant model-front correction + live char-size
 	pivot.add_child(fix)
+	fix.scale = Vector3.ONE * _char_scale
 
 	var meshes: Array = []
+	var anim: AnimationPlayer = null
 	if arch.has("glb"):
 		var packed: PackedScene = load(arch["glb"])
 		var model: Node3D
@@ -389,12 +550,21 @@ func _make_visual(arch: Dictionary) -> Dictionary:
 			model = packed.instantiate()
 		fix.add_child(model)
 		var aabb := _combined_aabb(model)
-		var s := MODEL_H / maxf(aabb.size.y, 0.001)
+		var s := (MODEL_H / maxf(aabb.size.y, 0.001)) * float(arch.get("scale_mul", 1.0))
 		model.scale = Vector3.ONE * s
 		var cc := aabb.position + aabb.size * 0.5
-		model.position = Vector3(-cc.x * s, -aabb.position.y * s, -cc.z * s)
+		var lift := float(arch.get("float_h", 0.0))
+		model.position = Vector3(-cc.x * s, -aabb.position.y * s + lift, -cc.z * s)
 		fix.rotation.y = arch.get("yaw_off", MODEL_YAW_OFF)
 		meshes = _mesh_instances(model)
+		# skeletal animation (only FANG has clips today; others fall back to procedural juice)
+		anim = _find_anim_player(model)
+		if anim != null:
+			for clip in ["idle", "walk"]:
+				if anim.has_animation(clip):
+					anim.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
+			if anim.has_animation("idle"):
+				anim.play("idle")
 	else:
 		# greybox 3D stand-in: a colored capsule at fighter scale
 		var cap := MeshInstance3D.new()
@@ -485,7 +655,29 @@ func _make_visual(arch: Dictionary) -> Dictionary:
 
 	return {"pivot": pivot, "fix": fix, "meshes": meshes, "overlay": overlay,
 		"ring": ring, "shield": shield, "shield_mat": shield_mat,
-		"tel": tel, "tel_mat": tel_mat, "cast": cast, "cast_mat": cast_mat, "ko": 0.0}
+		"tel": tel, "tel_mat": tel_mat, "cast": cast, "cast_mat": cast_mat, "ko": 0.0,
+		"anim": anim, "anim_state": "idle",
+		"head_h": MODEL_H * float(arch.get("scale_mul", 1.0)) * 1.3 + float(arch.get("float_h", 0.0))}
+
+func _find_anim_player(n: Node) -> AnimationPlayer:
+	if n is AnimationPlayer:
+		return n
+	for c in n.get_children():
+		var r := _find_anim_player(c)
+		if r != null:
+			return r
+	return null
+
+# skeletal base motion (idle <-> walk); combat beats stay on the procedural whole-model juice
+func _drive_anim(f, v: Dictionary) -> void:
+	var anim: AnimationPlayer = v.get("anim")
+	if anim == null:
+		return
+	var moving: bool = f.active and f._move_vel.length() > f.speed * 0.18
+	var want: String = "walk" if (moving and anim.has_animation("walk")) else "idle"
+	if want != v.get("anim_state", "") and anim.has_animation(want):
+		anim.play(want, 0.15)     # 0.15s crossfade so the switch reads smooth
+		v["anim_state"] = want
 
 # ---------- per-frame ----------
 
@@ -521,10 +713,10 @@ func _process(delta: float) -> void:
 			p["life"] -= delta
 			p["node"].position = Vector3(p["pos"].x * WORLD_SCALE, 0.45, p["pos"].y * WORLD_SCALE)
 			for f in _fighters:
-				if f == p["owner"] or not f.active:
-					continue
+				if f == p["owner"] or not f.active or f.team == p["owner"].team:
+					continue                    # 3v3: projectiles skip teammates
 				if p["pos"].distance_to(f.position) < PROJ_RADIUS + 16.0:
-					f.take_hit(p["vel"].normalized(), PROJ_DAMAGE, PROJ_KNOCK)
+					f.take_hit(p["vel"].normalized(), PROJ_DAMAGE, PROJ_KNOCK, p["owner"])
 					spawn_sparks(p["pos"], p["vel"], 6, p["owner"].body_color)
 					p["life"] = 0.0
 					break
@@ -561,15 +753,215 @@ func _process(delta: float) -> void:
 				_recv_press.rpc_id(1, "ranged")
 			_prev_ranged = rg
 
+	_update_match(delta)
 	for f in _fighters:
 		_update_visual(f, delta)
+	_update_camera(delta)
 	if _state != "select":
 		_hud.queue_redraw()
+
+func _cam_dir() -> Vector3:
+	var p := deg_to_rad(_cam_pitch_deg)
+	return Vector3(0.0, sin(p), cos(p))
+
+func _update_camera(delta: float) -> void:
+	if _state == "select":
+		return
+	# frame the CENTROID of all active fighters; zoom to their spread (fits a 3v3 teamfight)
+	var sum := Vector3.ZERO
+	var n := 0
+	for f in _fighters:
+		if not f.active:
+			continue
+		sum += Vector3(f.position.x * WORLD_SCALE, 0.0, f.position.y * WORLD_SCALE)
+		n += 1
+	if n == 0:
+		return
+	var mid := sum / float(n)
+	var spread := 0.0
+	for f in _fighters:
+		if not f.active:
+			continue
+		var p := Vector3(f.position.x * WORLD_SCALE, 0.0, f.position.y * WORLD_SCALE)
+		spread = maxf(spread, mid.distance_to(p))
+	var dist: float = clampf(remap(spread, 1.5, 6.5, _cam_dist_min, _cam_dist_max), _cam_dist_min, _cam_dist_max)
+	var look_goal := Vector3(mid.x, _cam_look_y, mid.z)
+	var pos_goal := look_goal + _cam_dir() * dist
+	var k := 1.0 - exp(-_cam_smooth * delta)   # frame-rate-independent smoothing (no jitter/snap)
+	_cam.fov = _cam_fov
+	_cam_look = _cam_look.lerp(look_goal, k)
+	_cam.position = _cam.position.lerp(pos_goal, k)
+	_cam.look_at(_cam_look, Vector3.UP)
+
+# ---------- F8 live look-tuner (camera / lighting / atmosphere / post) ----------
+
+func _toggle_tuner() -> void:
+	if _tuner == null:
+		_build_tuner()
+	else:
+		_tuner.visible = not _tuner.visible
+
+func _build_tuner() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 40
+	add_child(layer)
+	var panel := PanelContainer.new()
+	panel.anchor_left = 1.0; panel.anchor_right = 1.0
+	panel.anchor_top = 0.0; panel.anchor_bottom = 1.0
+	panel.offset_left = -358; panel.offset_right = -8
+	panel.offset_top = 8; panel.offset_bottom = -8
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.06, 0.07, 0.10, 0.92)
+	sb.set_content_margin_all(10.0)
+	sb.set_corner_radius_all(6)
+	panel.add_theme_stylebox_override("panel", sb)
+	layer.add_child(panel)
+	_tuner = panel
+
+	var scroll := ScrollContainer.new()
+	panel.add_child(scroll)
+	var vb := VBoxContainer.new()
+	vb.custom_minimum_size = Vector2(330, 0)
+	vb.add_theme_constant_override("separation", 3)
+	scroll.add_child(vb)
+
+	var title := Label.new()
+	title.text = "LOOK TUNER   (F8 to hide)"
+	title.add_theme_color_override("font_color", Color(1, 0.9, 0.5))
+	vb.add_child(title)
+
+	_tuner_head(vb, "CAMERA")
+	_tuner_slider(vb, "Zoom in (close)", 4.0, 12.0, _cam_dist_min, func(v): _cam_dist_min = v)
+	_tuner_slider(vb, "Zoom out (far)", 8.0, 22.0, _cam_dist_max, func(v): _cam_dist_max = v)
+	_tuner_slider(vb, "Angle (top-down)", 20.0, 78.0, _cam_pitch_deg, func(v): _cam_pitch_deg = v)
+	_tuner_slider(vb, "FOV", 38.0, 82.0, _cam_fov, func(v): _cam_fov = v)
+	_tuner_slider(vb, "Follow smooth", 2.0, 15.0, _cam_smooth, func(v): _cam_smooth = v)
+	_tuner_slider(vb, "Look height", 0.0, 2.0, _cam_look_y, func(v): _cam_look_y = v)
+	_tuner_slider(vb, "Character size", 0.5, 2.2, _char_scale, func(v): _set_char_scale(v))
+
+	_tuner_head(vb, "LIGHTING")
+	_tuner_slider(vb, "Key energy", 0.0, 3.0, _key_light.light_energy, func(v): _key_light.light_energy = v)
+	_tuner_slider(vb, "Key pitch", -90.0, -5.0, _key_light.rotation_degrees.x, func(v): _key_light.rotation_degrees.x = v)
+	_tuner_slider(vb, "Key yaw", -180.0, 180.0, _key_light.rotation_degrees.y, func(v): _key_light.rotation_degrees.y = v)
+	_tuner_slider(vb, "Fill energy", 0.0, 2.0, _fill_light.light_energy, func(v): _fill_light.light_energy = v)
+	_tuner_slider(vb, "Ambient energy", 0.0, 2.0, _env.ambient_light_energy, func(v): _env.ambient_light_energy = v)
+	_tuner_check(vb, "Shadows", _key_light.shadow_enabled, func(p): _key_light.shadow_enabled = p)
+
+	_tuner_head(vb, "ATMOSPHERE")
+	_tuner_check(vb, "Fog", _env.fog_enabled, func(p): _env.fog_enabled = p)
+	_tuner_slider(vb, "Fog density", 0.0, 0.08, _env.fog_density, func(v): _env.fog_density = v)
+	_tuner_check(vb, "Glow / bloom", _env.glow_enabled, func(p): _env.glow_enabled = p)
+	_tuner_slider(vb, "Glow strength", 0.0, 2.0, _env.glow_strength, func(v): _env.glow_strength = v)
+	_tuner_color(vb, "Sky top", _sky_mat.sky_top_color, func(c): _sky_mat.sky_top_color = c)
+	_tuner_color(vb, "Sky horizon", _sky_mat.sky_horizon_color, func(c): _sky_mat.sky_horizon_color = c)
+
+	_tuner_head(vb, "POST")
+	_tuner_slider(vb, "Saturation", 0.0, 2.0, _env.adjustment_saturation, func(v): _env.adjustment_saturation = v)
+	_tuner_slider(vb, "Contrast", 0.5, 1.6, _env.adjustment_contrast, func(v): _env.adjustment_contrast = v)
+	_tuner_slider(vb, "Brightness", 0.5, 1.6, _env.adjustment_brightness, func(v): _env.adjustment_brightness = v)
+
+	var btn := Button.new()
+	btn.text = "PRINT VALUES (to console)"
+	btn.pressed.connect(_print_tuner_values)
+	vb.add_child(btn)
+
+func _tuner_head(vb: VBoxContainer, text: String) -> void:
+	var sep := HSeparator.new()
+	vb.add_child(sep)
+	var l := Label.new()
+	l.text = text
+	l.add_theme_color_override("font_color", Color(0.5, 0.8, 1.0))
+	vb.add_child(l)
+
+func _tuner_slider(vb: VBoxContainer, label: String, mn: float, mx: float, val: float, setter: Callable) -> void:
+	var l := Label.new()
+	l.text = "%s:  %.2f" % [label, val]
+	vb.add_child(l)
+	var s := HSlider.new()
+	s.min_value = mn; s.max_value = mx; s.step = (mx - mn) / 240.0; s.value = val
+	s.custom_minimum_size = Vector2(310, 16)
+	s.value_changed.connect(func(v: float):
+		l.text = "%s:  %.2f" % [label, v]
+		setter.call(v))
+	vb.add_child(s)
+
+func _tuner_check(vb: VBoxContainer, label: String, val: bool, setter: Callable) -> void:
+	var c := CheckBox.new()
+	c.text = label
+	c.button_pressed = val
+	c.toggled.connect(func(p: bool): setter.call(p))
+	vb.add_child(c)
+
+func _tuner_color(vb: VBoxContainer, label: String, val: Color, setter: Callable) -> void:
+	var row := HBoxContainer.new()
+	var l := Label.new()
+	l.text = label
+	l.custom_minimum_size = Vector2(150, 0)
+	row.add_child(l)
+	var cp := ColorPickerButton.new()
+	cp.color = val
+	cp.custom_minimum_size = Vector2(150, 24)
+	cp.color_changed.connect(func(c: Color): setter.call(c))
+	row.add_child(cp)
+	vb.add_child(row)
+
+func _set_char_scale(v: float) -> void:
+	_char_scale = v
+	for f in _vis:
+		var fx = _vis[f].get("fix")
+		if fx != null:
+			fx.scale = Vector3.ONE * v
+
+func _print_tuner_values() -> void:
+	print("\n===== LOOK TUNER VALUES (paste to Claude to lock) =====")
+	print("CAMERA  dist_min=%.2f  dist_max=%.2f  pitch=%.1f  fov=%.1f  smooth=%.1f  look_y=%.2f  char_scale=%.2f" % [
+		_cam_dist_min, _cam_dist_max, _cam_pitch_deg, _cam_fov, _cam_smooth, _cam_look_y, _char_scale])
+	print("LIGHT   key_energy=%.2f  key_pitch=%.1f  key_yaw=%.1f  fill=%.2f  ambient=%.2f  shadows=%s" % [
+		_key_light.light_energy, _key_light.rotation_degrees.x, _key_light.rotation_degrees.y,
+		_fill_light.light_energy, _env.ambient_light_energy, str(_key_light.shadow_enabled)])
+	print("ATMO    fog=%s density=%.3f  glow=%s strength=%.2f  sky_top=%s  sky_horizon=%s" % [
+		str(_env.fog_enabled), _env.fog_density, str(_env.glow_enabled), _env.glow_strength,
+		str(_sky_mat.sky_top_color), str(_sky_mat.sky_horizon_color)])
+	print("POST    saturation=%.2f  contrast=%.2f  brightness=%.2f" % [
+		_env.adjustment_saturation, _env.adjustment_contrast, _env.adjustment_brightness])
+	print("========================================================\n")
+
+func _play_sfx(stream: AudioStream, db: float = 0.0, pitch_var: float = 0.06) -> void:
+	if stream == null or _sfx_pool.is_empty():
+		return
+	var p: AudioStreamPlayer = _sfx_pool[_sfx_i]
+	_sfx_i = (_sfx_i + 1) % _sfx_pool.size()
+	p.stream = stream
+	p.volume_db = db
+	p.pitch_scale = 1.0 + randf_range(-pitch_var, pitch_var)
+	p.play()
+
+# edge-detect combat events off the fighter's own state -> one sound per transition
+func _sfx_events(f) -> void:
+	var prev: Dictionary = _sfx_prev.get(f,
+		{"attacking": false, "pose": "", "active": true, "cast": 0.0, "lunge": false, "block": false})
+	if f._attacking and not prev["attacking"]:
+		_play_sfx(SFX_SWING, -6.0)
+	if f._pose == "hit" and prev["pose"] != "hit":
+		_play_sfx(SFX_HIT, -2.0)
+	elif f._pose == "parry" and prev["pose"] != "parry":
+		_play_sfx(SFX_PARRY, -4.0)
+	# skill cast: chill/shockwave set _cast_anim, rusher's lunge sets _lunge
+	if (f._cast_anim > 0.0 and prev["cast"] <= 0.0) or (f._lunge and not prev["lunge"]):
+		_play_sfx(SFX_CAST, -5.0)
+	if f._blocking and not prev["block"]:
+		_play_sfx(SFX_BLOCK, -8.0)
+	if prev["active"] and not f.active and f.hp <= 0:
+		_play_sfx(SFX_KO, -1.0, 0.02)
+	_sfx_prev[f] = {"attacking": f._attacking, "pose": f._pose, "active": f.active,
+		"cast": f._cast_anim, "lunge": f._lunge, "block": f._blocking}
 
 func _update_visual(f, delta: float) -> void:
 	if not _vis.has(f):
 		return
 	var v: Dictionary = _vis[f]
+	_sfx_events(f)
+	_drive_anim(f, v)
 	var pivot: Node3D = v["pivot"]
 	pivot.position = Vector3(f.position.x * WORLD_SCALE, 0.0, f.position.y * WORLD_SCALE)
 	# F6 directional-view mode (display only - sim/aim/hitboxes stay continuous)
@@ -601,7 +993,9 @@ func _update_visual(f, delta: float) -> void:
 		if mk > 0.01:
 			scl = Vector3(1.0 - mk * 0.35, 1.0 - mk * 0.45, 1.0 + mk)
 
-	v["ko"] = move_toward(v["ko"], (PI * 0.5) if not f.active else 0.0, 5.0 * delta)
+	# only the DEFEATED fighter (hp gone) tips over - the winner is merely frozen at round-over
+	var downed: bool = not f.active and f.hp <= 0
+	v["ko"] = move_toward(v["ko"], (PI * 0.5) if downed else 0.0, 5.0 * delta)
 	pivot.rotation = Vector3(pitch - v["ko"], yaw, 0.0)
 	pivot.scale = scl
 
@@ -664,7 +1058,7 @@ func _draw_hud(c: Control) -> void:
 		if not _vis.has(f):
 			continue
 		var v: Dictionary = _vis[f]
-		var head: Vector3 = (v["pivot"] as Node3D).position + Vector3(0.0, MODEL_H * 1.3, 0.0)
+		var head: Vector3 = (v["pivot"] as Node3D).position + Vector3(0.0, v.get("head_h", MODEL_H * 1.3), 0.0)
 		var sp := _cam.unproject_position(head)
 		var bw := 64.0
 		var bh := 7.0
@@ -678,8 +1072,25 @@ func _draw_hud(c: Control) -> void:
 		c.draw_rect(Rect2(sp + Vector2(-bw / 2.0, bh + 2.0), Vector2(bw, 4.0)), Color(0, 0, 0, 0.5))
 		c.draw_rect(Rect2(sp + Vector2(-bw / 2.0, bh + 2.0), Vector2(bw * sratio, 4.0)), scol)
 		if font:
+			var ncol: Color = TEAM_COL[f.team].lerp(Color.WHITE, 0.35)   # team-tinted = read who's who
 			c.draw_string(font, sp + Vector2(-60.0, -6.0), f.display_name,
-				HORIZONTAL_ALIGNMENT_CENTER, 120.0, 13, Color(1, 1, 1, 0.85))
+				HORIZONTAL_ALIGNMENT_CENTER, 120.0, 13, ncol)
+
+	# player ULTIMATE charge meter (the money-moment readout), bottom-center
+	if _p1 != null and is_instance_valid(_p1) and _p1.ultimate_type != "":
+		var uw := 240.0
+		var ux := (c.size.x - uw) * 0.5
+		var uy := c.size.y - 42.0
+		c.draw_rect(Rect2(Vector2(ux, uy), Vector2(uw, 12.0)), Color(0, 0, 0, 0.55))
+		var uc: float = clampf(_p1._ult_charge, 0.0, 1.0)
+		var full: bool = uc >= 1.0
+		c.draw_rect(Rect2(Vector2(ux, uy), Vector2(uw * uc, 12.0)),
+			Color(1.0, 0.85, 0.30) if full else Color(0.55, 0.50, 0.32))
+		if font:
+			c.draw_string(font, Vector2(ux, uy - 4.0),
+				"ULTIMATE READY (Q)" if full else "ultimate charging",
+				HORIZONTAL_ALIGNMENT_CENTER, uw, 14,
+				Color(1, 0.9, 0.5) if full else Color(0.85, 0.85, 0.85, 0.8))
 
 func _refresh_info() -> void:
 	if not _info or _p1 == null:
@@ -688,18 +1099,20 @@ func _refresh_info() -> void:
 	var practice := ""
 	if _net_role == "none" and _p2 and _p2.passive:
 		practice = "   ·   PRACTICE (bot frozen, P wakes)"
-	var view := "smooth" if _view_snap == 0 else "%d dirs" % _view_snap
 	var net := ""
 	if _net_role != "none":
 		net = "\nONLINE (%s)   ·   LAG one-way %d ms (round-trip %d)   ·   [L] cycles lag" % [
 			_net_role.to_upper(), _lag_ms, _lag_ms * 2]
-	_info.text = "Arrows steer · A run · S melee · D ranged · R %s · Space block/parry\nTab re-pick · P practice · F4 slow-mo · F6 view (%s) · Esc quit%s%s" % [
-		my_f.skill_type, view, practice, net]
+	_info.text = "3v3 · Arrows steer · A run · S melee · D ranged · R %s · Q ULTIMATE · Space block/parry · grab the CENTER ORB\nTab re-pick · F4 slow-mo · F8 look-tuner · Esc quit%s%s" % [
+		my_f.skill_type, practice, net]
 
 # ---------- input (meta keys - fighters read their own keys) ----------
 
 func _input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo):
+		return
+	if event.keycode == KEY_F8:        # live look-tuner panel (camera / lighting / atmosphere)
+		_toggle_tuner()
 		return
 	if _state == "select":
 		if _ip_edit and _ip_edit.has_focus():
@@ -744,16 +1157,13 @@ func _input(event: InputEvent) -> void:
 	elif event.keycode == KEY_F4:
 		_slowmo = not _slowmo
 		Engine.time_scale = 0.25 if _slowmo else 1.0
-	elif event.keycode == KEY_F6:
-		var next: int = {0: 8, 8: 4, 4: 0}[_view_snap]
-		_view_snap = next
-		for f in _fighters:
-			f.facing_snap = _view_snap
-		_refresh_info()
 
 # ================= ONLINE (net_fight's locked core, same 3D render) =================
 
 func _net_host() -> void:
+	# online is the old 1v1 path - dormant since the 3v3 pivot (single-client + bots for now).
+	_title_label.text = "ONLINE PAUSED\nthe game is now 3v3 vs bots - press SPACE.  (online returns for 3v3 later)"
+	return
 	_my_arch = _arch_keys[_sel_index]
 	_peer = ENetMultiplayerPeer.new()
 	if _peer.create_server(PORT, 1) != OK:
@@ -768,6 +1178,8 @@ func _net_host() -> void:
 	_title_label.text = "HOSTING as %s  ·  guest connects to  %s\n(other machine: pick a fighter, type this IP, press J)      Tab cancels" % [_my_arch.to_upper(), ip]
 
 func _net_join() -> void:
+	_title_label.text = "ONLINE PAUSED\nthe game is now 3v3 vs bots - press SPACE.  (online returns for 3v3 later)"
+	return
 	_my_arch = _arch_keys[_sel_index]
 	var ip := "127.0.0.1"
 	if _ip_edit:
@@ -816,6 +1228,7 @@ func _start_net_match(host_arch: String, guest_arch: String) -> void:
 	_p2 = _make_fighter(guest_arch, "GUEST", false, P2_SPAWN)
 	_p2.facing = Vector2.LEFT
 	_fighters = [_p1, _p2]
+	_sfx_prev.clear()
 	_vis[_p1] = _make_visual(ARCHETYPES[host_arch])
 	_vis[_p2] = _make_visual(ARCHETYPES[guest_arch])
 	if _net_role == "host":
@@ -1074,6 +1487,7 @@ func _add_spark(sim_pos: Vector2, vel: Vector3, life: float, color: Color) -> vo
 	_sparks.append({"node": mi, "mat": m, "base_col": color, "vel": vel, "life": life, "max": life})
 
 func spawn_projectile(pos: Vector2, dir: Vector2, owner) -> void:
+	_play_sfx(SFX_SHOT, -7.0)
 	var d := dir.normalized() if dir.length() > 0.01 else Vector2.RIGHT
 	var mi := MeshInstance3D.new()
 	var sm := SphereMesh.new()
@@ -1090,72 +1504,124 @@ func spawn_projectile(pos: Vector2, dir: Vector2, owner) -> void:
 
 func apply_chill(origin: Vector2, radius: float, duration: float, caster) -> void:
 	for f in _fighters:
-		if f == caster or not f.active:
-			continue
+		if f == caster or not f.active or f.team == caster.team:
+			continue                            # 3v3: only enemies
 		if origin.distance_to(f.position) <= radius:
 			f.apply_chill(duration)
 
 func apply_shockwave(origin: Vector2, radius: float, knock: float, dmg: int, caster) -> void:
 	for f in _fighters:
-		if f == caster or not f.active:
-			continue
+		if f == caster or not f.active or f.team == caster.team:
+			continue                            # 3v3: only enemies
 		var d: Vector2 = f.position - origin
 		if d.length() <= radius:
 			var dir: Vector2 = d.normalized() if d.length() > 0.001 else Vector2.RIGHT
-			f.take_hit(dir, dmg, knock)
+			f.take_hit(dir, dmg, knock, caster)
 
-func on_ko(loser) -> void:
+# A fighter died: award the kill to whoever last hit it, then queue its respawn.
+# In 3v3 a death does NOT end the round - the round ends on the timer, by score.
+func on_ko(victim) -> void:
 	if _state != "fighting":
 		return
+	victim.active = false
+	var killer = victim._last_hit_by
+	if killer != null and killer.team != victim.team:
+		_team_score[killer.team] += 1
+		_refresh_scoreboard()
+	_dead[victim] = RESPAWN_TIME
+
+# per-frame match tick (respawns, buffs, orb, round timer) - called from _process while fighting
+func _update_match(delta: float) -> void:
+	if _state != "fighting":
+		return
+	for f in _dead.keys():
+		_dead[f] -= delta
+		if _dead[f] <= 0.0:
+			f.reset_fighter(f.spawn_pos)
+			f.facing = Vector2.RIGHT if f.team == 0 else Vector2.LEFT
+			_dead.erase(f)
+	for i in range(2):
+		if _team_buff[i] > 0.0:
+			_team_buff[i] -= delta
+	_update_orb(delta)
+	_round_time_left -= delta
+	_refresh_scoreboard()
+	if _round_time_left <= 0.0:
+		_end_round_by_score()
+
+func _update_orb(delta: float) -> void:
+	if not _orb_active:
+		_orb_timer -= delta
+		if _orb_timer <= 0.0:
+			_orb_active = true
+			if _orb:
+				_orb.visible = true
+		return
+	# spin + bob the live orb for readability
+	if _orb:
+		_orb.rotate_y(2.0 * delta)
+	for f in _fighters:
+		if f.active and f.position.length() <= ORB_GRAB_DIST:
+			_grab_orb(f.team)
+			return
+
+func _grab_orb(team: int) -> void:
+	_team_score[team] += ORB_BONUS
+	_team_buff[team] = ORB_BUFF_TIME
+	for f in _fighters:
+		if f.team == team:
+			f._buff_time = ORB_BUFF_TIME
+	_orb_active = false
+	if _orb:
+		_orb.visible = false
+	_orb_timer = ORB_INTERVAL
+	_play_sfx(SFX_CAST, -1.0)
+	spawn_burst(Vector2.ZERO, 20, TEAM_COL[team])
+	_refresh_scoreboard()
+
+func _end_round_by_score() -> void:
 	_state = "round_over"
-	_p1.active = false
-	_p2.active = false
-
-	var winner: Node2D = _p2 if loser == _p1 else _p1
-	if winner == _p1:
-		_p1_score += 1
-	else:
-		_p2_score += 1
-	_update_score()
-	_banner.add_theme_color_override("font_color", winner.body_color)
-
-	var wname: String = winner.fighter_name       # YOU/BOT offline · HOST/GUEST online
-	var winner_score: int = _p1_score if winner == _p1 else _p2_score
-	var match_over := winner_score >= WINS_NEEDED
+	var draw: bool = _team_score[0] == _team_score[1]
+	var w: int = 0 if _team_score[0] >= _team_score[1] else 1
+	if not draw:
+		_round_wins[w] += 1
+	var match_over: bool = _round_wins[w] >= ROUNDS_TO_WIN and not draw
 	var text: String
-	if wname == "YOU":
-		text = "YOU WIN THE MATCH!" if match_over else "you win the round"
+	if draw:
+		text = "round draw"
+	elif w == 0:
+		text = "YOU WIN THE MATCH!" if match_over else "your team wins the round"
 	else:
-		text = ("%s WINS THE MATCH!" % wname) if match_over else ("%s wins the round" % wname.to_lower())
-	print("[game3d] round over: %s -> %d - %d" % [wname, _p1_score, _p2_score])
+		text = "ENEMY WINS THE MATCH!" if match_over else "enemy team wins the round"
+	_banner.add_theme_color_override("font_color", TEAM_COL[w] if not draw else Color(0.8, 0.8, 0.8))
 	_banner.text = text
 	_banner.visible = true
-	if _net_role == "host":
-		_recv_round_over.rpc(text, winner.body_color, _p1_score, _p2_score)
-	var t := get_tree().create_timer(3.0 if match_over else 1.6)
+	_refresh_scoreboard()
+	print("[game3d] round over  score %d-%d  wins %d-%d" % [_team_score[0], _team_score[1], _round_wins[0], _round_wins[1]])
+	var t := get_tree().create_timer(3.0 if match_over else 2.0)
 	await t.timeout
 	if _state != "round_over":
-		return              # re-picked / disconnected mid-banner
-	if match_over:
-		_p1_score = 0
-		_p2_score = 0
-		_update_score()
-	_reset_round()
-	if _net_role == "host":
-		_recv_round_start.rpc(_p1_score, _p2_score)
-
-func _reset_round() -> void:
+		return
 	_banner.visible = false
-	_p1.reset_fighter(P1_SPAWN)
-	_p2.reset_fighter(P2_SPAWN)
-	_p2.facing = Vector2.LEFT
+	if match_over:
+		_return_to_select()
+		return
+	_start_round()
 	_state = "fighting"
 
+func _refresh_scoreboard() -> void:
+	if not _score_label:
+		return
+	var mins := int(max(_round_time_left, 0.0)) / 60
+	var secs := int(max(_round_time_left, 0.0)) % 60
+	var buff0 := "  [POWER]" if _team_buff[0] > 0.0 else ""
+	var buff1 := "  [POWER]" if _team_buff[1] > 0.0 else ""
+	_score_label.text = "YOUR TEAM %d%s    %d:%02d    %d ENEMY%s      rounds  %d - %d  (best of 3)" % [
+		_team_score[0], buff0, mins, secs, _team_score[1], buff1, _round_wins[0], _round_wins[1]]
+
+# kept as an alias so the dormant 1v1-online functions still compile
 func _update_score() -> void:
-	if _score_label:
-		var left := "YOU" if _net_role == "none" else "HOST"
-		var right := "BOT" if _net_role == "none" else "GUEST"
-		_score_label.text = "%s   %d  -  %d   %s      (first to %d)" % [left, _p1_score, _p2_score, right, WINS_NEEDED]
+	_refresh_scoreboard()
 
 # ---------- helpers ----------
 

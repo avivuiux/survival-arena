@@ -96,6 +96,22 @@ var remote_intent := {"dir": Vector2.ZERO, "attack": false, "skill": false,
 
 var active := true
 var hp := 100
+var team := 0                       # 3v3: 0 or 1. Bots target enemies; teammates don't hit each other.
+var spawn_pos := Vector2.ZERO       # where this fighter respawns
+var _last_hit_by = null             # attacker who last damaged me -> kill credit
+var _buff_time := 0.0               # center-orb power spike: extra melee damage while > 0
+const BUFF_DMG_MULT := 1.35
+# ultimate ("money moment", GDD Stage 4): charges over the round, one big signature move
+var ultimate_type := ""            # "frenzy" | "chill_nova" | "quake" | "" (none)
+var key_ultimate := KEY_Q
+var _ult_charge := 0.0             # 0..1
+var _ult_prev := false
+var _frenzy_time := 0.0            # FANG ult: berserk (faster + harder hits)
+const ULT_FILL_TIME := 75.0        # passive charge time (also gains on dealing damage)
+const ULT_HIT_GAIN := 0.05
+const FRENZY_TIME := 5.0
+const FRENZY_DMG_MULT := 1.3
+const FRENZY_CD_MULT := 0.5
 var facing := Vector2.RIGHT
 var velocity := Vector2.ZERO        # knockback velocity
 var _move_vel := Vector2.ZERO       # input movement velocity (has momentum)
@@ -186,6 +202,12 @@ func _process(delta: float) -> void:
 		_ranged_cd -= delta
 	if _chill_time > 0.0:
 		_chill_time -= delta
+	if _buff_time > 0.0:
+		_buff_time -= delta
+	if _frenzy_time > 0.0:
+		_frenzy_time -= delta
+	if active and _ult_charge < 1.0:
+		_ult_charge = minf(1.0, _ult_charge + delta / ULT_FILL_TIME)
 	if _cast_anim > 0.0:
 		_cast_anim -= delta
 	if _bot_retreat > 0.0:
@@ -231,6 +253,7 @@ func _process(delta: float) -> void:
 		var want_ranged := false
 		var want_block := false
 		var want_booster := false
+		var want_ultimate := false
 		if is_bot:
 			if not passive:                       # practice mode: bot stands idle
 				var intent := _bot_think()
@@ -241,6 +264,7 @@ func _process(delta: float) -> void:
 				want_ranged = intent["ranged"]
 				want_block = intent["block"]
 				want_booster = intent["booster"]
+				want_ultimate = intent.get("ultimate", false)
 		elif remote_driven:
 			# the network feeds the same intent layer as keys/bot (NET.md slice 3)
 			in_dir = remote_intent["dir"]
@@ -269,6 +293,9 @@ func _process(delta: float) -> void:
 			var kp_r := Input.is_physical_key_pressed(key_ranged)
 			want_ranged = kp_r and not _ranged_prev
 			_ranged_prev = kp_r
+			var kp_q := Input.is_physical_key_pressed(key_ultimate)
+			want_ultimate = kp_q and not _ult_prev
+			_ult_prev = kp_q
 			want_block = Input.is_physical_key_pressed(key_defense)
 			want_booster = Input.is_physical_key_pressed(key_booster)
 
@@ -368,6 +395,9 @@ func _process(delta: float) -> void:
 				_ranged_cd = RANGED_COOLDOWN
 				if game:
 					game.spawn_projectile(position, facing, self)
+				_ult_charge = minf(1.0, _ult_charge + ULT_HIT_GAIN)
+			if want_ultimate and _ult_charge >= 1.0 and ultimate_type != "":
+				_cast_ultimate()
 
 	queue_redraw()
 
@@ -379,11 +409,13 @@ func _physics_process(delta: float) -> void:
 	for area in _hitbox.get_overlapping_areas():
 		if area.is_in_group("hurtbox") and not _already_hit.has(area):
 			var target := area.get_parent()
-			if target == self:
+			if target == self or target == null or not target.has_method("take_hit"):
 				continue
+			if target.team == team:
+				continue                        # 3v3: no friendly fire
 			_already_hit.append(area)
-			if target and target.has_method("take_hit"):
-				target.take_hit(facing, damage)
+			target.take_hit(facing, _melee_damage(), KNOCKBACK, self)
+			_ult_charge = minf(1.0, _ult_charge + ULT_HIT_GAIN)
 	if _attacking and _attack_time <= 0.0:
 		_attacking = false
 		if not _lunge:
@@ -396,13 +428,13 @@ func _begin_windup() -> void:
 		return
 	_winding = true
 	_windup_time = WINDUP_TIME
-	_cooldown = attack_cooldown + WINDUP_TIME   # cooldown counts from the press
+	_cooldown = _eff_cooldown() + WINDUP_TIME   # cooldown counts from the press
 
 func _start_attack() -> void:
 	_attacking = true
 	_attack_time = ATTACK_ACTIVE
 	if _cooldown <= 0.0:
-		_cooldown = attack_cooldown             # direct path (windup disabled)
+		_cooldown = _eff_cooldown()             # direct path (windup disabled)
 	_already_hit.clear()
 	_update_hitbox_position()
 	_hitbox.monitoring = true
@@ -458,16 +490,26 @@ func _bot_think() -> Dictionary:
 	var out := {"dir": Vector2.ZERO, "attack": false, "dash": false, "skill": false, "ranged": false, "block": false, "booster": false}
 	var foe = null
 	if game:
+		var best := 1.0e20
 		for f in game._fighters:
-			if f != self and f.active:
+			if f == self or not f.active or f.team == team:
+				continue                       # 3v3: only chase ENEMIES
+			var dd: float = position.distance_squared_to(f.position)
+			if dd < best:
+				best = dd
 				foe = f
-				break
 	if foe == null:
 		return out
 
 	var to_foe: Vector2 = foe.position - position
 	var dist := to_foe.length()
 	var dir_to: Vector2 = to_foe.normalized() if dist > 0.001 else Vector2.RIGHT
+
+	# pop the ultimate when charged and an enemy is in range (the money moment)
+	if _ult_charge >= 1.0 and ultimate_type != "" and dist < 320.0 and randf() < 0.03:
+		out["dir"] = dir_to
+		out["ultimate"] = true
+		return out
 
 	# Block a close swing (the bot's defensive option now that dash is gone).
 	# The wind-up is readable - the bot reacts to it like a player would.
@@ -528,9 +570,43 @@ func _attack_time_for_speed(v: float) -> float:
 	var x := 1.0 - pow(1.0 - frac, 1.0 / BOOST_ATTACK_SHARP)
 	return x * BOOST_ATTACK_TIME
 
-func take_hit(dir: Vector2, dmg: int, knock: float = KNOCKBACK) -> void:
+func _melee_damage() -> int:
+	var m := 1.0
+	if _buff_time > 0.0:
+		m *= BUFF_DMG_MULT
+	if _frenzy_time > 0.0:
+		m *= FRENZY_DMG_MULT
+	return int(round(float(damage) * m))
+
+func _eff_cooldown() -> float:
+	return attack_cooldown * (FRENZY_CD_MULT if _frenzy_time > 0.0 else 1.0)
+
+# the "money moment" - a big signature per role. Charge is already spent by the caller.
+func _cast_ultimate() -> void:
+	_ult_charge = 0.0
+	match ultimate_type:
+		"frenzy":                                   # FANG: berserk (faster + harder hits)
+			_frenzy_time = FRENZY_TIME
+			_cast_anim = 0.35
+			_cast_radius = 130.0
+		"chill_nova":                               # ZERO: big AoE freeze
+			if game:
+				game.apply_chill(position, 270.0, 3.2, self)
+			_cast_anim = 0.45
+			_cast_radius = 270.0
+		"quake":                                    # light-knight: ground-slam knockback
+			if game:
+				game.apply_shockwave(position, 250.0, 440.0, 24, self)
+			_cast_anim = 0.45
+			_cast_radius = 250.0
+	if game:
+		game.add_shake(11.0)
+
+func take_hit(dir: Vector2, dmg: int, knock: float = KNOCKBACK, attacker = null) -> void:
 	if not active or _iframe > 0.0:   # dashing dodges the hit
 		return
+	if attacker != null:
+		_last_hit_by = attacker       # kill credit goes to the last damager
 	# Blocking a frontal hit: parry (block just started) negates; otherwise chip.
 	if _blocking and facing.dot(-dir.normalized()) > 0.25:
 		if _block_time <= PARRY_WINDOW:
@@ -591,6 +667,10 @@ func reset_fighter(pos: Vector2) -> void:
 	_pose_time = 0.0
 	_winding = false
 	_windup_time = 0.0
+	_buff_time = 0.0
+	_frenzy_time = 0.0
+	_ult_prev = false
+	_last_hit_by = null
 	active = true
 
 # The body's drawn VIEW: nearest of N headings with a sticky margin (hysteresis), so

@@ -272,10 +272,111 @@
   .g-item.archived .g-kind { color:#8b93a8; border-color:#8b93a855; }
   .g-item.archived img { filter:grayscale(.45) brightness(.85); }
   .detail .hero-portrait .noimg { aspect-ratio: 3/4; display:grid; place-items:center; color:var(--txt-3); font-size:60px; }
-  .detail-body .d-name { font-size: 34px; font-weight: 800; letter-spacing: -.6px; margin: 0; display:flex; align-items:center; gap:12px; }
+  .detail-body .d-epithet { font-size: 12px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--ch); margin: 0 0 6px; text-shadow: 0 0 18px color-mix(in srgb,var(--ch) 45%, transparent); }
+  .detail-body .d-name { font-size: 40px; font-weight: 900; letter-spacing: -.8px; margin: 0; display:flex; align-items:center; gap:12px; }
   .detail-body .d-name .swatch { width:16px;height:16px;border-radius:4px;background:var(--ch); box-shadow:0 0 12px var(--ch); }
-  .detail-body .d-tag { color: var(--txt-2); font-size: 15px; margin: 10px 0 4px; max-width: 640px; }
+  /* class line: archetype + role + element badges */
+  .d-classline { display:flex; flex-wrap:wrap; gap:7px; margin:12px 0 4px; align-items:center; }
+  .class-chip { font-size:11px; font-weight:800; letter-spacing:.6px; text-transform:uppercase;
+    padding:4px 11px; border-radius:20px; color:#fff;
+    background: color-mix(in srgb,var(--ch) 22%, transparent); border:1px solid color-mix(in srgb,var(--ch) 50%, transparent); }
+  .elem-badge { font-size:11px; font-weight:700; letter-spacing:.4px; text-transform:capitalize;
+    padding:4px 11px 4px 22px; border-radius:20px; color:var(--txt); position:relative;
+    background:var(--bg-4); border:1px solid var(--line-2); }
+  .elem-badge::before { content:""; position:absolute; left:9px; top:50%; transform:translateY(-50%);
+    width:7px; height:7px; border-radius:50%; background:var(--ch); box-shadow:0 0 7px var(--ch); }
+  .detail-body .d-tag { color: var(--txt-2); font-size: 15px; margin: 12px 0 4px; max-width: 640px; }
   .detail-body .d-arche { color: var(--txt-3); font-size: 13.5px; font-style: italic; margin-bottom: 20px; }
+  /* MMO vitals strip */
+  .vitals { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:1px;
+    background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin:6px 0 24px; }
+  .vital { background:linear-gradient(180deg, var(--bg-3), var(--bg-2)); padding:12px 15px; }
+  .vital .vk { font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--ch); margin-bottom:4px; }
+  .vital .vv { font-size:13.5px; font-weight:600; color:var(--txt); line-height:1.45; }
+  /* detail tabs */
+  .d-tabs { display:flex; gap:4px; border-bottom:1px solid var(--line); margin:4px 0 22px; }
+  .d-tab { background:none; border:none; color:var(--txt-3); font-weight:700; font-size:14px; cursor:pointer;
+    padding:10px 16px; border-bottom:2px solid transparent; margin-bottom:-1px; transition:.15s; }
+  .d-tab:hover { color:var(--txt); }
+  .d-tab.active { color:#fff; border-bottom-color:var(--ch); }
+  .d-pane[hidden] { display:none; }
+  /* composition blend */
+  .comp-block { margin:2px 0 24px; }
+  .comp-bars { display:flex; flex-direction:column; gap:11px; }
+  .comp-row .comp-head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px; }
+  .comp-tag { font-size:13.5px; font-weight:700; color:var(--txt); text-transform:capitalize; }
+  .comp-pct { font-size:12.5px; font-weight:800; color:var(--ch); }
+  .comp-track { height:12px; border-radius:20px; background:var(--bg-4); overflow:hidden; border:1px solid var(--line); }
+  .comp-fill { height:100%; border-radius:20px;
+    background:linear-gradient(90deg, color-mix(in srgb,var(--ch) 55%, transparent), var(--ch));
+    box-shadow:0 0 12px color-mix(in srgb,var(--ch) 50%, transparent); }
+  .comp-empty { color:var(--txt-3); }
+  .comp-editor { margin-top:12px; }
+  .comp-editor summary { cursor:pointer; color:var(--txt-2); font-size:12.5px; font-weight:700; user-select:none; }
+  .comp-edit-rows { margin-top:10px; display:flex; flex-direction:column; gap:7px; }
+  .comp-edit-row { display:flex; align-items:center; gap:7px; }
+  .comp-in-tag { flex:1; }
+  .comp-in-pct { width:64px; }
+  .comp-pctsign { color:var(--txt-3); font-size:12px; margin-left:-4px; }
+  .comp-editor input { background:var(--bg-4); border:1px solid var(--line-2); border-radius:7px; color:var(--txt); padding:7px 9px; font-size:13px; font-family:inherit; }
+  /* aesthetics */
+  .aes-block { margin:2px 0 24px; }
+  .aes-list { display:flex; flex-wrap:wrap; gap:8px; }
+  .aes-badge { font-size:12.5px; font-weight:700; text-transform:capitalize; color:#fff; padding:5px 13px; border-radius:20px;
+    background:color-mix(in srgb,var(--ch) 20%, transparent); border:1px solid color-mix(in srgb,var(--ch) 45%, transparent); }
+  .aes-picker { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
+  .aes-pick { background:var(--bg-3); border:1px solid var(--line); color:var(--txt-2); border-radius:20px;
+    padding:5px 12px; font-size:12.5px; font-weight:600; cursor:pointer; text-transform:capitalize; transition:.12s; }
+  .aes-pick:hover { color:var(--txt); border-color:var(--line-2); }
+  .aes-pick.on { background:color-mix(in srgb,var(--ch) 22%, transparent); border-color:var(--ch); color:#fff; }
+  /* prompt lab */
+  .pl-tsw { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+  .pl-t { display:flex; flex-direction:column; align-items:flex-start; gap:2px; text-align:left;
+    background:var(--bg-3); border:1px solid var(--line); border-radius:10px; padding:10px 15px; cursor:pointer; transition:.12s; min-width:200px; }
+  .pl-t:hover { border-color:var(--line-2); }
+  .pl-t.on { background:color-mix(in srgb,var(--accent) 16%, transparent); border-color:var(--accent); }
+  .pl-t b { font-size:14px; color:var(--txt); font-weight:800; }
+  .pl-t span { font-size:11.5px; color:var(--txt-3); }
+  .pl-t.on b { color:#fff; }
+  .promptlab { position:relative; background:var(--bg-2); border:1px solid var(--line); border-radius:var(--radius); padding:20px 22px; }
+  .pl-chips { font-size:16px; line-height:2.1; color:var(--txt); }
+  .pl-word { border-radius:6px; padding:1px 2px; }
+  .pl-word.swappable { cursor:pointer; background:color-mix(in srgb,var(--accent) 12%, transparent);
+    box-shadow:inset 0 -2px 0 color-mix(in srgb,var(--accent) 55%, transparent); transition:.12s; }
+  .pl-word.swappable:hover { background:color-mix(in srgb,var(--accent) 26%, transparent); }
+  .pl-word b { font-weight:600; }
+  .pl-pop { position:absolute; z-index:40; width:min(440px,88vw); background:var(--bg-3);
+    border:1px solid var(--line-2); border-radius:12px; padding:14px 15px; box-shadow:var(--shadow); }
+  .pl-pop-head { font-size:13px; color:var(--txt-2); margin-bottom:10px; }
+  .pl-pop-head b { color:var(--accent); }
+  .pl-slider-row { display:flex; align-items:center; gap:10px; font-size:11px; color:var(--txt-3); font-weight:700; }
+  .pl-slider-row input { flex:1; accent-color:var(--accent); }
+  .pl-tier-lbl { font-size:11px; color:var(--accent); font-weight:800; text-transform:uppercase; letter-spacing:.5px; margin:6px 0 10px; text-align:center; }
+  .pl-alts { display:flex; flex-wrap:wrap; gap:7px; max-height:230px; overflow-y:auto; }
+  .pl-alt { background:var(--bg-4); border:1px solid var(--line); color:var(--txt); border-radius:7px;
+    padding:6px 11px; font-size:13px; cursor:pointer; transition:.12s; }
+  .pl-alt:hover { background:color-mix(in srgb,var(--accent) 22%, transparent); border-color:var(--accent); color:#fff; }
+  .pl-rawlabel { font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--txt-3); margin:22px 0 8px; }
+  .pl-raw { width:100%; background:var(--bg-2); border:1px solid var(--line-2); border-radius:10px; color:var(--txt);
+    padding:14px 16px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; line-height:1.6; resize:vertical; }
+  /* prompt tab */
+  .prompt-toggles { display:flex; flex-wrap:wrap; gap:7px; margin:10px 0 16px; }
+  .ptog { background:var(--bg-3); border:1px solid var(--line); color:var(--txt-3); border-radius:20px;
+    padding:5px 12px; font-size:12px; font-weight:700; cursor:pointer; transition:.12s; }
+  .ptog:hover:not(:disabled) { color:var(--txt); border-color:var(--line-2); }
+  .ptog.on { background:color-mix(in srgb,var(--ch) 20%, transparent); border-color:var(--ch); color:#fff; }
+  .ptog:disabled { opacity:.35; cursor:not-allowed; }
+  .prompt-out { width:100%; background:var(--bg-2); border:1px solid var(--line-2); border-radius:10px;
+    color:var(--txt); padding:14px 16px; font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    font-size:12.5px; line-height:1.65; resize:vertical; }
+  /* powers block - cataloged ability keywords */
+  .powers-block { margin:2px 0 24px; }
+  .powers-block .pw-label { font-size:11px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:var(--ch); margin-bottom:9px; }
+  .pw-list { display:flex; flex-wrap:wrap; gap:8px; }
+  .power-badge { font-size:12.5px; font-weight:600; color:var(--txt); padding:6px 13px; border-radius:8px;
+    background:linear-gradient(180deg, var(--bg-4), var(--bg-3)); border:1px solid var(--line-2);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.03); }
 
   .lore { padding: 18px 20px; margin-bottom: 16px; }
   .lore h3 { margin: 0 0 8px; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ch); font-weight: 800; }
@@ -374,6 +475,7 @@
     <div class="nav-item" data-view="roster"><span class="ico">▦</span> Roster</div>
     <div class="nav-item" data-view="explorer"><span class="ico">⌕</span> Tag Explorer</div>
     <div class="nav-item" data-view="explore"><span class="ico">✦</span> Create Character</div>
+    <div class="nav-item" data-view="promptlab"><span class="ico">✎</span> Prompt Lab</div>
     <div class="nav-sep"></div>
     <div class="nav-item" id="btn-export"><span class="ico">↓</span> Export JSON</div>
     <div class="foot">
@@ -401,12 +503,13 @@
     "range":       { "label": "Range",             "values": ["close/melee","mid","long/ranged","mixed"] },
     "movement":    { "label": "Movement mode",     "values": ["grounded","floating/hover","flying","teleport/blink","dash-heavy"] },
     "tempo":       { "label": "Tempo / playstyle", "values": ["aggressive","defensive","patient-control","hit-and-run","setup"] },
-    "temperament": { "label": "Temperament",       "values": ["hot/loud/warm","cold/quiet/composed","wild","arrogant","stoic","playful"] },
+    "temperament": { "label": "Temperament",       "values": ["hot/loud/warm","cold/quiet/composed","wild","arrogant","stoic","playful","calculating","menacing","melancholic","honorable","serene","vengeful","weary","unhinged","gentle","brooding"] },
     "size":        { "label": "Size / silhouette", "values": ["small-nimble","average","tall-lean","large-heavy","large-agile"] },
     "storyRole":   { "label": "Story role",        "values": ["rookie","veteran","rival","gatekeeper","champion/boss","wildcard","comic"] },
     "era":         { "label": "Origin / era",      "values": ["present","past (displaced)","future","otherworld","unknown"] },
-    "element":     { "label": "Element / theme",   "values": ["fire","ice","lightning","earth","wind","void","light","nature","cosmic","ice/cosmic","none"] },
-    "vibe":        { "label": "Moral vibe",        "values": ["heroic","anti-hero","anti-hero -> villain lean","cold-neutral","villain","chaotic"] }
+    "element":     { "label": "Element / theme (primary)", "values": ["fire","ice","lightning","earth","wind","void","light","nature","cosmic","shadow","crystal","blood","time","gravity","sound","metal","storm","poison","none"] },
+    "vibe":        { "label": "Moral vibe",        "values": ["heroic","anti-hero","anti-hero -> villain lean","cold-neutral","villain","chaotic"] },
+    "aesthetic":   { "label": "Aesthetic / aura (multi)", "multi": true, "values": ["noble","elegant","sexy","regal","imposing","menacing","cold-beautiful","frozen","prince","cunning","seductive","otherworldly","ethereal","scrappy","rugged","fierce","warm","charismatic","stoic","brutal","refined","feral","mysterious","tragic","serene","sinister"] }
   },
   "characters": [
     {
@@ -418,6 +521,19 @@
       "portrait": "../../concept/characters/fang/explorations/fang_soulprompt_r2_v4.jpg",
       "status": { "bible": true, "art": true, "rig": false },
       "tags": { "nature":"beast-kin","powerSource":"physical/martial","archetype":"rusher","range":"close/melee","movement":"grounded","tempo":"aggressive","temperament":"hot/loud/warm","size":"large-agile","storyRole":"rookie","era":"present","element":"fire","vibe":"heroic" },
+      "extraElements": [],
+      "powers": ["Enhanced Strength", "Pyrokinesis (leashed, channels through the fists)", "Predator Instinct", "Pouncing Lunge / Enhanced Leap", "Beast-kin Physiology"],
+      "aesthetics": ["scrappy", "fierce", "warm", "charismatic", "rugged"],
+      "composition": [{"tag": "tiger beast", "pct": 65}, {"tag": "human heart", "pct": 35}],
+      "natureNote": "Beast-kin by birth - born a tiger beast-kin, not made. The fire is an expression of his leashed inner ferocity, not a separate power.",
+      "epithet": "The Proud Beast",
+      "species": "Tiger Beast-kin",
+      "faction": "Street-born beast-kin - no dojo, no clan, self-made",
+      "realm": "The Circuit's underlevels - raised in hundreds of street fights",
+      "age": "Young (a rookie in his first real league)",
+      "height": "Large and agile - a fast heavyweight",
+      "weapon": "Banner-wrapped fists and a predator pounce; fire when he lets the leash slip",
+      "weakness": "The leash itself - holding the brutal power back; and being seen as 'just a monster'",
       "seed": "Built as a monster, heart of gold - and PROUD of the beast. His answer to being feared isn't 'see I'm not a beast' - it's 'I AM a beast, I'm proud of it, and I'll make you cheer for one.' NOT a clown - serious determination and a leashed, brutal power under warm, principled optimism. The fire on his fists is what that leashed ferocity looks like when he chooses to let a little out.",
       "want": "Not validation, but self-acceptance, pride, and lifting his kind - to make the world celebrate beast-kin instead of fear them, by being unapologetically himself.",
       "gallery": [
@@ -439,11 +555,55 @@
       "tagline": "The cold, calculating veteran - a man who got ice powers, was trapped in ice for years, and woke into the Circuit era to find his whole world gone.",
       "archetypeSummary": "Control / zone: freezes the stage, slows the enemy, dictates tempo. Patient, calculating, defensive - the exact opposite of FANG.",
       "colorIdentity": "#3B82F6",
-      "portrait": "../../concept/characters/zero/zero_final_2.png",
+      "portrait": "../../concept/characters/zero/explorations/zero_soulprompt_CHOSEN_aviv.png",
       "status": { "bible": true, "art": true, "rig": false },
-      "tags": { "nature":"transformed","powerSource":"elemental","archetype":"control/zoner","range":"mid","movement":"floating/hover","tempo":"patient-control","temperament":"cold/quiet/composed","size":"tall-lean","storyRole":"gatekeeper","era":"past (displaced)","element":"ice/cosmic","vibe":"anti-hero -> villain lean" },
-      "seed": "He went cold to survive. Master AND prisoner of the same power: a cosmic/supernatural merge fused him WITH the ice and left him a little cruel - a sliver of the man replaced by something colder, edging him toward antagonist. Almost entirely living cosmic ice now; the human flesh is the small remnant.",
+      "gallery": [
+        { "src": "../../concept/characters/zero/explorations/zero_soulprompt_CHOSEN_aviv.png", "label": "CHOSEN DIRECTION (Aviv 2026-07-06, self-generated + liked): cosmic-ice prince. FANG-style-ref + dry catalog + richer aura (prince/sexy/cunning).", "kind": "canon" },
+        { "src": "../../concept/characters/zero/zero_final_2.png", "label": "ARCHIVED earlier design (2026-07-01) - cosmic ice being, superseded.", "kind": "archived" }
+      ],
+      "tags": { "nature":"transformed","powerSource":"elemental","archetype":"control/zoner","range":"mid","movement":"floating/hover","tempo":"patient-control","temperament":"cold/quiet/composed","size":"tall-lean","storyRole":"gatekeeper","era":"past (displaced)","element":"ice","vibe":"anti-hero -> villain lean" },
+      "extraElements": ["cosmic"],
+      "powers": ["Cryokinesis", "Cold Manipulation", "Cosmo-Cryokinesis (cosmic ice)", "Absolute Zero Inducement", "Cryostasis Survivor (frozen for a lost age)", "Deceleration / Stasis Inducement (zoning debuffs)", "Levitation"],
+      "aesthetics": ["noble", "elegant", "cold-beautiful", "frozen", "prince", "sexy", "cunning", "seductive"],
+      "composition": [{"tag": "cosmic-ice entity", "pct": 65}, {"tag": "human remnant", "pct": 35}],
+      "natureNote": "Transformed: born an ordinary man, then his ice power fused with something cosmic from between the stars. The merge did not leave him neutral - it took most of his body and a sliver of his humanity, leaving him colder and a little cruel. He is master AND prisoner of the same power.",
+      "epithet": "Warden of the Vanished Age",
+      "species": "Cosmic Ice Revenant (once human)",
+      "faction": "The Vanished Age - loyal only to a century that no longer exists",
+      "realm": "A frozen world lost to time - he woke from the ice into an era where everyone he knew is gone",
+      "age": "Displaced - lived, was frozen for years, and woke lifetimes later",
+      "height": "Tall and lean - a control fighter, not a bruiser",
+      "weapon": "The cold itself - freezes the stage, slows the enemy, dictates tempo from mid-range",
+      "weakness": "Frozen inside - he cannot let go of what he lost; the pendant is the crack in his composure",
+      "seed": "He went cold to survive. Master AND prisoner of the same power: the merge left him a little cruel - a sliver of the man replaced by something colder, edging him toward antagonist.",
       "want": "To restore what the ice took - turn back the loss, his time, world, and people. His wish to the champion is to undo it."
+    },
+    {
+      "id": "atlas",
+      "name": "ATLAS",
+      "tagline": "The unbreakable wall - a colossal guardian idol-statue that woke with a conscience, fighting only to atone.",
+      "archetypeSummary": "Tank: immense, slow, defensive-by-vow. Absorbs, endures, shoves you back ('you shall not pass') but never strikes to kill.",
+      "colorIdentity": "#2FA86E",
+      "portrait": "../../concept/rework/atlas_noble_1.jpg",
+      "status": { "bible": true, "art": true, "rig": false },
+      "gallery": [ { "src": "../../concept/rework/atlas_noble_1.jpg", "label": "Design anchor (2026-07-03) - warrior-king jade colossus. Chibi model built from this; now off-style, refreshing to collectible-toy.", "kind": "archived" } ],
+      "tags": { "nature": "construct/golem", "powerSource": "innate mutation", "archetype": "tank/bruiser", "range": "close/melee", "movement": "grounded", "tempo": "defensive", "temperament": "honorable", "size": "large-heavy", "storyRole": "veteran", "era": "unknown", "element": "earth", "vibe": "heroic" },
+      "extraElements": ["nature"],
+      "powers": ["Enhanced Durability / Invulnerability", "Immovability", "Shockwave Generation (radial ground-slam)", "Kinetic Repulsion / Knockback-Shove", "Damage Absorption", "Terrakinesis (stone / jade)", "Force-Field / Forearm-Shield"],
+      "aesthetics": ["noble", "regal", "imposing", "monumental", "majestic", "trustworthy", "luxurious"],
+      "composition": [{"tag": "carved jade idol-statue body", "pct": 80}, {"tag": "gold + gemstone life bursting through the cracks", "pct": 20}],
+      "natureNote": "A made thing: a colossal guardian idol-statue, built as a weapon of scale to protect, that woke with a conscience. Not a being wearing armor - the body IS the material (carved jade-stone). He was made to level the very thing he guarded, and now chooses to only guard.",
+      "epithet": "The Guardian-King",
+      "species": "Living Idol-Statue (awoken guardian construct)",
+      "faction": "Sworn protector - loyal to the charge he destroyed and vowed to restore",
+      "realm": "An ancient realm he was built to guard and was made to level",
+      "age": "Ancient - a made guardian of a lost age",
+      "height": "Colossal - the widest and heaviest silhouette in the roster, low centre of gravity",
+      "weapon": "His own mass - a raised forearm-shield, a knockback shove, and a radial ground-slam shockwave; he never strikes to kill",
+      "weakness": "Slow and telegraphed; fears losing control and destroying again; refuses to attack, only defends",
+      "seed": "The most destructive body in the arena, wielded as a proud PROTECTOR. Raised to protect, then made to level what he guarded; now stands immovable and dignified, a weapon that chooses to only guard. He enters a fighting league he hates because the champion's wish is the one door back to restoring what he destroyed.",
+      "want": "To restore what he destroyed - the wish is the only thing big enough to undo it.",
+      "signatureObject": "The gold and gemstones and new life bursting through the cracks in his stone body - his wish made literal; plus the raised forearm-shield stance."
     }
   ]
 }
@@ -465,12 +625,20 @@ const COLORS = ["#E8722A","#3B82F6","#35c692","#a855f7","#ef4444","#14b8a6","#ea
 // The create wizard's steps. `fields` = free inputs; `axes` = tag pickers; `review` = summary.
 const CREATE_STEPS = [
   { key:"basics", title:"Basics",        fields:["name","tagline","color"] },
+  { key:"identity", title:"Identity",    fields:["epithet","species","faction","realm","powers"] },
   { key:"nature", title:"Nature & Power", axes:["nature","powerSource","element"] },
   { key:"combat", title:"Combat",         axes:["archetype","range","movement","tempo"] },
   { key:"who",    title:"Character",      axes:["temperament","size","storyRole","era","vibe"] },
   { key:"kernel", title:"Story",          fields:["seed","want"] },
   { key:"review", title:"Review",         review:true },
 ];
+// dry free-text fields captured in the wizard (composition + aesthetics stay Dossier-editable post-create)
+const WIZ_TEXT_FIELDS = {
+  epithet: { lab:"Epithet / title", ph:"e.g. The Proud Beast" },
+  species: { lab:"Race / species (concrete)", ph:"e.g. Tiger Beast-kin, Cosmic Ice Revenant" },
+  faction: { lab:"Faction / allegiance", ph:"e.g. street-born, the Vanished Age" },
+  realm:   { lab:"Origin / realm", ph:"where they come from" },
+};
 
 /* --------- State --------- */
 let AXES = {};          // axis key -> {label, values}
@@ -481,7 +649,9 @@ let STATE = { view: "dashboard", selectedId: null, filters: {} };
 /* --------- Boot --------- */
 function bootFromData(data) {
   AXES = data.axes;
-  AXIS_KEYS = Object.keys(AXES);
+  // `aesthetic` is a multi-value display field (own block + picker), NOT one of the single-select
+  // classification axes - keep it out of the 12-axis grid / coverage / matrix.
+  AXIS_KEYS = Object.keys(AXES).filter(k => k !== "aesthetic");
   BASE_CHARS = data.characters;
   render();
 }
@@ -521,7 +691,10 @@ function getRoster() {
   const base = BASE_CHARS.map(c => {
     const e = edits[c.id];
     if (!e) return { ...c, isStub: false };
-    return { ...c, tags: { ...c.tags, ...(e.tags || {}) }, status: { ...c.status, ...(e.status || {}) }, isStub: false };
+    return { ...c, tags: { ...c.tags, ...(e.tags || {}) }, status: { ...c.status, ...(e.status || {}) },
+      aesthetics: e.aesthetics !== undefined ? e.aesthetics : c.aesthetics,
+      composition: e.composition !== undefined ? e.composition : c.composition,
+      isStub: false };
   });
   const created = loadCreated().map(c => ({ ...c, isStub: false, isUser: true }));
   const stubs = loadStubs().map(s => ({ ...s, isStub: true }));
@@ -560,7 +733,151 @@ function gapList() {
    Small DOM helpers
    =================================================================== */
 const $ = (sel, el = document) => el.querySelector(sel);
+const $$ = (sel, el = document) => Array.from(el.querySelectorAll(sel));
 function el(html) { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; }
+
+/* ---- Composition: weighted blend bars + editor ("60% cosmic-ice / 40% human") ---- */
+function compositionBlock(c, editable) {
+  const comp = Array.isArray(c.composition) ? c.composition.slice() : [];
+  const box = el(`<div class="comp-block"></div>`);
+  box.append(el(`<div class="pw-label">Composition <span class="hint" style="font-weight:600;letter-spacing:0;text-transform:none">what he is made of - a weighted blend for the AI</span></div>`));
+  if (!comp.length && !editable) { box.append(el(`<div class="comp-empty">-</div>`)); return box; }
+  const bars = el(`<div class="comp-bars"></div>`);
+  comp.forEach(seg => {
+    const pct = Math.max(0, Math.min(100, Number(seg.pct)||0));
+    bars.append(el(`<div class="comp-row">
+      <div class="comp-head"><span class="comp-tag">${esc(seg.tag||'-')}</span><span class="comp-pct">${pct}%</span></div>
+      <div class="comp-track"><div class="comp-fill" style="width:${pct}%"></div></div></div>`));
+  });
+  box.append(bars);
+  if (editable) {
+    const ed = el(`<details class="comp-editor"><summary>edit blend</summary></details>`);
+    const rows = el(`<div class="comp-edit-rows"></div>`);
+    const drawRows = () => {
+      rows.innerHTML = "";
+      comp.forEach((seg, i) => {
+        const r = el(`<div class="comp-edit-row"></div>`);
+        const tag = el(`<input class="comp-in-tag" type="text" value="${esc(seg.tag||'')}" placeholder="e.g. cosmic-ice entity">`);
+        const pct = el(`<input class="comp-in-pct" type="number" min="0" max="100" value="${Number(seg.pct)||0}">`);
+        const rm = el(`<button class="btn sm ghost">✕</button>`);
+        tag.oninput = () => comp[i].tag = tag.value;
+        pct.oninput = () => comp[i].pct = Number(pct.value)||0;
+        rm.onclick = () => { comp.splice(i,1); drawRows(); };
+        r.append(tag, pct, el(`<span class="comp-pctsign">%</span>`), rm);
+        rows.append(r);
+      });
+    };
+    drawRows();
+    const add = el(`<button class="btn sm" style="margin-top:8px">+ add part</button>`);
+    add.onclick = () => { comp.push({tag:"", pct:0}); drawRows(); };
+    const save = el(`<button class="btn sm primary" style="margin-top:8px;margin-left:6px">Save blend</button>`);
+    save.onclick = () => setCharField(c.id, "composition", comp.filter(s=>s.tag));
+    ed.append(rows, add, save);
+    box.append(ed);
+  }
+  return box;
+}
+
+/* ---- Prompt builder: dry-catalog generation prompt from the Dossier fields ---- */
+// Ordered includable fields. Each: {key, label, get(c) -> string ('' = skip)}.
+const PROMPT_FIELDS = [
+  { key:"species",   label:"Race / species",  get:c => c.species || "" },
+  { key:"nature",    label:"Nature",          get:c => c.tags?.nature || "" },
+  { key:"powers",    label:"Powers",          get:c => (c.powers||[]).join(", ") },
+  { key:"composition", label:"Composition",   get:c => (c.composition||[]).map(s=>`${s.pct}% ${s.tag}`).join(", ") },
+  { key:"aesthetic", label:"Aesthetic",       get:c => (c.aesthetics||[]).join(", ") },
+  { key:"archetype", label:"Combat archetype",get:c => c.tags?.archetype || "" },
+  { key:"range",     label:"Range",           get:c => c.tags?.range || "" },
+  { key:"movement",  label:"Movement",        get:c => c.tags?.movement || "" },
+  { key:"tempo",     label:"Tempo",           get:c => c.tags?.tempo || "" },
+  { key:"temperament", label:"Temperament",   get:c => c.tags?.temperament || "" },
+  { key:"size",      label:"Silhouette",      get:c => c.tags?.size || "" },
+  { key:"storyRole", label:"Story role",      get:c => c.tags?.storyRole || "" },
+  { key:"era",       label:"Era",             get:c => c.tags?.era || "" },
+  { key:"element",   label:"Element",         get:c => [c.tags?.element, ...(c.extraElements||[])].filter(Boolean).filter(e=>e!=='none').join(" + ") },
+  { key:"vibe",      label:"Moral vibe",      get:c => c.tags?.vibe || "" },
+  { key:"signatureObject", label:"Signature object", get:c => c.signatureObject || "" },
+];
+const PROMPT_STYLE_LINE = "Use the referenced image ONLY as the visual STYLE anchor: match its render finish, material realism, lighting, proportions (big-head collectible-toy 3D figure, ~4 to 4.5 heads tall) and world/quality. Do NOT copy its character; design a completely different original character from the tags below, in that identical style.";
+const PROMPT_CLOSE = "Design one original character embodying these tags. Full body, single character, neutral gray studio background, nothing cropped. Avoid the obvious cliches - invent all visual specifics yourself.";
+function buildPrompt(c, include) {
+  const lines = [];
+  if (include.style) { lines.push(PROMPT_STYLE_LINE); lines.push(""); }
+  lines.push("CHARACTER TAGS");
+  PROMPT_FIELDS.forEach(f => {
+    if (!include[f.key]) return;
+    const v = f.get(c);
+    if (v) lines.push(`${f.label}: ${v}`);
+  });
+  lines.push("");
+  lines.push(PROMPT_CLOSE);
+  return lines.join("\n");
+}
+function promptTab(c) {
+  const wrap = el(`<div class="prompt-tab"></div>`);
+  wrap.append(el(`<div class="pw-label">Generation prompt <span class="hint" style="font-weight:600;letter-spacing:0;text-transform:none">tick the parameters to include - the text rebuilds live</span></div>`));
+  // include-state: default everything that has a value ON
+  const include = { style: true };
+  PROMPT_FIELDS.forEach(f => { include[f.key] = !!f.get(c); });
+  // toggles
+  const toggles = el(`<div class="prompt-toggles"></div>`);
+  const mkToggle = (key, label, disabled) => {
+    const on = include[key];
+    const b = el(`<button class="ptog ${on?'on':''}" ${disabled?'disabled':''}>${esc(label)}</button>`);
+    if (!disabled) b.onclick = () => { include[key] = !include[key]; b.classList.toggle("on"); refresh(); };
+    return b;
+  };
+  toggles.append(mkToggle("style", "style anchor (FANG)"));
+  PROMPT_FIELDS.forEach(f => {
+    const has = !!f.get(c);
+    const b = mkToggle(f.key, f.label, !has);
+    if (!has) b.title = "no value set for this field";
+    toggles.append(b);
+  });
+  wrap.append(toggles);
+  // output
+  const ta = el(`<textarea class="prompt-out" rows="16" readonly></textarea>`);
+  wrap.append(ta);
+  const bar = el(`<div class="toolbar" style="margin-top:10px"></div>`);
+  const copy = el(`<button class="btn sm primary">Copy prompt</button>`);
+  copy.onclick = () => { ta.select(); try { navigator.clipboard.writeText(ta.value); } catch {} document.execCommand && document.execCommand("copy"); toast("Prompt copied"); };
+  bar.append(copy);
+  bar.append(el(`<span class="hint" style="align-self:center">Style reference: FANG r2_v4 (type: style) - attach separately in Magnific</span>`));
+  wrap.append(bar);
+  const refresh = () => { ta.value = buildPrompt(c, include); };
+  refresh();
+  return wrap;
+}
+
+/* ---- Aesthetics: multi-tag aura descriptors, editable ---- */
+function aestheticsBlock(c, editable) {
+  const cur = Array.isArray(c.aesthetics) ? c.aesthetics.slice() : [];
+  const box = el(`<div class="aes-block"></div>`);
+  box.append(el(`<div class="pw-label">Aesthetic / aura</div>`));
+  const list = el(`<div class="aes-list"></div>`);
+  if (!cur.length) list.append(el(`<span class="comp-empty">-</span>`));
+  cur.forEach(a => list.append(el(`<span class="aes-badge">${esc(a)}</span>`)));
+  box.append(list);
+  if (editable) {
+    const ed = el(`<details class="comp-editor"><summary>edit aura</summary></details>`);
+    const grid = el(`<div class="aes-picker"></div>`);
+    (AXES.aesthetic ? AXES.aesthetic.values : []).forEach(v => {
+      const on = cur.includes(v);
+      const chip = el(`<button class="aes-pick ${on?'on':''}">${esc(v)}</button>`);
+      chip.onclick = () => {
+        const i = cur.indexOf(v);
+        if (i>=0) cur.splice(i,1); else cur.push(v);
+        chip.classList.toggle("on");
+      };
+      grid.append(chip);
+    });
+    const save = el(`<button class="btn sm primary" style="margin-top:10px">Save aura</button>`);
+    save.onclick = () => setCharField(c.id, "aesthetics", cur.slice());
+    ed.append(grid, save);
+    box.append(ed);
+  }
+  return box;
+}
 function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m])); }
 function toast(msg) {
   const t = $("#toast"); $("#toast-msg").textContent = msg;
@@ -606,7 +923,174 @@ function render() {
     case "detail":    m.innerHTML = ""; m.append(viewDetail(STATE.selectedId)); break;
     case "explorer":  m.innerHTML = ""; m.append(viewExplorer()); break;
     case "explore":   m.innerHTML = ""; m.append(viewExplore()); break;
+    case "promptlab": m.innerHTML = ""; m.append(viewPromptLab()); break;
   }
+}
+
+/* ===================================================================
+   PROMPT LAB  -  click any word, slide near<->far, swap it.
+   Alternatives are PRECOMPUTED (baked data, instant + offline). To cover a
+   new word, ask Claude to add it to WORD_ALTERNATIVES. `near/mid/far` = the
+   slider tiers (close synonym -> divergent/surprising).
+   =================================================================== */
+const WORD_ALTERNATIVES = {
+  colossal:   { near:["huge","immense","massive","gigantic","enormous","towering","titanic","gargantuan","hulking","vast","mighty","giant"],
+                mid:["imposing","monolithic","ponderous","monumental","dense","weighty","broad","solid","overwhelming","dominant","formidable","heavyset"],
+                far:["mountainous","tectonic","glacial","cathedral-like","planetary","primordial","leviathan","continental","oceanic","world-bearing","gravity-bending","ancient-as-bedrock"] },
+  legendary:  { near:["mythic","fabled","famed","renowned","storied","iconic","celebrated","epic","heroic","vaunted","illustrious","exalted"],
+                mid:["ancient","timeless","revered","hallowed","monumental","enduring","peerless","singular","untouchable","world-class","apex","ultimate"],
+                far:["god-tier","relic-grade","one-of-a-kind","folklore-born","prophecy-bound","cosmic-rank","forbidden","sealed-away","last-of-its-kind","dream-forged","impossible","legend-that-walks"] },
+  guardian:   { near:["protector","defender","sentinel","warden","keeper","shield","custodian","watchman","bulwark","guard","paladin","bastion"],
+                mid:["gatekeeper","anchor","cornerstone","pillar","aegis","shepherd","caretaker","steward","overseer","vanguard","sworn-knight","last-line"],
+                far:["living-fortress","standing-oath","final-wall","refuge-made-flesh","threshold-spirit","covenant-bearer","guardian-idol","lighthouse-soul","sanctuary-beast","promise-given-form","ward-totem","the-thing-that-holds"] },
+  immovable:  { near:["unmovable","unshakable","steadfast","rooted","planted","fixed","stalwart","unyielding","unbudging","grounded","anchored","solid"],
+                mid:["resolute","unbreakable","unwavering","implacable","adamant","enduring","tireless","patient","stubborn","dogged","permanent","constant"],
+                far:["tectonic","gravity-locked","law-of-nature","load-bearing","time-worn","mountain-still","glacially-slow","eternally-planted","inevitable","unarguable","fact-like","the-still-point"] },
+  protector:  { near:["guardian","defender","shield","warden","sentinel","keeper","bulwark","champion","guard","paladin","aegis","bodyguard"],
+                mid:["caretaker","shepherd","warder","sworn-guard","last-line","cornerstone","anchor","stronghold","custodian","steward","vanguard","refuge"],
+                far:["living-shield","standing-vow","wall-that-loves","sheltering-giant","the-one-who-stays","harbor-soul","covenant-keeper","refuge-made-flesh","held-breath","safe-harbor","the-space-behind-him","unasked-savior"] },
+  endures:    { near:["withstands","outlasts","survives","persists","holds","weathers","bears","abides","tolerates","stands","lasts","perseveres"],
+                mid:["absorbs","shoulders","carries","sustains","holds-the-line","refuses-to-fall","takes-it","stays-standing","never-breaks","outwaits","holds-fast","remains"],
+                far:["swallows-the-storm","becomes-the-anchor","outlives-the-blow","turns-pain-to-stillness","wears-down-time","holds-like-bedrock","greets-every-hit","makes-suffering-boring","refuses-the-ending","stands-past-reason","the-wave-breaks-on-him","never-notices"] },
+  noble:      { near:["dignified","regal","stately","proud","honorable","majestic","gallant","lordly","princely","distinguished","upright","gracious"],
+                mid:["kingly","sovereign","exalted","venerable","chivalrous","high-born","commanding","reverent","solemn","refined","composed","magnanimous"],
+                far:["saint-like","monarch-of-nothing","fallen-king","god-among-guards","born-to-a-lost-crown","holy-fool","ruined-royalty","paladin-of-the-forgotten","dignity-incarnate","the-last-true-lord","grace-under-stone","quiet-majesty"] },
+  monumental: { near:["colossal","towering","grand","massive","imposing","statuesque","epic","majestic","immense","stately","huge","mighty"],
+                mid:["monolithic","cathedral-scale","architectural","carved","edifice-like","landmark","enduring","weighty","solemn","permanent","dense","load-bearing"],
+                far:["mausoleum-still","obelisk-like","memorial-made-flesh","ruin-grand","temple-bodied","engraved-with-history","built-to-outlast-empires","gravestone-noble","pyramid-patient","time-capsule","a-place-more-than-a-person","walking-architecture"] },
+  defensive:  { near:["protective","guarding","shielding","warding","fortified","blocking","sheltering","covering","holding","bracing","screening","tanky"],
+                mid:["patient","reactive","counter-poised","bulwarked","entrenched","turtled","bastioned","stonewalling","absorbing","resilient","stalwart","unhurried"],
+                far:["never-the-aggressor","allergic-to-attack","made-of-refusal","only-a-wall","pacifist-by-vow","the-immovable-answer","guard-first-always","a-shield-with-a-heartbeat","harm-declined","the-line-you-cannot-cross","protection-as-nature","violence-refused"] },
+  refuses:    { near:["declines","rejects","resists","denies","spurns","forbids","won't","opposes","withholds","abstains","balks-at","turns-down"],
+                mid:["vows-against","chooses-not-to","holds-back","stays-his-hand","will-not","disowns","renounces","forbids-himself","bites-back","leashes","restrains","refrains"],
+                far:["would-die-before","unlearns","buries-the-instinct","chooses-mercy-every-second","keeps-the-beast-chained","swallows-the-blow","turns-power-inward","makes-a-cage-of-himself","the-vow-that-defines-him","penance-in-motion","strength-held-like-breath","chooses-to-only-hold"] },
+  plain:      { near:["simple","bare","clean","blank","neutral","empty","minimal","unadorned","understated","flat","clear","white"],
+                mid:["studio","seamless","featureless","muted","soft-lit","gradient","gray","matte","undecorated","quiet","stark","spare"],
+                far:["void-like","infinite-nothing","dreamlike-empty","gallery-white","limbo","stage-lit-dark","deep-space","fog-shrouded","monochrome-mist","abstract-ground","weightless-backdrop","pure-negative-space"] },
+  silhouette: { near:["outline","profile","shape","form","contour","figure","frame","build","body-line","form-read","stance","posture"],
+                mid:["read","recognizability","gestalt","signature-shape","proportions","mass-read","negative-space","posture-read","stance-read","proportion-read","body-language","physical-signature"] },
+  crisp:      { near:["sharp","clean","clear","precise","defined","tidy","neat","refined","polished","hard-edged","clear-cut","exact"],
+                mid:["high-fidelity","detailed","legible","readable","controlled","deliberate","confident","assured","professional","studio-grade","tight","resolved"] },
+};
+
+let PL_STATE = null; // {prompt, tier, template} - lives in memory for the session
+// Two locked templates: step-1 CONCEPT (free, any style) and step-2/3 A-POSE ASSET
+// (rig-ready, style locked via the FANG/ZERO image reference, realism-signalers stripped).
+const PL_TEMPLATES = {
+  concept: "A legendary Tank guardian character for a fighting game roster - the immovable protector who endures everything, breaks nothing, and refuses to be a weapon. Colossal, defensive, noble, monumental. Full-body character design, single character, plain background. Invent everything freely - species, material, element, silhouette, face, powers. Avoid the obvious cliches. Surprise me.",
+  apose: "Use the referenced image(s) ONLY as the visual STYLE anchor (match their exact finish, materials, proportions and world). Keep the SAME character - only the pose changes.\n\nA clean high-fidelity 3D game-character asset of [CHARACTER], in a neutral rig-ready A-pose that shows the full silhouette: facing forward, symmetric, arms held about 40 degrees out from the torso, elbows soft, hands fully open with fingers relaxed and separated, legs roughly parallel. Every limb clearly separated from the body and from each other; any tail, cape or long hair swept clear to one side, not crossing any limb. [MATERIAL AND TEXTURE NOTES]. Soft professional studio lighting, ambient occlusion, crisp clean edges, high resolution, full body head to feet, centered, straight-on with minimal perspective, nothing cropped, isolated on a solid neutral grey studio background. No text, no logos, no display base.",
+};
+const PL_DEFAULT = PL_TEMPLATES.concept;
+const PL_TIERS = ["near","mid","far"];
+const PL_TIER_LABEL = ["closest", "related", "far / surprising"];
+
+function plCasePattern(orig, repl) {
+  if (orig === orig.toUpperCase() && /[A-Z]/.test(orig)) return repl.toUpperCase();
+  if (orig[0] === orig[0].toUpperCase()) return repl.charAt(0).toUpperCase() + repl.slice(1);
+  return repl;
+}
+
+function viewPromptLab() {
+  if (!PL_STATE) PL_STATE = { prompt: PL_DEFAULT, tier: 0, template: "concept" };
+  const wrap = el(`<div>
+    <div class="page-head"><div class="eyebrow">Prompt editing</div><h1>Prompt Lab</h1>
+      <p>Click any highlighted word, slide from closest to far/surprising, and swap it. Alternatives are baked in (instant, offline) - if a word has no options, ask Claude to add it.</p></div>
+  </div>`);
+
+  // template switcher: step-1 concept (free) vs step-2/3 A-pose asset (style-locked)
+  const tsw = el(`<div class="pl-tsw"></div>`);
+  const mkT = (key, label, hint) => {
+    const b = el(`<button class="pl-t ${PL_STATE.template===key?'on':''}"><b>${esc(label)}</b><span>${esc(hint)}</span></button>`);
+    b.onclick = () => { PL_STATE.template = key; PL_STATE.prompt = PL_TEMPLATES[key]; setView("promptlab"); };
+    return b;
+  };
+  tsw.append(mkT("concept", "1 · Concept", "free, any style - the creative pass"));
+  tsw.append(mkT("apose", "2 · A-pose asset", "rig-ready, style locked via FANG/ZERO image"));
+  wrap.append(tsw);
+
+  const lab = el(`<div class="promptlab"></div>`);
+  // chip render of the prompt
+  const chipHost = el(`<div class="pl-chips"></div>`);
+  // popover host (single, reused)
+  const pop = el(`<div class="pl-pop" hidden></div>`);
+
+  function renderChips() {
+    chipHost.innerHTML = "";
+    const tokens = PL_STATE.prompt.split(/(\s+)/); // keep whitespace tokens
+    tokens.forEach((tok, i) => {
+      if (/^\s+$/.test(tok)) { chipHost.append(document.createTextNode(tok)); return; }
+      const m = tok.match(/^([^A-Za-z]*)([A-Za-z][A-Za-z'-]*)([^A-Za-z]*)$/);
+      if (!m) { chipHost.append(document.createTextNode(tok)); return; }
+      const [, pre, core, post] = m;
+      const has = !!WORD_ALTERNATIVES[core.toLowerCase()];
+      const chip = el(`<span class="pl-word ${has?'swappable':''}" data-i="${i}" data-core="${esc(core)}">${esc(pre)}<b>${esc(core)}</b>${esc(post)}</span>`);
+      if (has) chip.onclick = (e) => { e.stopPropagation(); openPop(chip, i, core); };
+      chipHost.append(chip);
+    });
+  }
+
+  function openPop(chip, tokenIndex, core) {
+    const alts = WORD_ALTERNATIVES[core.toLowerCase()];
+    pop.innerHTML = "";
+    pop.append(el(`<div class="pl-pop-head">Swap <b>${esc(core)}</b></div>`));
+    // slider
+    const sl = el(`<div class="pl-slider-row"><span>closest</span><input type="range" min="0" max="2" step="1" value="${PL_STATE.tier}"><span>far</span></div>`);
+    const slider = $("input", sl);
+    const tierLbl = el(`<div class="pl-tier-lbl">${PL_TIER_LABEL[PL_STATE.tier]}</div>`);
+    const altHost = el(`<div class="pl-alts"></div>`);
+    const drawAlts = () => {
+      altHost.innerHTML = "";
+      const list = alts[PL_TIERS[PL_STATE.tier]] || [];
+      list.forEach(w => {
+        const a = el(`<button class="pl-alt">${esc(w)}</button>`);
+        a.onclick = () => { applySwap(tokenIndex, core, w); pop.hidden = true; };
+        altHost.append(a);
+      });
+      tierLbl.textContent = PL_TIER_LABEL[PL_STATE.tier];
+    };
+    slider.oninput = () => { PL_STATE.tier = Number(slider.value); drawAlts(); };
+    drawAlts();
+    pop.append(sl, tierLbl, altHost);
+    // position under the chip
+    const lr = lab.getBoundingClientRect(), cr = chip.getBoundingClientRect();
+    pop.style.left = Math.max(4, cr.left - lr.left) + "px";
+    pop.style.top = (cr.bottom - lr.top + 8) + "px";
+    pop.hidden = false;
+  }
+
+  function applySwap(tokenIndex, core, repl) {
+    const tokens = PL_STATE.prompt.split(/(\s+)/);
+    const tok = tokens[tokenIndex];
+    const m = tok.match(/^([^A-Za-z]*)([A-Za-z][A-Za-z'-]*)([^A-Za-z]*)$/);
+    if (!m) return;
+    tokens[tokenIndex] = m[1] + plCasePattern(core, repl) + m[3];
+    PL_STATE.prompt = tokens.join("");
+    renderChips(); syncTextarea();
+  }
+
+  lab.append(chipHost); lab.append(pop);
+  document.addEventListener("click", () => { pop.hidden = true; });
+
+  // raw editor + actions
+  const raw = el(`<textarea class="pl-raw" rows="7"></textarea>`);
+  const syncTextarea = () => { raw.value = PL_STATE.prompt; };
+  raw.oninput = () => { PL_STATE.prompt = raw.value; renderChips(); };
+  syncTextarea();
+
+  const bar = el(`<div class="toolbar" style="margin-top:12px"></div>`);
+  const copy = el(`<button class="btn sm primary">Copy prompt</button>`);
+  copy.onclick = () => { raw.select(); try { navigator.clipboard.writeText(PL_STATE.prompt); } catch {} toast("Prompt copied"); };
+  const reset = el(`<button class="btn sm ghost">Reset template</button>`);
+  reset.onclick = () => { PL_STATE.prompt = PL_TEMPLATES[PL_STATE.template]; renderChips(); syncTextarea(); };
+  bar.append(copy, reset);
+  bar.append(el(`<span class="hint" style="align-self:center">Highlighted = has swap options. Missing a word? Ask Claude to add it.</span>`));
+
+  renderChips();
+  wrap.append(lab);
+  wrap.append(el(`<div class="pl-rawlabel">Raw prompt (edit freely)</div>`));
+  wrap.append(raw);
+  wrap.append(bar);
+  return wrap;
 }
 
 /* ===================================================================
@@ -750,16 +1234,26 @@ function viewDetail(id) {
   // left: hero portrait
   detail.append(el(`<div class="hero-portrait">${portraitImg(c)}</div>`));
 
-  // right: body
+  // right: body - MMO character sheet header
   const body = el(`<div class="detail-body"></div>`);
+  if (c.epithet) body.append(el(`<div class="d-epithet">${esc(c.epithet)}</div>`));
   body.append(el(`<h1 class="d-name"><span class="swatch"></span>${esc(c.name)} ${c.isStub?'<span class="stub-flag" style="position:static">◇ stub</span>':''}</h1>`));
+
+  // class line: archetype + element badges + story role
+  const elemBadges = [c.tags?.element, ...(Array.isArray(c.extraElements)?c.extraElements:[])]
+    .filter(Boolean).filter(e=>e!=='none')
+    .map(e=>`<span class="elem-badge">${esc(e)}</span>`).join("");
+  const classBits = [c.tags?.archetype, c.tags?.storyRole].filter(Boolean)
+    .map(x=>`<span class="class-chip">${esc(x)}</span>`).join("");
+  if (classBits || elemBadges) body.append(el(`<div class="d-classline">${classBits}${elemBadges}</div>`));
+
   body.append(el(`<div class="d-tag">${esc(c.tagline||'Unnamed concept.')}</div>`));
   if (c.archetypeSummary) body.append(el(`<div class="d-arche">${esc(c.archetypeSummary)}</div>`));
 
   // status chips (editable for real chars)
   if (!c.isStub) {
     const s = c.status || {};
-    const st = el(`<div class="toolbar" style="margin-bottom:20px"></div>`);
+    const st = el(`<div class="toolbar" style="margin-bottom:16px"></div>`);
     ["bible","art","rig"].forEach(k => {
       const b = el(`<button class="btn sm ${s[k]?'primary':''}" data-k="${k}">${s[k]?'✓ ':''}${k}</button>`);
       b.onclick = () => toggleStatus(c.id, k);
@@ -768,13 +1262,76 @@ function viewDetail(id) {
     body.append(st);
   }
 
-  // lore
-  if (c.seed) body.append(el(`<div class="panel lore"><h3>The Seed / Contradiction</h3><p>${esc(c.seed)}</p></div>`));
-  if (c.want) body.append(el(`<div class="panel lore"><h3>The Want</h3><p>${esc(c.want)}</p></div>`));
+  /* ---- TABS: Dossier (dry) | Story & Art ---- */
+  const tabbar = el(`<div class="d-tabs">
+    <button class="d-tab active" data-pane="dossier">Dossier</button>
+    <button class="d-tab" data-pane="prompt">Prompt</button>
+    <button class="d-tab" data-pane="story">Story &amp; Art</button></div>`);
+  const paneDossier = el(`<div class="d-pane" data-pane="dossier"></div>`);
+  const panePrompt = el(`<div class="d-pane" data-pane="prompt" hidden></div>`);
+  const paneStory = el(`<div class="d-pane" data-pane="story" hidden></div>`);
+  body.append(tabbar); body.append(paneDossier); body.append(panePrompt); body.append(paneStory);
+  const allPanes = [paneDossier, panePrompt, paneStory];
+  $$(".d-tab", tabbar).forEach(t => t.onclick = () => {
+    $$(".d-tab", tabbar).forEach(x => x.classList.toggle("active", x===t));
+    allPanes.forEach(p => p.hidden = (p.dataset.pane !== t.dataset.pane));
+  });
+  panePrompt.append(promptTab(c));
 
-  // gallery: canon art + design explorations (added 2026-07-05)
+  /* ===== DOSSIER pane (dry catalog only) ===== */
+  // vitals - the MMO "who / what is this" strip
+  const vitals = [
+    ["Race / species", c.species], ["Faction / allegiance", c.faction],
+    ["Origin / realm", c.realm], ["Age", c.age], ["Build / height", c.height],
+    ["Fighting tool", c.weapon], ["Weakness", c.weakness],
+  ].filter(v => v[1]);
+  if (vitals.length) {
+    const vg = el(`<div class="vitals"></div>`);
+    vitals.forEach(([k,v]) => vg.append(el(`<div class="vital"><div class="vk">${esc(k)}</div><div class="vv">${esc(v)}</div></div>`)));
+    paneDossier.append(vg);
+  }
+  // composition - weighted blend bars (+ editor)
+  paneDossier.append(compositionBlock(c, editable));
+  // powers - cataloged ability keywords
+  if (Array.isArray(c.powers) && c.powers.length) {
+    const pw = el(`<div class="powers-block"><div class="pw-label">Powers &amp; abilities</div><div class="pw-list"></div></div>`);
+    c.powers.forEach(p => $(".pw-list", pw).append(el(`<span class="power-badge">${esc(p)}</span>`)));
+    paneDossier.append(pw);
+  }
+  // aesthetics - aura descriptors (multi-tag, editable)
+  paneDossier.append(aestheticsBlock(c, editable));
+  // tags (editable) - 12 axes
+  paneDossier.append(el(`<div class="section-title"><h2>Classification - 12 axes</h2>
+    ${editable?'<span class="hint">click a value to edit · rare = only this fighter has it</span>':''}</div>`));
+  const tg = el(`<div class="tag-grid"></div>`);
+  AXIS_KEYS.forEach(ax => {
+    const val = c.tags?.[ax];
+    const isRare = val && cov[ax][val] === 1;
+    if (editable) {
+      const cell = el(`<div class="tag-cell edit">
+        <div class="k">${esc(AXES[ax].label)} ${isRare?'<span class="rare">only 1</span>':''}</div>
+        <div class="v"></div></div>`);
+      const sel = el(`<select data-ax="${esc(ax)}"></select>`);
+      const opts = AXES[ax].values.includes(val) || !val ? AXES[ax].values : [val, ...AXES[ax].values];
+      opts.forEach(o => { const op = document.createElement("option"); op.value=o; op.textContent=o; if(o===val) op.selected=true; sel.append(op); });
+      sel.onchange = () => setCharTag(c.id, ax, sel.value);
+      $(".v", cell).append(sel);
+      tg.append(cell);
+    } else {
+      tg.append(el(`<div class="tag-cell">
+        <div class="k">${esc(AXES[ax].label)} ${isRare?'<span class="rare">only 1</span>':''}</div>
+        <div class="v">${esc(val||'-')}</div></div>`));
+    }
+  });
+  paneDossier.append(tg);
+
+  /* ===== STORY pane (lore + art) ===== */
+  if (c.natureNote) paneStory.append(el(`<div class="panel lore"><h3>Nature - how &amp; why (${esc(c.tags?.nature||'')})</h3><p>${esc(c.natureNote)}</p></div>`));
+  if (c.seed) paneStory.append(el(`<div class="panel lore"><h3>The Seed / Contradiction</h3><p>${esc(c.seed)}</p></div>`));
+  if (c.want) paneStory.append(el(`<div class="panel lore"><h3>The Want</h3><p>${esc(c.want)}</p></div>`));
+  if (!c.natureNote && !c.seed && !c.want) paneStory.append(el(`<div class="panel lore"><p style="color:var(--txt-3)">No story written yet.</p></div>`));
   if (Array.isArray(c.gallery) && c.gallery.length) {
-    body.append(el(`<div class="section-title"><h2>Gallery - art & explorations</h2>
+    paneStory.append(el(`<div class="section-title"><h2>Gallery - art & explorations</h2>
       <span class="hint">canon = locked look · exploration = off-canon idea probe</span></div>`));
     const gg = el(`<div class="gallery-grid"></div>`);
     c.gallery.forEach(it => {
@@ -786,34 +1343,8 @@ function viewDetail(id) {
       fig.append(el(`<figcaption><span class="g-kind">${esc(it.kind||'img')}</span><br>${esc(it.label||'')}</figcaption>`));
       gg.append(fig);
     });
-    body.append(gg);
+    paneStory.append(gg);
   }
-
-  // tags (editable)
-  body.append(el(`<div class="section-title"><h2>Classification — 12 axes</h2>
-    ${editable?'<span class="hint">click a value to edit · rare = only this fighter has it</span>':''}</div>`));
-  const tg = el(`<div class="tag-grid"></div>`);
-  AXIS_KEYS.forEach(ax => {
-    const val = c.tags?.[ax];
-    const isRare = val && cov[ax][val] === 1;
-    if (editable) {
-      const cell = el(`<div class="tag-cell edit">
-        <div class="k">${esc(AXES[ax].label)} ${isRare?'<span class="rare">only 1</span>':''}</div>
-        <div class="v"></div></div>`);
-      const sel = el(`<select data-ax="${esc(ax)}"></select>`);
-      // include current value even if custom / not in enum
-      const opts = AXES[ax].values.includes(val) || !val ? AXES[ax].values : [val, ...AXES[ax].values];
-      opts.forEach(o => { const op = document.createElement("option"); op.value=o; op.textContent=o; if(o===val) op.selected=true; sel.append(op); });
-      sel.onchange = () => setCharTag(c.id, ax, sel.value);
-      $(".v", cell).append(sel);
-      tg.append(cell);
-    } else {
-      tg.append(el(`<div class="tag-cell">
-        <div class="k">${esc(AXES[ax].label)} ${isRare?'<span class="rare">only 1</span>':''}</div>
-        <div class="v">${esc(val||'—')}</div></div>`));
-    }
-  });
-  body.append(tg);
 
   // stub actions
   if (c.isStub || c.isUser) {
@@ -849,6 +1380,19 @@ function toggleStatus(id, key) {
   edits[id] = { ...(edits[id]||{}), status: cur };
   saveEdits(edits);
   toast(`${base?.name || '?'}: ${key} ${cur[key]?'done':'reset'}`);
+  render();
+}
+// set an array-valued field (aesthetics) or composition ([{tag,pct}]) on a character
+function setCharField(id, field, val) {
+  const created = loadCreated(); const ci = created.findIndex(c => c.id === id);
+  if (ci >= 0) {
+    created[ci] = { ...created[ci], [field]: val }; saveCreated(created);
+    toast("Updated - export to save to file"); render(); return;
+  }
+  const edits = loadEdits();
+  edits[id] = { ...(edits[id]||{}), [field]: val };
+  saveEdits(edits);
+  toast("Updated - export to save to file");
   render();
 }
 function setCharTag(id, ax, val) {
@@ -972,10 +1516,23 @@ function viewExplore() {
           sw.append(b);
         });
         bodyEl.append(sw);
+      } else if (WIZ_TEXT_FIELDS[f]) { // dry identity text fields
+        const cfg = WIZ_TEXT_FIELDS[f];
+        const fld = el(`<label class="field" style="margin-bottom:16px"><span class="lab">${esc(cfg.lab)}</span></label>`);
+        const inp = el(`<input type="text">`);
+        inp.placeholder = cfg.ph; inp.value = STATE._meta[f] || "";
+        inp.oninput = () => { STATE._meta[f] = inp.value; renderWizPreview(); };
+        fld.append(inp); bodyEl.append(fld);
+      } else if (f === "powers") {
+        const fld = el(`<label class="field" style="margin-bottom:16px"><span class="lab">Powers &amp; abilities (one per line, use catalog terms e.g. Cryokinesis)</span></label>`);
+        const ta = el(`<textarea rows="4"></textarea>`);
+        ta.placeholder = "Cryokinesis\nCold Manipulation\nLevitation"; ta.value = STATE._meta.powers || "";
+        ta.oninput = () => { STATE._meta.powers = ta.value; };
+        fld.append(ta); bodyEl.append(fld);
       } else { // seed / want textareas
         const lab = f === "seed" ? "The Seed / contradiction (optional)" : "The Want (optional)";
-        const ph = f === "seed" ? "Who they are + the one contradiction that makes them a person…"
-                                : "What they actually want — the emotional engine…";
+        const ph = f === "seed" ? "Who they are + the one contradiction that makes them a person"
+                                : "What they actually want - the emotional engine";
         const fld = el(`<label class="field" style="margin-bottom:16px"><span class="lab">${lab}</span></label>`);
         const ta = el(`<textarea rows="4"></textarea>`);
         ta.placeholder = ph; ta.value = STATE._meta[f] || "";
@@ -1080,10 +1637,14 @@ function renderWizPreview() {
 // Persist the drafted fighter into the roster (as in-progress), then open it.
 function createFighter() {
   const c = wizPreviewChar();
+  const powers = (STATE._meta.powers || "").split(/[\n,]/).map(s=>s.trim()).filter(Boolean);
   const fighter = {
     id: "usr_" + Date.now(),
     name: c.name, tagline: c.tagline, colorIdentity: c.colorIdentity,
     portrait: "", status: c.status, tags: { ...STATE._draft },
+    epithet: STATE._meta.epithet || "", species: STATE._meta.species || "",
+    faction: STATE._meta.faction || "", realm: STATE._meta.realm || "",
+    powers, aesthetics: [], composition: [], extraElements: [],
     seed: c.seed, want: c.want
   };
   const created = loadCreated(); created.push(fighter);

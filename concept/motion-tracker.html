@@ -1,0 +1,425 @@
+<style>
+  :root{
+    --bg:#1b1f29; --surface:#232834; --surface2:#2a3040; --line:#39414f;
+    --text:#e9ecf3; --dim:#98a1b4; --faint:#6d768a;
+    --brass:#c9a24b;
+    --fang:#ff9247; --zero:#5fb4ff; --atlas:#5ad39a;
+    --locked:#46cf8c; --draft:#e6b53f; --open:#6b7488;
+    --vfx:#3fb8b0; --anim:#a986f0; --rig:#e88a4a;
+    --radius:14px; --maxw:1120px;
+    --mono:ui-monospace,"Cascadia Code","Consolas",monospace;
+    --sans:system-ui,"Segoe UI",Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --bg:#eef0f4; --surface:#ffffff; --surface2:#f3f5f9; --line:#d7dce6;
+      --text:#1c2230; --dim:#5b6577; --faint:#8b93a4;
+      --brass:#9a7620; --open:#98a1b4;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#1b1f29; --surface:#232834; --surface2:#2a3040; --line:#39414f;
+    --text:#e9ecf3; --dim:#98a1b4; --faint:#6d768a; --brass:#c9a24b; --open:#6b7488;
+  }
+  :root[data-theme="light"]{
+    --bg:#eef0f4; --surface:#ffffff; --surface2:#f3f5f9; --line:#d7dce6;
+    --text:#1c2230; --dim:#5b6577; --faint:#8b93a4; --brass:#9a7620; --open:#98a1b4;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:28px 20px 80px}
+  [dir="ltr"]{direction:ltr;text-align:left}
+
+  header.top{display:flex;flex-wrap:wrap;align-items:flex-end;gap:16px 24px;
+    padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:26px}
+  .brandline{font-family:var(--mono);font-size:12px;letter-spacing:.22em;
+    color:var(--brass);text-transform:uppercase;margin:0 0 6px}
+  h1{margin:0;font-size:clamp(26px,4vw,40px);font-weight:800;letter-spacing:-.01em;
+    text-wrap:balance}
+  h1 .sub{color:var(--dim);font-weight:600}
+  .tagline{color:var(--dim);font-size:14px;margin:8px 0 0;max-width:60ch}
+  .legend{margin-inline-start:auto;display:flex;flex-direction:column;gap:8px;font-size:12.5px}
+  .legend .row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .dot{display:inline-flex;align-items:center;gap:6px;color:var(--dim)}
+  .dot::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--c)}
+
+  .roster{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:30px}
+  @media(max-width:720px){.roster{grid-template-columns:1fr}}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 18px;position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--accent)}
+  .card .hd{display:flex;align-items:baseline;gap:10px}
+  .card .name{font-size:19px;font-weight:800;letter-spacing:.02em}
+  .card .arch{font-family:var(--mono);font-size:11px;color:var(--dim);text-transform:uppercase;
+    letter-spacing:.12em}
+  .card .oneliner{font-size:13px;color:var(--dim);margin:6px 0 12px;min-height:34px}
+  .meter{height:7px;background:var(--surface2);border-radius:99px;overflow:hidden}
+  .meter i{display:block;height:100%;background:var(--accent);border-radius:99px}
+  .card .pct{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);
+    margin-top:7px;font-variant-numeric:tabular-nums}
+  .card .pct b{color:var(--text);font-weight:700}
+
+  h2.sec{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
+    font-family:var(--mono);font-weight:600;margin:38px 0 14px;
+    display:flex;align-items:center;gap:12px}
+  h2.sec::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  .gate{display:flex;gap:14px;align-items:flex-start;background:color-mix(in srgb,var(--draft) 9%,var(--surface));
+    border:1px solid color-mix(in srgb,var(--draft) 34%,var(--line));border-radius:var(--radius);
+    padding:15px 18px;margin-bottom:6px}
+  .gate-badge{flex:none;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;
+    color:var(--draft);background:color-mix(in srgb,var(--draft) 16%,transparent);
+    border:1px solid color-mix(in srgb,var(--draft) 40%,transparent);padding:5px 11px;border-radius:99px;
+    white-space:nowrap;margin-top:2px}
+  .gate-body{font-size:13.5px;color:var(--text);line-height:1.5}
+  .cellok{color:var(--locked);font-weight:700}
+  .cellflag{color:var(--draft);font-weight:700}
+  .cellnext{font-size:12.5px;color:var(--dim)}
+  #statusgrid td:first-child,#statusgrid th:first-child{font-weight:800}
+  #statusgrid td{text-align:center}
+  #statusgrid td.nextcol{text-align:start}
+  .matrix-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);
+    background:var(--surface)}
+  table{border-collapse:collapse;width:100%;min-width:560px}
+  th,td{padding:11px 14px;text-align:start;border-bottom:1px solid var(--line);font-size:14px}
+  thead th{position:sticky;top:0;background:var(--surface2);font-size:12px;color:var(--dim);
+    font-weight:700;letter-spacing:.03em;z-index:1}
+  thead th.ch{color:var(--accent)}
+  tbody tr:last-child td{border-bottom:none}
+  .act{font-weight:600}
+  .act .eng{font-family:var(--mono);font-size:11px;color:var(--faint);display:block;margin-top:2px}
+  td.st{text-align:center}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;
+    padding:4px 10px;border-radius:99px;border:1px solid transparent;white-space:nowrap}
+  .chip.locked{color:var(--locked);background:color-mix(in srgb,var(--locked) 15%,transparent);
+    border-color:color-mix(in srgb,var(--locked) 35%,transparent)}
+  .chip.draft{color:var(--draft);background:color-mix(in srgb,var(--draft) 14%,transparent);
+    border-color:color-mix(in srgb,var(--draft) 32%,transparent)}
+  .chip.open{color:var(--open);background:color-mix(in srgb,var(--open) 16%,transparent);
+    border-color:color-mix(in srgb,var(--open) 34%,transparent)}
+
+  .subhead{display:flex;align-items:center;gap:10px;margin:0 0 4px}
+  .subhead .name{font-size:22px;font-weight:800;color:var(--fang)}
+  .subhead .badge{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:99px;
+    background:color-mix(in srgb,var(--locked) 15%,transparent);color:var(--locked);
+    border:1px solid color-mix(in srgb,var(--locked) 34%,transparent);text-transform:uppercase;
+    letter-spacing:.08em}
+  .subnote{color:var(--dim);font-size:13px;margin:0 0 18px;max-width:70ch}
+  .actions{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  @media(max-width:760px){.actions{grid-template-columns:1fr}}
+  .action{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:15px 16px}
+  .action .ttl{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+  .action .ttl h3{margin:0;font-size:15px;font-weight:700}
+  .action .ttl .eng{font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+  .tags{display:flex;gap:5px;flex-wrap:wrap}
+  .tag{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;
+    letter-spacing:.04em}
+  .tag.vfx{color:var(--vfx);background:color-mix(in srgb,var(--vfx) 16%,transparent)}
+  .tag.anim{color:var(--anim);background:color-mix(in srgb,var(--anim) 18%,transparent)}
+  .tag.rig{color:var(--rig);background:color-mix(in srgb,var(--rig) 16%,transparent)}
+  .action .body{font-size:13.5px;color:var(--text)}
+  .action .vfxline{font-size:12.5px;color:var(--dim);margin-top:7px}
+  .action .vfxline b{color:var(--vfx);font-weight:700;font-family:var(--mono);font-size:11px}
+  .action .because{font-size:12px;color:var(--faint);margin-top:8px;padding-top:8px;
+    border-top:1px dashed var(--line);font-style:italic}
+
+  .nextgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:720px){.nextgrid{grid-template-columns:1fr}}
+  .next{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:15px 17px}
+  .next .hd{display:flex;align-items:baseline;gap:9px;margin-bottom:8px}
+  .next .nm{font-weight:800;font-size:17px}
+  .next.z .nm{color:var(--zero)} .next.a .nm{color:var(--atlas)}
+  .next p{margin:0 0 8px;font-size:13px;color:var(--dim)}
+  .next .have{font-size:12.5px;color:var(--text)}
+  .next .have b{color:var(--draft)}
+
+  footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);
+    color:var(--faint);font-size:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  footer .mono{font-family:var(--mono)}
+</style>
+
+<div class="wrap" dir="rtl">
+  <header class="top">
+    <div>
+      <p class="brandline">OVERTHRONE · Survival Arena</p>
+      <h1>מעקב אפיון-תנועה <span class="sub">- הרוסטר</span></h1>
+      <p class="tagline">איך כל דמות נושמת, נעה ותוקפת - ממופה לכל פעולה שהמנוע כבר מריץ
+        (<span dir="ltr" style="font-family:var(--mono);font-size:12px">fighter.gd</span>).
+        זה הבסיס שעליו יולבשו אנימציה ו-VFX בהמשך.</p>
+    </div>
+    <div class="legend">
+      <div class="row">
+        <span class="dot" style="--c:var(--locked)">נעול</span>
+        <span class="dot" style="--c:var(--draft)">טיוטה</span>
+        <span class="dot" style="--c:var(--open)">פתוח</span>
+      </div>
+      <div class="row" dir="ltr" style="justify-content:flex-end">
+        <span class="tag vfx">VFX</span><span style="color:var(--dim);font-size:11px">runtime</span>
+        <span class="tag anim">ANIM</span><span style="color:var(--dim);font-size:11px">deferred</span>
+        <span class="tag rig">RIG</span><span style="color:var(--dim);font-size:11px">rig-dep</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="roster">
+    <div class="card" style="--accent:var(--fang)">
+      <div class="hd"><span class="name">FANG</span><span class="arch">rusher · fire</span></div>
+      <p class="oneliner">טורף-נמר חם-מזג. הכל תנועה, זינוק=pounce, אש רק ב-lunge.</p>
+      <div class="meter"><i style="width:100%"></i></div>
+      <div class="pct"><span>אפיון-תנועה</span><span><b>11 / 11</b> פעולות נעולות</span></div>
+    </div>
+    <div class="card" style="--accent:var(--zero)">
+      <div class="hd"><span class="name">ZERO</span><span class="arch">balanced · ice</span></div>
+      <p class="oneliner">ישות-קרח קוסמית, קרה ומנותקת. שליטה, סבלנות, אפס-חגיגה.</p>
+      <div class="meter"><i style="width:100%"></i></div>
+      <div class="pct"><span>אפיון-תנועה</span><span><b>11 / 11</b> פעולות נעולות</span></div>
+    </div>
+    <div class="card" style="--accent:var(--atlas)">
+      <div class="hd"><span class="name">ATLAS</span><span class="arch">tank · jade-king</span></div>
+      <p class="oneliner">מלך-אליל חי, מגן בכוונה. חומה, לא נשק. דריפט-פרופורציה מסומן.</p>
+      <div class="meter"><i style="width:100%"></i></div>
+      <div class="pct"><span>אפיון-תנועה</span><span><b>11 / 11</b> פעולות נעולות</span></div>
+    </div>
+  </div>
+
+  <div class="gate">
+    <div class="gate-badge">השער החוסם</div>
+    <div class="gate-body">
+      <b>המכניקה צריכה להוכיח את הרוסטר-המלא חי ב-game3d</b> (שלושתם מחווטים, אך טרם נשׂוחק ואושר יחד).
+      כל מה שמכאן והלאה - אנימציה, VFX, ליטוש - מחכה לשער הזה. הליין-קונספט לא ערם עוד עד שהוא ייפתח.
+    </div>
+  </div>
+
+  <h2 class="sec">מרכז-שליטה - איפה כל דמות עומדת</h2>
+  <div class="matrix-scroll">
+    <table id="statusgrid"></table>
+  </div>
+
+  <h2 class="sec">לוח-הצעידה - פעולות × דמויות</h2>
+  <div class="matrix-scroll">
+    <table id="matrix"></table>
+  </div>
+
+  <h2 class="sec">FANG - אפיון-תנועה מלא (הרף)</h2>
+  <div class="subhead">
+    <span class="name" dir="ltr">FANG</span>
+    <span class="badge">11/11 locked</span>
+  </div>
+  <p class="subnote">כל דמות יורשת את אותה תחושת-מומנטום מוכחת (מתיחה ~16%, overshoot, שובל-מהירות,
+    wind-up 0.08 שנייה, hit-squash ~20%). מה שלמטה = הטעם הספציפי של FANG על-גבי זה. זה הרף שאיתו
+    ZERO ו-ATLAS ייצעדו.</p>
+  <div class="actions" id="fang-detail"></div>
+
+  <h2 class="sec">ZERO - אפיון-תנועה מלא</h2>
+  <div class="subhead">
+    <span class="name" dir="ltr" style="color:var(--zero)">ZERO</span>
+    <span class="badge">11/11 locked</span>
+  </div>
+  <p class="subnote">ההפך המכוון של FANG: לא חסר-מנוחה אלא דומם, לא לופ אלא גלישה-צפה,
+    wind-up כמעט-בלתי-נראה, chill=רגע-הכסף, וב-KO המסכה נסדקת (במקום לקום מחייך). ה"חיים"
+    שלו באים מה-float ומשברי-הקרח שמקיפים דמות דוממת.</p>
+  <div class="actions" id="zero-detail"></div>
+
+  <h2 class="sec">ATLAS - אפיון-תנועה מלא</h2>
+  <div class="subhead">
+    <span class="name" dir="ltr" style="color:var(--atlas)">ATLAS</span>
+    <span class="badge">11/11 locked</span>
+  </div>
+  <p class="subnote">הקוטב השלישי: מסה עצומה ומכוונת (לא מהיר כמו FANG, לא חסכני-צף כמו ZERO).
+    כבד-להתחיל וכבד-לעצור, ה-block הוא הבית שלו, shockwave=רגע-הכסף (הגנתי), וב-KO כורע במכובד
+    "ואז אני שוב עומד". הזהב-בסדקים פועם כמו לב.</p>
+  <div class="actions" id="atlas-detail"></div>
+
+  <div class="rostercomplete" style="margin-top:34px;background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);padding:18px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <span style="font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--locked);
+      border:1px solid color-mix(in srgb,var(--locked) 34%,transparent);padding:5px 12px;border-radius:99px">
+      33 / 33 נעול</span>
+    <span style="color:var(--dim);font-size:14px">אפיון-התנועה של כל הרוסטר הושלם לרף אחיד.
+      הבא: להלביד אנימציה + VFX על הבסיס הזה - אבל רק אחרי שהמכניקה מוכיחה רוסטר-מלא חי במשחק.</span>
+  </div>
+
+  <footer>
+    <span>מקור-אמת = הביבלים ב-<span class="mono">concept/characters/</span>. לוח זה מתעדכן תוך-כדי הצעידה.</span>
+    <span class="mono">v1 · 2026-07-04</span>
+  </footer>
+</div>
+
+<script>
+  const RUBRIC = [
+    {key:"idle",   he:"Idle / נשימה",        eng:"idle"},
+    {key:"move",   he:"תנועה / ריצה",         eng:"move + momentum"},
+    {key:"windup", he:"Wind-up להתקפה",       eng:"wind-up 0.08s"},
+    {key:"swing",  he:"Swing פעיל",           eng:"attack active 0.12s"},
+    {key:"skill",  he:"סקיל (ארכיטיפ)",        eng:"skill"},
+    {key:"ranged", he:"Ranged מכוון",         eng:"ranged (shared)"},
+    {key:"block",  he:"Block",                eng:"block"},
+    {key:"hit",    he:"חטיפת מכה",             eng:"hit-squash 0.14s"},
+    {key:"knock",  he:"Knockback / stagger",  eng:"knockback"},
+    {key:"win",    he:"ניצחון",               eng:"win"},
+    {key:"lose",   he:"הפסד / KO",            eng:"lose / KO"},
+  ];
+  const STATUS = {
+    FANG:{idle:"locked",move:"locked",windup:"locked",swing:"locked",skill:"locked",
+      ranged:"locked",block:"locked",hit:"locked",knock:"locked",win:"locked",lose:"locked"},
+    ZERO:{idle:"locked",move:"locked",windup:"locked",swing:"locked",skill:"locked",
+      ranged:"locked",block:"locked",hit:"locked",knock:"locked",win:"locked",lose:"locked"},
+    ATLAS:{idle:"locked",move:"locked",windup:"locked",swing:"locked",skill:"locked",
+      ranged:"locked",block:"locked",hit:"locked",knock:"locked",win:"locked",lose:"locked"},
+  };
+  const ST_LABEL={locked:"נעול",draft:"טיוטה",open:"פתוח"};
+
+  const FANG = [
+    {t:"Idle / נשימה",eng:"idle",tags:["ANIM","RIG"],
+      body:"לא מסוגל לעמוד במקום - משקל עובר מרגל לרגל, ניתור-מנוחה נמוך, פוצח פרקי-אצבעות, זנב מצליף, אוזניים סורקות את הקהל. לעולם לא נרגע לגמרי.",
+      vfx:"-", because:"טורף חסר-מנוחה + לב-שוומן."},
+    {t:"תנועה / ריצה",eng:"move + momentum",tags:["VFX"],
+      body:"לופ נמוך רכון-קדימה, כפות digitigrade בולעות קרקע, הזנב זורם כמשקל-נגד. מתיחת-המהירות הגנרית נקראת כטורף שמסתער.",
+      vfx:"שובל = בעיטת-אבק חמה, בלי אש (אש שמורה ל-lunge בלבד).", because:"כוננות-pounce (Layer 3) + כלל האש-בתנועה-בלבד (Layer 5)."},
+    {t:"Wind-up להתקפה",eng:"wind-up 0.08s",tags:["ANIM","VFX"],
+      body:"ה-pounce-crouch - נופל נמוך, המשקל מתקפל על הרגל האחורית, הזנב מצליף מעלה, האוזניים משתטחות קדימה (נעילת-טורף).",
+      vfx:"ריצוד-חום קלוש + ניצוצות-אמבר מתקבצים באגרופים העטופים.", because:"קושר stance אל מכניקה בקריאוּת. זה התל החתום שלו."},
+    {t:"Swing פעיל",eng:"attack active 0.12s",tags:["VFX"],
+      body:"מכת-טופר גורפת, כל הגוף נזרק קדימה מאחוריה (הרכינה-הגנרית 20% נקראת כמחויבות).",
+      vfx:"פס-קשת כתום קצר של הטופר.", because:"קומבו-רחוב מאולתר + ידיים-טופר כבדות (Layer 3/4)."},
+    {t:"סקיל = LUNGE / ה-pounce",eng:"skill · lunge 0.20s",tags:["ANIM","VFX"],
+      body:"מהלך-הכסף - זינוק-טורף מילולי, מתיחה מלאה, טפרים מובילים.",
+      vfx:"כאן נדלק זוהר-האמבר: שובל-להבה מהאגרופים, פיצוץ-ניצוצות במגע.",
+      because:"ה-lunge הוא pounce מילולי (Layer 3) + זוהר-רק-ב-lunge (Layer 5). הרגע היחיד שהפראיוּת-הכבולה מציצה."},
+    {t:"Ranged מכוון",eng:"ranged (shared)",tags:["VFX"],
+      body:"מאולתר, לא נקי - מכה-מושלכת / חתך-טופר קצר מיודה, בנהמה.",
+      vfx:"חתך כתום קטן, חלש מזוהר-ה-lunge.", because:"רחוב-מאולתר, לא נשק-ירי מאומן. הביטוי החלש שלו."},
+    {t:"Block",eng:"block",tags:["ANIM"],
+      body:"מסורב - שילוב אמות והתכופפות, אוזניים אחורה, ברור ש*רוצה* לתקוף במקום. מגן חסר-סבלנות, לא חומה נוחה (הקריאה ההיא = ATLAS).",
+      vfx:"-", because:"rusher שבוחר ריסון שונא את זה. ניגוד ל-vow-to-guard של ATLAS."},
+    {t:"חטיפת מכה",eng:"hit-squash 0.14s",tags:["VFX","RIG"],
+      body:"המעיכה-הגנרית 20% לאורך כיוון-המכה. הטעם של FANG = אוזניים נשמטות + עווית עם-ניב חשוף, סופג ונשאר עומד.",
+      vfx:"-", because:"כבד-משקל שסוחר בעמידוּת אבל מסרב לקרוס."},
+    {t:"Knockback / stagger",eng:"knockback",tags:["ANIM"],
+      body:"נטוע, מחליק אחורה על העקבים במקום לעוף - נועץ טפרים לעצור, נהמה.",
+      vfx:"-", because:"מסגרת כבד-משקל שרירית (Layer 4)."},
+    {t:"ניצחון",eng:"win",tags:["ANIM","RIG"],
+      body:"שואג, אגרוף לחזה, ואז מצדיע-לקהל - שמחת-חיה, משוחררת ומשותפת.",
+      vfx:"-", because:"רוצה שהחיה תעורר תשואות (Layer 1/2)."},
+    {t:"הפסד / KO",eng:"lose / KO",tags:["ANIM","RIG"],
+      body:"אוזניים נצמדות, זנב נשמט, נופל חזק - ואז נועץ אגרוף וקם מחייך בכל-זאת (גם בתבוסה).",
+      vfx:"-", because:"ה-get-up-grinning הוא התל שחותר תחת המפלצת (Layer 2, הפחד)."},
+  ];
+
+  const ZERO = [
+    {t:"Idle / נשימה",eng:"idle",tags:["VFX","RIG"],
+      body:"דומם לחלוטין - צף במקום, זרועות שלובות, נשיפה מעלה אֵד, בלתי-קריא. הגוף לא מפרפר (האנטי-FANG).",
+      vfx:"שברי-קרח + אֵד קר מקיפים אותו לאט במסלול, ריחוף-נדנוד קלוש.", because:"אדם בלי מה להוכיח. הקרח-הקוסמי הסובב נושא את החיים, לא הגוף."},
+    {t:"תנועה / גלישה",eng:"move + momentum",tags:["VFX","RIG"],
+      body:"לא רץ - גולש, כפות-רגליים לא נוגעות, נסחף כמו קרח על מים דוממים, גלימת-הקריסטל נגררת. מתיחת-המהירות נקראת כהחלקה חלקה, לא זינוק.",
+      vfx:"שובל = אֵד-כפור + שברי-קרח נושרים, כחול קר.", because:"הוא צף (Layer 4). לוחמי-שליטה גולשים למקום, לא מסתערים."},
+    {t:"Wind-up להתקפה",eng:"wind-up 0.08s",tags:["ANIM","VFX"],
+      body:"מינימלי, מדויק - בקושי זז, מחווה נשלטת קטנה כשקרח מתגבש ביד. מטלגרף בכוונה חלש (שולט לא משדר).",
+      vfx:"קרח חד מתגבש מהר בקצות האצבעות.", because:"חסכנות מחושבת. ההפך מהתקפלות-הגוף של FANG."},
+    {t:"Swing פעיל",eng:"attack active 0.12s",tags:["VFX"],
+      body:"סחיפה נקייה של להב-קרח שנוצר, חסכני - הגוף בקושי מתחייב, הקור עושה את העבודה (הרכינה 20% יושבת עליו רכה בהרבה).",
+      vfx:"קשת-שבב כחול חיוור פריכה, בלי חום, קצוות חדים.", because:"דיוק על-פני כוח (Layer 4)."},
+    {t:"סקיל = CHILL / טבעת-הכפור",eng:"skill · chill 0.4s",tags:["ANIM","VFX"],
+      body:"רגע-הכסף שלו (תשובת-ZERO ל-lunge) - מרים יד, רגוע, וטבעת-כפור מתרחבת החוצה, הרצפה מתגבשת, כל מי שנתפס מואט. בלתי-נמנע.",
+      vfx:"הגוף גלקסיה-בקריסטל זוהר חזק יותר בהטלה; אור סגול/ציאן קוסמי בטבעת.",
+      because:"\"אתה תישרף. אני רק צריך לחכות\". פנטזיית-השליטה שלו, מילולית (Layer 0/3/9)."},
+    {t:"Ranged מכוון",eng:"ranged (shared)",tags:["VFX"],
+      body:"בניגוד להשלכה-המאולתרת של FANG - נטיף-קרח / חץ-כפור מכוון בודד, נקי ונשלט.",
+      vfx:"שבב ישר חד, כחול-קר.", because:"ranged של זוֹנֶר הוא ממושמע, לא מאולתר. כלי-אמת, לא מחשבה שנייה חלשה."},
+    {t:"Block",eng:"block",tags:["ANIM","VFX"],
+      body:"נוח, צפוי - מרים מגן-קרח קריסטלי אלגנטי / חומה דקה, לא-מוטרד, סבלני. לא מסורב כמו FANG, ולא המבצר-הבלתי-זז של ATLAS - מגן-קריסטל חינני וזמני.",
+      vfx:"-", because:"סבלנות היא כל המשחק שלו (Layer 3)."},
+    {t:"חטיפת מכה",eng:"hit-squash 0.14s",tags:["VFX"],
+      body:"השלווה מחזיקה - הגוף בקושי מגיב; במקום זה סדק מילולי רץ על משטח-הקרח וקופא-מחדש מעליו.",
+      vfx:"שבר-שערה + איטום-כפור מחדש.", because:"אדם שמחזיק. הקרח סופג את הנזק, לא האיש (Layer 8)."},
+    {t:"Knockback / stagger",eng:"knockback",tags:["ANIM","VFX","RIG"],
+      body:"כצף, הוא נסחף אחורה כמו קרח שנדחף על מים - בלי החלקה, בלי מעידה - ואז עוצר ומתייצב-מחדש באוויר בקפיאה קטנה.",
+      vfx:"-", because:"הוא צף (Layer 4). גם knockback נשאר שלֵו."},
+    {t:"ניצחון",eng:"win",tags:["ANIM"],
+      body:"שקט - פונה הצידה, בלי חגיגה, נשיפת-כפור איטית. אין מה לחגוג. הוא עדיין לבד בעידן הלא-נכון.",
+      vfx:"-", because:"Layer 1/2 (האובדן שמתחת)."},
+    {t:"הפסד / KO",eng:"lose / KO",tags:["ANIM","RIG"],
+      body:"התל שלו, וההיפוך של קם-מחייך אצל FANG - לפְריים בודד השלווה נסדקת והצער של השארית-האנושית עולה (חצי-הפנים האנושי קורס), ואז הקרח משיב אותו כשהוא שוקע. המסכה נשברת בדיוק פעם אחת.",
+      vfx:"-", because:"Layer 1 הפחד (קפוא-מבפנים לנצח). הרגע היחיד שהאדם מאחורי הקרח מציץ."},
+  ];
+
+  const ATLAS = [
+    {t:"Idle / נשימה",eng:"idle",tags:["VFX"],
+      body:"נשימה עמוקה איטית, עמידה רחבה נטועה, גאה וזקוף - מונומנט שבמקרה נושם, רגוע ובלתי-זז.",
+      vfx:"הזהב בסדקים פועם קלוש, כמו פעימת-לב איטית של החיים שחוזרים דרכו.", because:"נשיאת מלך-שומר (תיקון-הטון) + הזהב-בסדקים כאובייקט-סיפור."},
+    {t:"תנועה / דריכה",eng:"move + momentum",tags:["VFX"],
+      body:"צעדים כבדים איטיים, מרכז-כובד נמוך, מכוון - הקרקע קוראת את משקלו. מתיחת-המומנטום יושבת כמסה כבדה: כבד להתחיל, כבד לעצור, לעולם לא מזנק.",
+      vfx:"בעיטת-אבק/פסולת קטנה בכל צעד (רק לעתים רחוקות מהיר-מספיק לשובל). בלי זוהר.", because:"עצום, נטוע, בלתי-זז (Layer 4). הוא לעולם לא רודף (Layer 7)."},
+    {t:"Wind-up להתקפה",eng:"wind-up 0.08s",tags:["ANIM","VFX"],
+      body:"מתייצב ונועץ עמוק יותר, מסה מתקבצת, המגן עולה - התכרבלות-בלימה, לא קפיצה-אחורה של מכה. איטי בכוונה.",
+      vfx:"סדקי-הזהב מבזיקים כשהוא מתחייב.", because:"חומה שמתכוננת לדחוף, לא אגרוף שהורג."},
+    {t:"Swing פעיל",eng:"attack active 0.12s",tags:["VFX"],
+      body:"דחיפה כבדה / חבטת-אמה - \"תחזור\". כל המסה נשענת פנימה (הרכינה 20% = כל משקל-הגוף), משפיע אבל לעולם לא אכזרי.",
+      vfx:"חבטת-ירקן-זהב עמומה, התפרצות-אבק.", because:"\"דוחף אחורה, לעולם לא הורג\" (Layer 3)."},
+    {t:"סקיל = SHOCKWAVE / החומה דוחפת",eng:"skill · shockwave",tags:["ANIM","VFX","RIG"],
+      body:"רגע-הכסף שלו (תשובת-ATLAS ל-lunge/chill) - נועץ ו-חובט, גל-הלם רדיאלי מתפרץ ומדיף הכל אחורה: \"לא תעבור\".",
+      vfx:"סדקי-אבן-החן מבעירים, הקרקע מתבקעת החוצה באור ירקן+זהב.",
+      because:"נדר המגן-הבלתי-זז מומחש (Layer 0/3/8). הדבר-הגדול היחיד שהוא עושה הוא הגנתי."},
+    {t:"Ranged מכוון",eng:"ranged (shared)",tags:["VFX"],
+      body:"הכי-פחות טבעי לו - השלכה מסורבלת ומהוססת של רסיס-אבן / בקע-קרקע קצר שנשלח קדימה, איטי ומטלגרף.",
+      vfx:"נתח כבד עם ניצנוץ-זהב, חלש ואיטי.", because:"שומר ששונא להילחם בעל ה-ranged המגושם ביותר. כוחו להחזיק נקודה, לא להושיט יד."},
+    {t:"Block",eng:"block",tags:["ANIM","VFX","RIG"],
+      body:"כאן הוא הכי הוא-עצמו - נועץ ומרים את מגן-האמה, הופך למבצר בלתי-זז, לא-מוטרד, סבלני, \"עמדו מאחוריי\". החומה הנוחה (ניגוד להתכופפות-המסורבת של FANG + המגן-הזמני של ZERO).",
+      vfx:"סדקי-הזהב בזוהר-קבוע בזמן המיגון.", because:"הגנה-בנדר היא כל הזהות שלו (Layer 0/3)."},
+    {t:"חטיפת מכה",eng:"hit-squash 0.14s",tags:["VFX"],
+      body:"בקושי זז - המעיכה הגנרית יושבת מינימלית על מסתו; הוא סופג, שבב-אבן קטן ניתז עם ניצוץ-זהב, לא-מוזז.",
+      vfx:"-", because:"\"כל מה שפוגע בך נשבר קודם\" (Layer 0). עמידוּת HP-גבוה."},
+    {t:"Knockback / stagger",eng:"knockback",tags:["ANIM"],
+      body:"הגוף הכי-קשה-להזזה ברוסטר - מתנגד, נועץ, מחליק רק מעט, מונומנט שמסרב ליפול, ואז נועץ-מחדש בכבדות.",
+      vfx:"-", because:"מסה עצומה + מרכז-כובד נמוך (Layer 4)."},
+    {t:"ניצחון",eng:"win",tags:["ANIM"],
+      body:"לא מתרברב - הנהון חגיגי מרוצה אחד: \"הסדר מחזיק\". מכובד, זוהר-הזהב מתיישב.",
+      vfx:"-", because:"שומר אציל, לעולם לא מתחנן או מתפאר (Layer 9)."},
+    {t:"הפסד / KO",eng:"lose / KO",tags:["ANIM","RIG"],
+      body:"כורע לאט - מונומנט משתחווה, עדיין מכובד, לעולם לא מנופץ-מסכן; הזהב בסדקים עומם אך לא מת. \"...ואז אני שוב עומד\".",
+      vfx:"-", because:"Layer 9 (\"ואז אני שוב עומד\") + הפחד (איבוד-שליטה), במפגש עם כבוד."},
+  ];
+
+  function chip(st){return '<span class="chip '+st+'">'+ST_LABEL[st]+'</span>';}
+  function tag(t){return '<span class="tag '+t.toLowerCase()+'">'+t+'</span>';}
+
+  const chars=["FANG","ZERO","ATLAS"];
+  let thead='<thead><tr><th>פעולה</th>'+chars.map(c=>'<th class="ch st" style="--accent:var(--'+c.toLowerCase()+')">'+c+'</th>').join('')+'</tr></thead>';
+  let tbody='<tbody>'+RUBRIC.map(r=>{
+    return '<tr><td class="act">'+r.he+'<span class="eng" dir="ltr">'+r.eng+'</span></td>'+
+      chars.map(c=>'<td class="st">'+chip(STATUS[c][r.key])+'</td>').join('')+'</tr>';
+  }).join('')+'</tbody>';
+  document.getElementById('matrix').innerHTML=thead+tbody;
+
+  // ---- command-center status grid ----
+  const DIMS=["זהות / ביבל","לוק נעול","מודל תלת game-ready","אפיון-תנועה","מחווט ב-game3d"];
+  const SG={
+    FANG:{d:["ok","ok","ok","ok","ok"],next:"מחכה לשער (הוכחת-רוסטר חיה)"},
+    ZERO:{d:["ok","ok","ok","ok","ok"],next:"מחכה לשער (הוכחת-רוסטר חיה)"},
+    ATLAS:{d:["ok","flag","ok","ok","ok"],next:"rework-לוק (בידי אביב) + מחכה לשער"},
+  };
+  const mk=v=>v==="ok"?'<span class="cellok">✓</span>':'<span class="cellflag">⚠</span>';
+  let sgh='<thead><tr><th>דמות</th>'+DIMS.map(d=>'<th>'+d+'</th>').join('')+'<th>הבא</th></tr></thead>';
+  let sgb='<tbody>'+chars.map(c=>{
+    const r=SG[c];
+    return '<tr><td style="color:var(--'+c.toLowerCase()+')">'+c+'</td>'+
+      r.d.map(mk).map(x=>'<td>'+x+'</td>').join('')+
+      '<td class="nextcol cellnext">'+r.next+'</td></tr>';
+  }).join('')+'</tbody>';
+  document.getElementById('statusgrid').innerHTML=sgh+sgb;
+
+  function renderDetail(id,data){
+    document.getElementById(id).innerHTML=data.map(a=>{
+      const vfx = (a.vfx && a.vfx!=="-") ? '<div class="vfxline"><b>VFX</b> '+a.vfx+'</div>' : '';
+      return '<div class="action"><div class="ttl"><h3>'+a.t+'<span class="eng" dir="ltr"> · '+a.eng+'</span></h3>'+
+        '<div class="tags">'+a.tags.map(tag).join('')+'</div></div>'+
+        '<div class="body">'+a.body+'</div>'+vfx+
+        '<div class="because">◄ '+a.because+'</div></div>';
+    }).join('');
+  }
+  renderDetail('fang-detail',FANG);
+  renderDetail('zero-detail',ZERO);
+  renderDetail('atlas-detail',ATLAS);
+</script>

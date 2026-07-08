@@ -83,21 +83,85 @@ Locked shape-facts (derive from essence, safe now):
   gentle growing IN the cracks** (moss / flowers / new life) = the restoration he seeks, made
   literal on his body. Hold until refs.
 
-## 5. THE SURFACE  ⏳ OPEN - awaiting references
-- **Signature colour:** must be distinct from FANG (orange) and ZERO (blue). Direction to test
-  against refs: earthy / green / bronze / weathered - NOT a hot or cold hero colour. `TBD.`
-- **Signature story-object:** `TBD` from refs. Strong candidate: the life growing in his cracks,
-  or a fragment of the thing he destroyed that he carries.
-- **Face & default expression:** sorrowful, weary, gentle - **NOT rage.** A destroyer with kind,
-  tired eyes. `expression <- because the contradiction (a weapon that grieves).`
+## 5. THE SURFACE  (LARGELY LOCKED - see "LOOK LOCKED 2026-07-03" below; a look-rework is Aviv's)
+> ⚠️ **This section's pass-1 drafts are SUPERSEDED by "LOOK LOCKED 2026-07-03".** The color and
+> face are decided there; the stale bullets below are kept only as the design trail. A further
+> look-rework of ATLAS is Aviv-owned (proportion drift + "I'll change more in ATLAS") - do not
+> re-author his surface here.
+- **Signature colour:** ~~TBD~~ → **LOCKED: jade-green + gold** (LOOK LOCKED section). Distinct
+  from FANG orange + ZERO blue; luxurious, monumental.
+- **Signature story-object:** ~~TBD~~ → **LOCKED: the gold + gemstones + life bursting through his
+  cracks** (his wish "restore what he destroyed" made literal on his body).
+- **Face & default expression:** ~~"sorrowful, weary, NOT rage"~~ **SUPERSEDED by the tone
+  correction → noble, RESOLUTE, calm-strong, trustworthy (a guardian-king, NOT weeping/pitiable).**
+  The grief is inner resolve, never tears-on-the-face. `expression <- because a weapon that CHOSE
+  to guard, carried with a king's dignity.`
 
-## 6. THE VIBE IN MOTION  (feeds animation later - animation itself is DEFERRED)
-- **Idle:** slow, heavy, but **proud and upright** - a planted guardian-king, calm and immovable
-  (tone correction: NOT bowed/penitent).
+## 6. THE VIBE IN MOTION  (LOCKED - deepened 2026-07-04)
+
+### 6a. Original vibe beats (kept)
 - **Signature gesture (his alone):** plants himself and raises a hand/forearm as an unbreakable
   **shield** for those behind him - a protector's stance, dignified not desperate.
-- **Win:** does not gloat - a single solemn, satisfied nod: order held.
-- **Lose:** kneels slowly - a monument bowing, still dignified, never shattered-pathetic.
+
+### 6b. MOTION CHARACTERIZATION - per real engine action (the FANG bar)
+Same engine actions (`fighter.gd`), same PROVEN generic juice, but ATLAS is the third pole:
+**FANG = fast + telegraph, ZERO = still + economy, ATLAS = immense + deliberate MASS.** Everything
+he does is heavy, planted, and slow-to-start / slow-to-stop; a tank CAN telegraph (his slowness is
+the tradeoff), the opposite of ZERO's under-read. His "alive" read = weight + the faint pulse of
+gold in his cracks. Tag key: **[VFX]** runtime, ships now. **[ANIM]** per-character animation,
+deferred. **[RIG]** needs the colossal-frame / forearm-shield rig. All his FX palette = jade-green
++ gold, gold-in-cracks glow.
+
+**Locomotion**
+- **Idle:** slow deep breathing, wide planted stance, proud and upright - a monument that happens
+  to breathe, calm and immovable (NOT bowed). **[VFX]** the gold in his cracks pulses faintly, like
+  a slow heartbeat of the life returning through him. <- guardian-king bearing (tone correction) +
+  gold-in-cracks story-object.
+- **Move / tread:** slow heavy footfalls, low centre of gravity, deliberate - the ground reads his
+  weight. The generic momentum stretch sits as PONDEROUS mass: heavy to start, heavy to stop, never
+  darting. **[VFX]** small dust/debris kick at each step (rarely fast enough to trail); no glow.
+  <- colossal, grounded, immovable (Layer 4); he never chases (Layer 7).
+
+**Offense** (note: he shoves, he does not strike to kill - Layer 3)
+- **Attack wind-up (0.08s):** braces and plants deeper, mass gathering, guard rising - a bracing
+  coil, not a striker's cock-back. **[ANIM][VFX]** gold cracks flare as he commits. Readably slow
+  on purpose. <- a wall winding up to push, not a fist to kill.
+- **Attack active / swing (0.12s):** a heavy SHOVE / forearm bash - "get back." His whole mass
+  leans into it (the generic 20% lean = full-body weight), impactful but never vicious. **[VFX]**
+  dull jade-gold impact thud, dust burst. <- "shove you back, never strike to kill" (Layer 3).
+- **Skill = SHOCKWAVE / the wall pushes back (tank):** HIS money-moment (ATLAS's answer to FANG's
+  lunge / ZERO's chill) - plants and SLAMS, a radial shockwave erupts and knocks everything back:
+  "you shall not pass." **[ANIM][VFX]** the gold-gem cracks BLAZE, the ground fractures outward
+  with jade+gold light. **[RIG]** <- the immovable-protector vow made literal (Layer 0/3/8); the
+  one big thing he does is DEFENSIVE.
+- **Ranged (aimed, shared kit):** the least natural for him - a reluctant, ponderous hurl of a
+  stone shard / a short ground-fissure sent forward, slow and telegraphed. **[VFX]** heavy chunk
+  with a gold glint, weak and slow. <- a guardian who hates to fight has the clumsiest ranged;
+  his power is holding a spot, not reaching out.
+
+**Defense / reaction** (his home)
+- **Block:** THIS is where he is most himself - plants and raises the forearm-shield, becomes an
+  immovable fortress, unbothered, patient, "stand behind me." The comfortable wall (contrast FANG's
+  reluctant hunch + ZERO's elegant temporary shield). **[ANIM][VFX][RIG]** gold cracks steady-glow
+  while guarding. <- defensive-by-vow is his entire identity (Layer 0/3).
+- **Take a hit (0.14s squash):** barely budges - the generic squash sits minimal on his mass; he
+  ABSORBS it, a small chip of stone flakes off with a gold spark, unmoved. **[VFX]** <- "everything
+  that hits you breaks first" (Layer 0); high-HP endurance.
+- **Knockback / stagger:** the hardest body in the roster to move - resists, digs in, slides only a
+  little, a monument refusing to topple, then heavily re-plants. **[ANIM]** <- immense mass +
+  low centre of gravity (Layer 4).
+
+**Round beats**
+- **Win:** does not gloat - a single solemn, satisfied nod: "order holds." Dignified, the gold glow
+  settling. **[ANIM]** <- noble guardian, never groveling or boasting (Layer 9).
+- **Lose / KO:** kneels slowly - a monument bowing, still dignified, never shattered-pathetic; the
+  gold in the cracks dims but does NOT die. "...Then I stand again." (Contrast FANG's grin + ZERO's
+  cracking mask: ATLAS = unbroken resolve.) **[ANIM][RIG]** <- Layer 9 ("then I stand again") +
+  the fear (losing control), faced with dignity.
+
+**Signature gesture (LOCKED):** the shield-stance - plant + raised forearm as an unbreakable shield
+for those behind him. Doubles as his block AND his whole identity in one pose. <- protector, not
+aggressor; the wall, not the weapon.
 
 ## 7. ROSTER FIT + THE AXIS HE OWNS (LOCKED)
 - **Owns the "immovable protector / penance" axis** - no other fighter is defensive-by-vow.

@@ -32,7 +32,33 @@ removed -> transparent RGBA PNG, the file you actually cut into parts).
 9. **Generated WITH the character's visual anchor as a reference** (Magnific Nano Banana Pro,
    `references:[{type:image}]`) so it stays consistent across poses and across the roster.
 
-## THE PERFECT RIG-POSE PROMPT TEMPLATE (reuse for every character)
+## ⚠️ A-POSE ASSET TEMPLATE v2 (locked with Aviv 2026-07-07) - use this now
+
+Adopted from a strong 3D-asset prompt Aviv brought, EDITED per the locked method: style stays
+locked via the FANG/ZERO `style` image reference (NOT via words), and the realism-signalers were
+stripped ("stylized PBR", "cinematic game engine", "subsurface scattering", "sharp mechanical
+details" - they pull toward photoreal and fight our collectible-toy look). Kept: the neutral
+render-quality scaffolding that makes a clean Tripo-ready asset. Lives in the Studio Prompt Lab as
+the "2 · A-pose asset" template.
+
+```
+Use the referenced image(s) ONLY as the visual STYLE anchor (match their exact finish, materials,
+proportions and world). Keep the SAME character - only the pose changes.
+
+A clean high-fidelity 3D game-character asset of [CHARACTER], in a neutral rig-ready A-pose that
+shows the full silhouette: facing forward, symmetric, arms held about 40 degrees out from the
+torso, elbows soft, hands fully open with fingers relaxed and separated, legs roughly parallel.
+Every limb clearly separated from the body and from each other; any tail, cape or long hair swept
+clear to one side, not crossing any limb. [MATERIAL AND TEXTURE NOTES]. Soft professional studio
+lighting, ambient occlusion, crisp clean edges, high resolution, full body head to feet, centered,
+straight-on with minimal perspective, nothing cropped, isolated on a solid neutral grey studio
+background. No text, no logos, no display base.
+```
+
+Pass the character's chosen concept image as the STYLE `image` reference (+ FANG/ZERO). This is the
+step-2/3 prompt in the concept-first pipeline (SOUL-PROMPT.md); step-1 concept prompt stays free.
+
+## THE PERFECT RIG-POSE PROMPT TEMPLATE (older v1, superseded by v2 above - kept as trail)
 
 **Settings:** Magnific `images_generate` · `mode: imagen-nano-banana-2` (Nano Banana Pro) ·
 `references: [{type:"image", identifier: <character's visual-anchor creation>}]` ·

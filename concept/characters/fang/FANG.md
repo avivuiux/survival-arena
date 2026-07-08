@@ -37,17 +37,19 @@ determined stare + a leashed-brutal aura shown as warm fire on the fists (same d
 picked from a soul-prompt exploration round (see `concept/SOUL-PROMPT.md`; round 1 = idea-only
 prompt, round 2 = menace push on round-1 #1 via image reference).
 
-**BIBLE AMENDMENT - THE FACE (supersedes Layer 4's "human face"):** FANG now has a **FULL TIGER
-FACE** (beast head, real muzzle, fangs) - Aviv ruled this explicitly when the conflict with the
-old "human face + tiger ears/fangs/markings" line was flagged. The imposing-body-vs-warm-soul
-tension now lives in EXPRESSION (predator stare + the warning-grin: "the smile of something that
-chooses, every second, not to bite") instead of human features. Amber predator eyes stay.
-Everything else in r2_v4 rides along: scrappy patched street gear, banner fist-wraps, rope/patch
-materials, chibi-plus toy-3D register.
+**~~BIBLE AMENDMENT - THE FACE~~ RESCINDED (Aviv, 2026-07-05 evening, animation/design lane):**
+the earlier "FULL TIGER FACE" ruling is CANCELLED. **Aviv confirmed r2_v4 AS-IS is the final
+canonical design - including its face** (boyish tiger face: tiger nose, fangs, markings, amber
+predator eyes, messy mane-hair). A full-tiger-face exploration round WAS generated and shown
+(`explorations/fang_tigerface_r3_v1-4.png`) - Aviv kept r2_v4 ("אני מרוצה מ-FANG שיצרנו").
+The r3 tiger-face images = archived alternatives, no canon role. The warning-grin/predator-stare
+expression language stays as r2_v4 shows it.
 
-**Downstream (concept lane):** generate the new canonical anchor + A-pose from r2_v4 -> 12-angle
-audit -> Tripo (per STYLE-GUIDE §3D engine rules) -> swap the in-game GLB. The current
-`FANG_chibi_3d_v1*` assets = the OLD face, still live in-game until the refresh lands.
+**Downstream - DONE (2026-07-06):** A-pose = `fang_r2v4_apose_1.png` (Aviv-LIKED of 4 candidates)
+-> 12-angle audit passed -> Tripo final recipe (v3.0 engine + detailed texture, see STYLE-GUIDE
+§engine-rule; earlier standard-texture drafts mushed eyes/fangs and were deleted) ->
+**`FANG_r2v4_3d_v4_rigged.glb` (3.3MB, rigged) WIRED into game3d. ⏳ Aviv F5 live-judge pending.**
+`FANG_chibi_3d_v1*` = OLD design, archived on disk. Anim clips must be RE-FORGED on the v4 rig.
 
 ---
 

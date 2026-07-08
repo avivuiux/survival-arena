@@ -208,8 +208,9 @@ Two references, one axis between them:
   to **collectible-figure realism of materials**: real fabric weave/patches/stitching, worn
   leather, rope, metal grommets, fur with actual strands, PBR-like studio lighting on a neutral
   backdrop. Detail-density is the point - "savable as a real toy you could buy."
-- **Face rule follows the FANG bible amendment:** full beast/character faces are allowed
-  (FANG = full tiger face); menace/warmth carried by EXPRESSION, not by human features.
+- **Face rule (UPDATED 2026-07-05 evening):** the full-tiger-face amendment was RESCINDED - Aviv
+  confirmed r2_v4 AS-IS including its boyish tiger face. Face register per character = whatever
+  the character's chosen design image shows; menace/warmth carried by EXPRESSION either way.
 - **SUPERSEDED:** the chibi-plus anchors `fang_styledial_A_attack.jpg` + `zero_chibiplus_cold_2.jpg`
   (2026-07-03 lock below) = archived as design. `fang_styledial_A_attack` keeps NO style role
   anymore (it was already archived as FANG design same day).
@@ -220,6 +221,17 @@ Two references, one axis between them:
   the full roster. A hero-warm style that can't do villain-cold fails the lock.
 - Generation recipe: soul-prompt (concept/SOUL-PROMPT.md) + this anchor as `image` reference
   for finish/proportions. 12-angle audit + Tripo path per §3D rules still apply.
+- **⚠️ ENGINE RULE UPDATE (2026-07-06, FANG r2_v4 conversion - FINAL RECIPE):** for THIS
+  detail-dense style, TWO flags are MANDATORY together, proven by elimination on the same A-pose:
+  1. `texture_quality: "detailed"` - standard mushed the identity hotspots (amber eyes went
+     grey-glass, fangs smeared, patches blurred); detailed restored ALL of them.
+  2. `model_version: "v3.0-20250812"` - the direct-API DEFAULT is an older engine and mushes
+     even WITH the detailed flag (the failed v3 run). v3.0 + detailed = Magnific-tripo-v31-grade.
+  Also proven: `animate_rig` does NOT degrade the texture (pre-rig vs rigged identical), and
+  `face_limit` 18000 keeps full quality. Recipe = `tools/tripo/tripo_pipeline.py <image> <out.glb>
+  18000 detailed` (v3.0 is its default now; saves a .prerig.glb intermediate for QA).
+  The style itself SURVIVES image-to-3D - the old "detail = mush" fear is dead with both flags set.
+  Live proof: `fang/FANG_r2v4_3d_v4_rigged.glb` (3.3MB, rigged, wired into game3d).
 
 ### ✅ 2026-07-03 (night) - NEW IN-GAME LOOK LOCKED (Aviv): "CHIBI-PLUS 3D-TOON"
 **THE TWO STYLE ANCHORS (Aviv-confirmed, final):**

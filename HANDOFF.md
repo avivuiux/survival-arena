@@ -176,9 +176,58 @@ Both chibi models were generated AND are wired into `game3d`:
   two-machine verdict is data-backed, not a vibe. Both verified via two-process localhost connect
   (match starts, stats read clean); **Aviv has a Mac but not available now** - he runs the real test later.
 
+## Current state - SESSION 10 (2026-07-07): ⚠️ VISION PIVOT to 3v3 ACTION-MOBA + Stage-2/4 IMPLEMENTED
+
+**The game was re-specced from 1v1-best-of-3 to a 3v3 action-MOBA (Battlerite-style) - Aviv's
+decision, locked in `GDD.md` + `DESIGN.md §VISION LOCKED` by the DESIGN lane.** The two-chat split
+is now formalised (`GDD.md §WORK SPLIT`): **DESIGN lane** owns the GDD stages + characters/art;
+**MECHANICS lane (this one)** implements the locked structure in `scripts/`. Contract = GDD.md.
+
+**Also this session (before the pivot): a big batch of `game3d` polish (all Aviv-approved live):**
+per-archetype size/hover (tank looms, ZERO floats), **smooth-locked rotation** (F6 removed, `const`),
+**synthesized combat SFX** (swing/hit/parry/KO/shot/cast/block in `audio/`, edge-detected), the
+**KO-only-loser fix**, the **arena as a place** (gradient sky + low walls + surrounding ground +
+shadows), **bigger characters + a dynamic follow-camera**, an **F8 live look-tuner** (camera/
+lighting/atmosphere/post sliders + PRINT VALUES), and the **skeletal-animation playback layer**
+(plays idle/walk if the model has clips; FANG is now the r2_v4 collectible-toy model, no clips yet
+-> procedural-juice fallback). All in `ROADMAP.md` (the full game gap-map, Aviv-requested).
+
+**IMPLEMENTED THIS SESSION (GDD Stage 2 + first slice of Stage 4) - headless-verified, live-tested:**
+- ✅ **3v3 match loop** (`game3d`): 6 fighters, **teams 0/1** (you = team-0 human + 2 bot allies vs
+  3 bot enemies), team spawns, **no friendly fire** (melee/projectile/skills skip teammates), bots
+  target nearest ENEMY. Single-client (bots fill the other 5), per the standing method.
+- ✅ **Respawn 10s** (dead -> back at team spawn). **Score = kills** (credit to last-hitter's team)
+  **+ orb bonus**. **Round = 3 min; higher score at the timer wins; best-of-3.** Tie = replay.
+- ✅ **Center power-orb** (spawns every 20s, grab within 60u = +2 team points + a 6s team damage
+  buff +35%). The anti-stall engine.
+- ✅ **Camera** now frames the centroid of ALL active fighters (readable-chaos for 6). **HUD** =
+  team scores + round timer + round-wins + [POWER] + team-tinted names.
+- ✅ **Stage-4 ULTIMATE system (first kit slice):** a charge meter (fills over ~75s + on dealing
+  damage), **Q** casts when full. **FANG = Frenzy** (5s berserk: attack-cd x0.5 + dmg x1.3),
+  **ZERO = Chill Nova** (big AoE freeze), **tank = Quake** (big shockwave). Bots ult when charged.
+  Player ult meter drawn bottom-centre. All numbers = GDD `[PROVE]` starting values.
+- **Online is PAUSED** (H/J show "online returns for 3v3"): the old 1v1 net path is dormant since
+  the pivot. Single-client only for now; online 3v3 is a later step.
+
+**Files (mechanics-owned, committed this session):** `scripts/game3d.gd`, `entities/fighter/
+fighter.gd`, `HANDOFF.md`, `ROADMAP.md`, `audio/`. **NOT touched (design-lane-owned, their WIP in
+the shared tree):** `GDD.md`, `DESIGN.md`, `ROSTER.md`, `concept/`, `tools/character-studio/`.
+
 ## Next steps
 
-**TOP OF THE STACK (session 9 candidates - run each through the principles, recommend ONE):**
+**TOP OF THE STACK (session 11 candidates - post 3v3-pivot; run each through the principles, recommend ONE):**
+- **Tune the 3v3 by play** (all GDD numbers are `[PROVE]`): respawn 10s (drops?), round 3 min (too
+  long?), orb interval/buff, score balance, camera zoom for 6. This is the find-the-fun on the new loop.
+- **Finish the Stage-4 kits** (GDD §Stage 4, LOCKED structure = 1 primary + 2 identity skills +
+  ultimate + defensive). Ultimate is DONE for all 3; the **2nd identity skill** per character is next
+  (e.g. FANG "Rake" claw-sweep). Build one, live-test, replicate.
+- **Smarter bots for 3v3** (currently each bot 1v1-thinks vs nearest enemy - readable but no team
+  play): focus-fire / peel / contest-the-orb behaviour.
+- **Online returns for 3v3** (currently PAUSED): the net stack is server-authoritative + proven at
+  latency, but it packs 2 fighters - needs a 6-fighter sync. Bigger; after the loop is fun.
+- ~~old 1v1 candidates below are SUPERSEDED by the 3v3 pivot~~ (kept for history):
+
+**TOP OF THE STACK (session 9 candidates - SUPERSEDED by the 3v3 pivot):**
 - **Aviv live-judges ZERO-chibi's facing/scale in game3d** (pick BALANCED, vs bot). If it faces
   wrong, one-line fix `balanced.yaw_off`. This closes the roster's 2nd model. START HERE.
 - **Real two-machine net test** (PC vs Mac): the LAST net gate - the pipe + LAN connect + RTT/loss
@@ -189,8 +238,11 @@ Both chibi models were generated AND are wired into `game3d`:
 - ~~**A-pose -> combat stance**~~ **RE-ORDERED TO LAST** (concept scope decision `199c574`):
   skeletal animation is the FINAL polish, only after the game is proven + roster is full, and even
   then minimal (breathing/walk/attack). Do NOT pick this next - it is the scope-death line.
-- **F6 directional-view decision**: smooth vs 8 vs 4 is still deferred ("אפשר לשנות אחר כך") -
-  a quick lock whenever Aviv wants to judge it in the unified game.
+- ~~**F6 directional-view decision**~~ **✅ LOCKED SMOOTH (Aviv 2026-07-04): "המשחק צריך להיות
+  חלק ולעשות הרגשה של חלקות."** The 8/4 directional-stepping option is rejected outright - the
+  F6 toggle is removed from game3d.gd and `_view_snap` is now a `const 0` (stepping is impossible).
+  The model's yaw already follows the momentum-smoothed facing (TURN_RATE) exactly, so rotation
+  is continuous. This was the last small open decision; nothing else non-Mac remains for the core.
 
 0. **(Session 3 done)** Movement feel overhauled + tuned by Aviv (envelope run, continuity,
    walk-sustain, whole-screen arena, F3/F4 debug, tuner tool). **Movement now feels right.**
